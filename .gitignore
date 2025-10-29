@@ -31,6 +31,8 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+# production env (do not commit)
+.env.production
 
 # vercel
 .vercel
