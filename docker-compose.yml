@@ -29,7 +29,7 @@ services:
       # Product images persistence
       - ./public/products:/app/public/products
     ports:
-      - "3000:3000"  # Đổi port bên trái, VD: "8080:3000" để dùng port 8080
+      - "5000:3000"  # Đổi port bên trái, VD: "8080:3000" để dùng port 8080
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
