@@ -1,0 +1,520 @@
+// Digital Shop Prisma Schema
+// Dark theme e-commerce with internal wallet system
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// User Management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String // Hashed password
+  role          UserRole  @default(BUYER)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Referral System
+  referralCode String? @unique // User's unique referral code
+  referredById String? // ID of user who referred them
+
+  // Relations
+  wallet              Wallet?
+  orders              Order[]
+  depositRequests     ManualDepositRequest[]
+  adminActions        AdminActionLog[]
+  productLogs         ProductLog[]
+  twoFactorAccounts   TwoFactorAccount[]
+  passwordResetTokens PasswordResetToken[]
+  referrals           Referral[]             @relation("Referrer")
+  referredBy          Referral?              @relation("Referee")
+
+  @@map("users")
+}
+
+model Wallet {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  balanceVnd Float    @default(0)
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+// Product Management
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  slug        String   @unique
+  icon        String? // URL to category icon/image
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  categoryId  String  @default("default")
+  name        String
+  slug        String  @unique
+  description String?
+  priceVnd    Float   @default(0)
+  stock       Int     @default(0)
+
+  // File upload fields
+  fileUrl    String? // S3 or file storage URL
+  fileName   String? // Original file name
+  totalLines Int     @default(0) // Total accounts/items in file
+  usedLines  Int     @default(0) // How many sold/used
+
+  images    String? // JSON string for images array
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  productLogs ProductLog[]
+  files       File[]
+  licenses    License[]
+
+  @@map("products")
+}
+
+model ProductLog {
+  id          String   @id @default(cuid())
+  productId   String
+  userId      String
+  orderId     String
+  action      String // "PURCHASE", "REFUND", etc.
+  quantity    Int // How many items/lines taken
+  lineIndices String? // JSON array of which lines were taken [0, 1, 2, ...]
+  content     String? // The actual content delivered (can be partial file content)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("product_logs")
+}
+
+model File {
+  id        String   @id @default(cuid())
+  productId String
+  s3Key     String
+  size      Int
+  checksum  String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  downloadLogs DownloadLog[]
+
+  @@map("files")
+}
+
+model License {
+  id         String        @id @default(cuid())
+  productId  String
+  codeOrJwt  String        @unique
+  status     LicenseStatus @default(NEW)
+  boundEmail String?
+  issuedAt   DateTime?
+  createdAt  DateTime      @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("licenses")
+}
+
+// Order Management
+model Order {
+  id             String        @id @default(cuid())
+  userId         String
+  status         OrderStatus   @default(PENDING)
+  totalAmountVnd Float
+  discountVnd    Float         @default(0) // Discount from coupon
+  couponCode     String? // Applied coupon code
+  currency       String        @default("VND")
+  itemsJson      String // Order items as JSON string
+  paymentMethod  PaymentMethod @default(WALLET)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+  orderItems   OrderItem[]
+  downloadLogs DownloadLog[]
+  productLogs  ProductLog[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int    @default(1)
+  priceVnd  Float
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Payment {
+  id           String          @id @default(cuid())
+  orderId      String
+  provider     PaymentProvider
+  providerTxid String?
+  amountVnd    Float
+  rawJson      String? // Raw payment data as JSON string
+  matchedBy    String? // How payment was matched (admin, tpbank, etc.)
+  createdAt    DateTime        @default(now())
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+// Manual Deposit System (QR Code based)
+model ManualDepositRequest {
+  id              Int           @id @default(autoincrement())
+  internalId      String?       @unique @default(cuid()) // Keep cuid for internal use, optional for migration
+  userId          String
+  amountVnd       Float
+  note            String?
+  qrCode          String? // QR code image URL
+  transferContent String? // Fixed transfer content for user
+  status          DepositStatus @default(PENDING)
+  adminNote       String?
+  decidedAt       DateTime?
+  createdAt       DateTime      @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("manual_deposit_requests")
+}
+
+// Coupon System
+model Coupon {
+  id             String       @id @default(cuid())
+  code           String       @unique // Coupon code (e.g., "SAVE20")
+  description    String? // Description of the coupon
+  discountType   DiscountType @default(PERCENTAGE) // PERCENTAGE or FIXED
+  discountValue  Float // Percentage (0-100) or fixed amount in VND
+  maxDiscountVnd Float? // Max discount amount for percentage coupons
+  minOrderVnd    Float        @default(0) // Minimum order amount to use coupon
+  maxUses        Int? // Max number of times coupon can be used (null = unlimited)
+  usedCount      Int          @default(0) // How many times used
+  startDate      DateTime? // When coupon becomes active
+  expiryDate     DateTime? // When coupon expires
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("coupons")
+}
+
+// Settings (Singleton)
+model Settings {
+  id                 String  @id @default("singleton")
+  // Website Settings
+  websiteName        String  @default("Digital Shop")
+  websiteTitle       String  @default("Digital Shop - Premium Digital Products")
+  websiteDescription String  @default("Premium digital products and services")
+  websiteKeywords    String  @default("digital products, premium, shop")
+  websiteLogo        String? // Logo URL
+  websiteFavicon     String? // Favicon URL
+  copyrightYear      String  @default("2025") // Copyright year in footer
+  supportEmail       String  @default("support@webmmo.com") // Support email in footer
+  contactInfo        String  @default("") // Additional contact info in footer
+
+  // Payment Settings
+  paymentMethods String @default("{\"manual\":true,\"tpbank\":false,\"momo\":false,\"crypto\":false}")
+  bankInfo       String @default("{\"bank\":\"\",\"account\":\"\",\"name\":\"\",\"instructions\":\"\"}")
+  topupRules     String @default("{\"minVnd\":10000,\"maxVnd\":100000000}")
+  tpbankConfig   String @default("{\"enabled\":false,\"apiUrl\":\"\",\"token\":\"\",\"amountTolerance\":2000}")
+
+  // Deposit Bonus Settings
+  depositBonusTiers String @default("[]")
+  // Example: [{"minAmount":50000,"maxAmount":100000,"bonusPercent":5},{"minAmount":100001,"maxAmount":500000,"bonusPercent":10}]
+
+  // Referral Settings
+  referralSettings String @default("{\"enabled\":true,\"referrerRewardVnd\":10000,\"refereeRewardVnd\":5000,\"minDepositForRewardVnd\":50000}")
+  // Example: {"enabled":true,"referrerRewardVnd":10000,"refereeRewardVnd":5000,"minDepositForRewardVnd":50000}
+
+  // UI Settings
+  uiTexts       String @default("{}")
+  themeSettings String @default("{\"primaryColor\":\"#3b82f6\",\"darkMode\":true}")
+
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+// Audit & Logging
+model DownloadLog {
+  id        String   @id @default(cuid())
+  orderId   String
+  fileId    String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  file  File? @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  @@map("download_logs")
+}
+
+model AdminActionLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  targetType String?
+  targetId   String?
+  diffJson   String? // Changes made as JSON string
+  createdAt  DateTime @default(now())
+
+  // Relations
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("admin_action_logs")
+}
+
+// Wallet Transactions
+model WalletTransaction {
+  id              String                @id @default(cuid())
+  userId          String
+  type            WalletTransactionType
+  amountVnd       Float
+  balanceAfterVnd Float
+  description     String?
+  metadata        String? // JSON string for additional data
+  createdAt       DateTime              @default(now())
+
+  @@index([userId])
+  @@map("wallet_transactions")
+}
+
+// Website Settings (Key-Value Store)
+model WebsiteSettings {
+  key       String   @id
+  value     String // JSON string or plain text
+  updatedAt DateTime @updatedAt
+
+  @@map("website_settings")
+}
+
+// Auto Topup Logs
+model AutoTopupLog {
+  id                String          @id @default(cuid())
+  bankTransactionId String          @unique
+  bankName          String // Name of bank from config
+  depositRequestId  Int?
+  userId            String?
+  topupCode         String
+  amountVnd         Float
+  description       String
+  status            AutoTopupStatus
+  errorMessage      String?
+  transactionDate   DateTime
+  createdAt         DateTime        @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@map("auto_topup_logs")
+}
+
+// Referral System
+model Referral {
+  id                String    @id @default(cuid())
+  referrerId        String // User who referred
+  refereeId         String    @unique // User who was referred
+  referralCode      String // Code used for referral
+  referrerRewardVnd Float     @default(0) // Reward given to referrer
+  refereeRewardVnd  Float     @default(0) // Reward given to referee
+  rewardPaid        Boolean   @default(false) // Whether rewards have been paid
+  rewardPaidAt      DateTime?
+  firstDepositVnd   Float? // First deposit amount by referee
+  firstDepositAt    DateTime?
+  createdAt         DateTime  @default(now())
+
+  // Relations
+  referrer User @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee  User @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@index([referralCode])
+  @@map("referrals")
+}
+
+// User Activity Log (for comprehensive tracking)
+model UserActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String // LOGIN, LOGOUT, REGISTER, VIEW_PRODUCT, ADD_TO_CART, PURCHASE, DEPOSIT, WITHDRAW, etc.
+  targetType String? // Product, Order, etc.
+  targetId   String? // ID of the target entity
+  metadata   String? // JSON string for additional data
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("user_activity_logs")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  BUYER
+}
+
+enum LicenseStatus {
+  NEW
+  ISSUED
+  REVOKED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  EXPIRED
+  REVIEW_REQUIRED
+}
+
+enum PaymentMethod {
+  WALLET
+}
+
+enum PaymentProvider {
+  MANUAL
+  TPBANK
+  MOMO
+  CRYPTO
+}
+
+enum DepositStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum WalletTransactionType {
+  DEPOSIT
+  PURCHASE
+  REFUND
+  ADMIN_ADJUST
+  REFERRAL_REWARD
+}
+
+enum AutoTopupStatus {
+  SUCCESS
+  INVALID
+  FAILED
+}
+
+// 2FA Authenticator
+model TwoFactorAccount {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String // Account name (e.g., "Google", "Facebook")
+  issuer    String // Service name
+  secret    String // TOTP secret key
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("two_factor_accounts")
+}
+
+// Password Reset Tokens
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique // Unique reset token
+  expiresAt DateTime // Token expiry time (e.g., 1 hour)
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Advertisement System
+model Advertisement {
+  id          String      @id @default(cuid())
+  name        String // Internal name for admin
+  type        AdType
+  placement   AdPlacement
+  content     String // JSON or HTML content depending on type
+  imageUrl    String? // For IMAGE type
+  clickUrl    String? // Redirect URL when clicked
+  order       Int         @default(0) // Display order
+  enabled     Boolean     @default(true)
+  impressions Int         @default(0) // Track views
+  clicks      Int         @default(0) // Track clicks
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([placement, enabled, order])
+  @@map("advertisements")
+}
+
+enum AdType {
+  GOOGLE_ADSENSE // Google Ads script
+  HTML_EMBED // Custom HTML/JS
+  IMAGE_BANNER // Upload image banner
+  VIDEO // Video embed
+}
+
+enum AdPlacement {
+  SIDEBAR_LEFT // Left sidebar
+  SIDEBAR_RIGHT // Right sidebar
+  BETWEEN_PRODUCTS // Between product grid items
+  HEADER // Top of page
+  FOOTER // Bottom of page
+}
