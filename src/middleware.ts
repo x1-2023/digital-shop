@@ -147,6 +147,7 @@ export const config = {
      */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
+  runtime: 'nodejs', // Use Node.js runtime instead of Edge runtime
 };
 
 
