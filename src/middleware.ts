@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifySessionToken } from '@/lib/jwt-session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -76,7 +77,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin')) {
     // Check session cookie
     const sessionCookie = request.cookies.get('session');
-    
+
     if (!sessionCookie) {
       // No session, redirect to login
       const url = new URL('/auth/signin', request.url);
@@ -84,26 +85,19 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Verify session by calling auth API
+    // Verify JWT session token directly (no fetch needed)
     try {
-      const apiUrl = new URL('/api/auth/session', request.url);
-      const response = await fetch(apiUrl.toString(), {
-        headers: {
-          Cookie: `session=${sessionCookie.value}`,
-        },
-      });
+      const sessionData = verifySessionToken(sessionCookie.value);
 
-      if (!response.ok) {
-        // Invalid session
+      if (!sessionData) {
+        // Invalid or expired session
         const url = new URL('/auth/signin', request.url);
         url.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(url);
       }
 
-      const data = await response.json();
-      
       // Check if user is admin
-      if (data.user?.role !== 'ADMIN') {
+      if (sessionData.role !== 'ADMIN') {
         // Not an admin, redirect to homepage
         const url = new URL('/', request.url);
         url.searchParams.set('error', 'unauthorized');
