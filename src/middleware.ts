@@ -1,64 +1,13 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifySessionToken } from '@/lib/jwt-session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // === SETUP WIZARD PROTECTION ===
-  // Check if accessing /setup route
-  if (pathname.startsWith('/setup')) {
-    try {
-      // Check setup status
-      const apiUrl = new URL('/api/setup/status', request.url);
-      const response = await fetch(apiUrl.toString());
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // If setup already completed, redirect to signin
-        if (data.setupCompleted) {
-          return NextResponse.redirect(new URL('/auth/signin', request.url));
-        }
-      }
-
-      // Allow access to /setup if not yet completed
-      return NextResponse.next();
-    } catch (error) {
-      // On error, allow access to setup page
-      return NextResponse.next();
-    }
-  }
-
-  // === REDIRECT TO SETUP IF NOT COMPLETED ===
-  // Skip setup redirect for these paths
-  const skipSetupRedirect = [
-    '/api/',
-    '/_next/',
-    '/setup',
-    '/favicon.ico',
-  ];
-
-  const shouldSkipSetupCheck = skipSetupRedirect.some(path => pathname.startsWith(path));
-
-  if (!shouldSkipSetupCheck) {
-    try {
-      const apiUrl = new URL('/api/setup/status', request.url);
-      const response = await fetch(apiUrl.toString());
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // If setup not completed and database not connected, redirect to setup
-        if (!data.setupCompleted && !data.adminExists) {
-          return NextResponse.redirect(new URL('/setup', request.url));
-        }
-      }
-    } catch (error) {
-      // On error, continue to requested page
-      console.error('Setup check error:', error);
-    }
-  }
+  // Note: Setup status checks are handled by the pages themselves
+  // to avoid Edge Runtime limitations with database access
+  // Middleware only handles basic route protection
 
   // Public routes that don't require authentication
   const publicRoutes = ['/', '/products', '/auth/signin', '/auth/verify-request', '/auth/error'];
@@ -74,45 +23,22 @@ export async function middleware(request: NextRequest) {
   });
 
   // Admin routes - require ADMIN role
+  // NOTE: We can't verify JWT in Edge Runtime middleware (no Node.js crypto support)
+  // So we just check for session cookie existence here
+  // Actual verification happens in the admin layout/pages
   if (pathname.startsWith('/admin')) {
-    // Check session cookie
     const sessionCookie = request.cookies.get('session');
 
     if (!sessionCookie) {
-      // No session, redirect to login
+      // No session cookie, redirect to login
       const url = new URL('/auth/signin', request.url);
       url.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(url);
     }
 
-    // Verify JWT session token directly (no fetch needed)
-    try {
-      const sessionData = verifySessionToken(sessionCookie.value);
-
-      if (!sessionData) {
-        // Invalid or expired session
-        const url = new URL('/auth/signin', request.url);
-        url.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(url);
-      }
-
-      // Check if user is admin
-      if (sessionData.role !== 'ADMIN') {
-        // Not an admin, redirect to homepage
-        const url = new URL('/', request.url);
-        url.searchParams.set('error', 'unauthorized');
-        return NextResponse.redirect(url);
-      }
-
-      // User is admin, allow access
-      return NextResponse.next();
-    } catch (error) {
-      console.error('Middleware auth check error:', error);
-      // On error, redirect to login
-      const url = new URL('/auth/signin', request.url);
-      url.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(url);
-    }
+    // Session cookie exists, let the page verify it
+    // This prevents Edge Runtime errors with JWT verification
+    return NextResponse.next();
   }
 
   // Protected routes (require authentication)
