@@ -1,0 +1,344 @@
+root@Web:~/digital-shop# docker compose up -d --build
+WARN[0000] /root/digital-shop/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[+] Building 183.6s (18/27)                                                                                           
+ => [internal] load local bake definitions                                                                       0.0s
+ => => reading from stdin 498B                                                                                   0.0s
+ => [internal] load build definition from Dockerfile.production                                                  0.1s
+ => => transferring dockerfile: 2.57kB                                                                           0.0s
+ => [internal] load metadata for docker.io/library/node:20-alpine                                                3.2s
+ => [internal] load .dockerignore                                                                                0.1s
+ => => transferring context: 835B                                                                                0.0s
+ => [internal] load build context                                                                                0.2s
+ => => transferring context: 1.40MB                                                                              0.1s
+ => [deps 1/7] FROM docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa3  3.4s
+ => => resolve docker.io/library/node:20-alpine@sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a7  0.0s
+ => => sha256:2b56f2779663b9e1a77bdb5235dc31f1a81e534ccab1c1b35c716a8db79eeab9 6.42kB / 6.42kB                   0.0s
+ => => sha256:2d35ebdb57d9971fea0cac1582aa78935adf8058b2cc32db163c98822e5dfa1b 3.80MB / 3.80MB                   0.7s
+ => => sha256:60e45a9660cfaebbbac9bba98180aa28b3966b7f2462d132c46f51a1f5b25a64 42.75MB / 42.75MB                 1.7s
+ => => sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435 7.67kB / 7.67kB                   0.0s
+ => => sha256:be8d32d651b3e0c9c2b28fdc1d3888408125d703232013cff955344d052027e5 1.72kB / 1.72kB                   0.0s
+ => => sha256:e74e4ed823e9560b3fe51c0cab47dbfdfc4b12453604319408ec58708fb9e720 1.26MB / 1.26MB                   1.1s
+ => => extracting sha256:2d35ebdb57d9971fea0cac1582aa78935adf8058b2cc32db163c98822e5dfa1b                        0.1s
+ => => sha256:da04d522c98fe12816b2bcddf8413fca73645f8fa60f287c672f58bcc7f0fa38 444B / 444B                       1.5s
+ => => extracting sha256:60e45a9660cfaebbbac9bba98180aa28b3966b7f2462d132c46f51a1f5b25a64                        1.2s
+ => => extracting sha256:e74e4ed823e9560b3fe51c0cab47dbfdfc4b12453604319408ec58708fb9e720                        0.0s
+ => => extracting sha256:da04d522c98fe12816b2bcddf8413fca73645f8fa60f287c672f58bcc7f0fa38                        0.0s
+ => [runner  2/13] RUN apk add --no-cache libc6-compat openssl curl                                              2.6s
+ => [deps 2/7] RUN apk add --no-cache libc6-compat openssl                                                       2.3s
+ => [deps 3/7] WORKDIR /app                                                                                      0.1s
+ => [deps 4/7] COPY package*.json ./                                                                             0.1s
+ => [deps 5/7] COPY prisma ./prisma/                                                                             0.1s
+ => [runner  3/13] WORKDIR /app                                                                                  0.2s 
+ => [deps 6/7] RUN npm ci                                                                                       40.9s 
+ => [runner  4/13] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs             0.5s 
+ => [deps 7/7] RUN npx prisma generate                                                                           7.0s 
+ => [builder 4/6] COPY --from=deps /app/node_modules ./node_modules                                             36.7s 
+ => [builder 5/6] COPY . .                                                                                       0.3s 
+ => ERROR [builder 6/6] RUN npm run build                                                                       74.3s 
+------                                                                                                                
+ > [builder 6/6] RUN npm run build:                                                                                   
+1.373                                                                                                                 
+1.373 > digital-shop@0.1.0 build                                                                                      
+1.373 > next build --turbopack                                                                                        
+1.373 
+2.832    ▲ Next.js 15.5.6 (Turbopack)
+2.833    - Experiments (use with caution):
+2.833      · optimizePackageImports
+2.834 
+2.919    Creating an optimized production build ...
+43.75  ✓ Finished writing to disk in 376ms
+43.80  ✓ Compiled successfully in 40.0s
+43.82    Linting and checking validity of types ...
+62.47 
+62.47 ./src/app/admin/advertisements/page.tsx
+62.47 70:6  Warning: React Hook useEffect has a missing dependency: 'fetchAds'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/app/admin/categories/page.tsx
+62.47 39:6  Warning: React Hook useEffect has a missing dependency: 'fetchCategories'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 111:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 133:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 191:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/admin/coupons/page.tsx
+62.47 12:30  Warning: 'Tag' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 12:35  Warning: 'Calendar' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 12:45  Warning: 'Percent' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 107:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 131:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/admin/deposit-bonus/page.tsx
+62.47 41:6  Warning: React Hook useEffect has a missing dependency: 'fetchTiers'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 45:6  Warning: React Hook useEffect has a missing dependency: 'calculateDemoBonus'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 103:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/admin/orders/[id]/page.tsx
+62.47 86:6  Warning: React Hook useEffect has a missing dependency: 'fetchOrder'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/app/admin/page.tsx
+62.47 15:3  Warning: 'TrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 19:3  Warning: 'Wallet' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 200:75  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/admin/products/[id]/edit/page.tsx
+62.47 81:6  Warning: React Hook useEffect has a missing dependency: 'fetchProduct'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 210:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 543:27  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+62.47 
+62.47 ./src/app/admin/products/new/page.tsx
+62.47 138:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 185:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 397:29  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+62.47 
+62.47 ./src/app/admin/rate-limits/page.tsx
+62.47 3:20  Warning: 'useEffect' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 83:10  Warning: 'isLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 83:21  Warning: 'setIsLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/admin/referrals/page.tsx
+62.47 12:17  Warning: 'Gift' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 12:23  Warning: 'TrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 74:6  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/app/admin/settings/page.tsx
+62.47 105:48  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 107:62  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 113:6  Warning: React Hook useEffect has a missing dependency: 'fetchSettings'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 219:48  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 223:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 300:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 339:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/admin/topups/page.tsx
+62.47 9:79  Warning: 'DialogTrigger' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 20:3  Warning: 'QrCode' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 24:8  Warning: 'Image' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 56:6  Warning: React Hook useEffect has a missing dependency: 'fetchDeposits'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/app/admin/users/page.tsx
+62.47 10:36  Warning: 'UserPlus' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 68:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 115:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/admin/wallets/page.tsx
+62.47 66:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 113:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/admin/website-settings/page.tsx
+62.47 12:10  Warning: 'Upload' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 128:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 169:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/api/admin/bank-config/route.ts
+62.47 9:27  Warning: 'req' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/api/admin/bank-config/test/route.ts
+62.47 67:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 80:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/categories/[id]/route.ts
+62.47 1:10  Warning: 'getSession' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/api/admin/categories/route.ts
+62.47 1:10  Warning: 'getSession' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 6:27  Warning: 'req' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/api/admin/coupons/[id]/route.ts
+62.47 37:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 60:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 87:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 145:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/coupons/route.ts
+62.47 28:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 39:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 95:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/deposits/[id]/approve/route.ts
+62.47 6:10  Warning: 'generateIdempotencyKey' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/api/admin/orders/[id]/route.ts
+62.47 53:25  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/products/[id]/route.ts
+62.47 107:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/rate-limits/route.ts
+62.47 9:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 94:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/settings/route.ts
+62.47 6:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 50:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/user-activity/route.ts
+62.47 28:25  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/admin/wallets/route.ts
+62.47 12:7  Warning: 'adjustWalletSchema' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/api/admin/webhook/route.ts
+62.47 5:27  Warning: 'req' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/api/admin/website-settings/route.ts
+62.47 116:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/advertisements/route.ts
+62.47 22:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/coupons/validate/route.ts
+62.47 100:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/cron/check-bank-transactions/route.ts
+62.47 34:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/orders/route.ts
+62.47 30:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 126:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/app/api/wallet/balance/route.ts
+62.47 5:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/auth/signin/page.tsx
+62.47 37:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/auth/signup/page.tsx
+62.47 96:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/authenticator/page.tsx
+62.47 57:6  Warning: React Hook useEffect has a missing dependency: 'fetchAccounts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 193:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/checkout/page.tsx
+62.47 28:11  Warning: 'CartItem' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 68:6  Warning: React Hook useEffect has a missing dependency: 'loadCheckoutData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 134:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/orders/[id]/page.tsx
+62.47 79:6  Warning: React Hook useEffect has a missing dependency: 'fetchOrder'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 152:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/orders/page.tsx
+62.47 57:6  Warning: React Hook useEffect has a missing dependency: 'fetchOrders'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/app/products/[slug]/page.tsx
+62.47 6:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 57:38  Warning: 'isInCart' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 63:6  Warning: React Hook useEffect has a missing dependency: 'fetchProduct'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/app/products/page.tsx
+62.47 69:6  Warning: React Hook useEffect has missing dependencies: 'fetchProducts' and 'updateURL'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 352:35  Warning: 'images' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/setup/page.tsx
+62.47 19:44  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 31:6  Warning: React Hook useEffect has a missing dependency: 'checkSetupStatus'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 50:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/app/wallet/page.tsx
+62.47 13:24  Warning: 'QrCode' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 493:31  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+62.47 
+62.47 ./src/components/forms/product-form-unified.tsx
+62.47 11:33  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 58:9  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 60:52  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/components/layout/admin-header.tsx
+62.47 64:6  Warning: React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/components/layout/header.tsx
+62.47 114:6  Warning: React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+62.47 
+62.47 ./src/components/ui/input.tsx
+62.47 6:18  Warning: An interface declaring no members is equivalent to its supertype.  @typescript-eslint/no-empty-object-type
+62.47 
+62.47 ./src/components/ui/textarea.tsx
+62.47 6:18  Warning: An interface declaring no members is equivalent to its supertype.  @typescript-eslint/no-empty-object-type
+62.47 
+62.47 ./src/hooks/use-toast.ts
+62.47 14:7  Warning: 'actionTypes' is assigned a value but only used as a type.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/lib/auth.ts
+62.47 5:30  Warning: 'SessionPayload' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/lib/auto-topup.ts
+62.47 314:47  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/lib/generic-bank-api.ts
+62.47 47:8  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 93:37  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 93:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 114:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 144:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 149:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 170:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 170:50  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 189:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 197:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/lib/jwt-session.ts
+62.47 50:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/lib/qr-code.ts
+62.47 1:8  Warning: 'QRCode' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/lib/redis.ts
+62.47 65:35  Warning: '_key' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 69:63  Warning: '_ttlSeconds' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 73:35  Warning: '_key' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/lib/user-activity.ts
+62.47 92:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 139:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 179:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62.47 
+62.47 ./src/lib/utils.ts
+62.47 40:57  Warning: 'amount' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 ./src/middleware.ts
+62.47 26:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62.47 66:9  Warning: 'isPublicRoute' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+62.47 
+62.47 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+72.42    Collecting page data ...
+73.97 Error: SESSION_SECRET must be set and at least 32 characters long. Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+73.97     at __TURBOPACK__module__evaluation__ (.next/server/chunks/_d32d2ffc._.js:1:53444)
+73.97     at instantiateModule (.next/server/chunks/[turbopack]_runtime.js:702:9)
+73.97     at getOrInstantiateModuleFromParent (.next/server/chunks/[turbopack]_runtime.js:725:12)
+73.97     at Context.esmImport [as i] (.next/server/chunks/[turbopack]_runtime.js:215:20)
+73.97     at __TURBOPACK__module__evaluation__ (.next/server/chunks/[root-of-the-server]__ea62d644._.js:1:1885)
+73.97     at instantiateModule (.next/server/chunks/[turbopack]_runtime.js:702:9)
+73.97     at getOrInstantiateModuleFromParent (.next/server/chunks/[turbopack]_runtime.js:725:12)
+73.97     at Context.esmImport [as i] (.next/server/chunks/[turbopack]_runtime.js:215:20)
+73.97     at __TURBOPACK__module__evaluation__ (.next/server/chunks/[root-of-the-server]__ea62d644._.js:1:3052)
+73.97     at instantiateModule (.next/server/chunks/[turbopack]_runtime.js:702:9)
+73.98 
+74.00 > Build error occurred
+74.04 [Error: Failed to collect page data for /api/admin/advertisements/[id]] {
+74.04   type: 'Error'
+74.04 }
+74.14 npm notice
+74.14 npm notice New major version of npm available! 10.8.2 -> 11.6.2
+74.14 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+74.14 npm notice To update run: npm install -g npm@11.6.2
+74.14 npm notice
+------
+Dockerfile.production:39
+
+--------------------
+
+  37 |     
+
+  38 |     # Build Next.js application
+
+  39 | >>> RUN npm run build
+
+  40 |     
+
+  41 |     # ==============================================================================
+
+--------------------
+
+failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1
+
+root@Web:~/digital-shop# docker ps -a
