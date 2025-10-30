@@ -30,7 +30,28 @@ NODE_ENV="production"
 - `SESSION_SECRET` must be at least 32 characters long
 - Generate secure secret: `openssl rand -hex 32`
 - Docker Compose automatically reads `.env` file from root directory
-- To use a different env file: `docker compose --env-file .env.production up`
+- To use a different env file: `docker compose --env-file .env.production up -d --build`
+
+### Using Different Environment Files
+
+If you have `.env.production` file instead of `.env`:
+
+```bash
+# Option 1: Rename file (recommended)
+mv .env.production .env
+docker compose up -d --build
+
+# Option 2: Use --env-file flag
+docker compose --env-file .env.production up -d --build
+docker compose --env-file .env.production down
+docker compose --env-file .env.production logs -f app
+
+# Option 3: Specify in command
+docker compose --env-file .env.production build --no-cache
+docker compose --env-file .env.production up -d
+```
+
+**Note:** If using `--env-file`, you must specify it for EVERY docker compose command.
 
 ---
 
