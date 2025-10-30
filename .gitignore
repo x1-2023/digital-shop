@@ -48,9 +48,9 @@ next-env.d.ts
 # backup
 /backup
 
-# logs
-logs
+# logs (exclude source code folders)
 *.log
+/logs
 
 # IDE
 .vscode/
