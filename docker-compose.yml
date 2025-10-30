@@ -8,13 +8,19 @@
 #   docker-compose restart app      # Restart app
 # ==============================================================================
 
-version: '3.9'
+# Remove obsolete version attribute as Docker Compose v2 doesn't need it
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile.production
+      args:
+        - SESSION_SECRET=${SESSION_SECRET}
+        - DATABASE_URL=${DATABASE_URL}
+        - RESEND_API_KEY=${RESEND_API_KEY}
+        - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
+        - NEXT_PUBLIC_TELEGRAM_URL=${NEXT_PUBLIC_TELEGRAM_URL}
     container_name: digital-shop-app
     restart: unless-stopped
     env_file:
