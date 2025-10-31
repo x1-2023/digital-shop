@@ -65,13 +65,19 @@ export default function AuthenticatorPage() {
 
       accounts.forEach(account => {
         try {
+          // Validate and clean secret
+          const cleanSecret = account.secret.replace(/\s/g, '').toUpperCase();
+          if (!cleanSecret || cleanSecret.length < 8) {
+            throw new Error('Invalid secret length');
+          }
+
           const totp = new OTPAuth.TOTP({
             issuer: account.issuer,
             label: account.name,
             algorithm: 'SHA1',
             digits: 6,
             period: 30,
-            secret: account.secret,
+            secret: cleanSecret,
           });
 
           const code = totp.generate();
@@ -80,7 +86,7 @@ export default function AuthenticatorPage() {
             timeRemaining,
           };
         } catch (error) {
-          console.error('Error generating code for', account.name, error);
+          console.error(`Error generating code for ${account.name}:`, error);
         }
       });
 
@@ -89,11 +95,16 @@ export default function AuthenticatorPage() {
       // Generate quick code if secret is provided
       if (quickSecret) {
         try {
+          const cleanSecret = quickSecret.replace(/\s/g, '').toUpperCase();
+          if (cleanSecret.length < 8) {
+            throw new Error('Secret too short');
+          }
+
           const totp = new OTPAuth.TOTP({
             algorithm: 'SHA1',
             digits: 6,
             period: 30,
-            secret: quickSecret.replace(/\s/g, ''),
+            secret: cleanSecret,
           });
 
           const code = totp.generate();
