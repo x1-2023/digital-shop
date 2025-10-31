@@ -56,19 +56,47 @@ sudo systemctl enable nginx
 print_success "Nginx đã được khởi động và enable auto-start"
 
 # ==============================================================================
-# 2. Cài đặt Node.js 20.x
+# 2. Cài đặt Node.js 20.x với NVM
 # ==============================================================================
 echo ""
-print_info "Bước 2: Cài đặt Node.js 20.x..."
+print_info "Bước 2: Cài đặt Node.js 20.x với NVM..."
 
+# Check if nvm exists
+if [ -d "$HOME/.nvm" ]; then
+    print_success "NVM đã có sẵn"
+    # Load nvm
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+else
+    print_info "Đang cài NVM..."
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+    # Load nvm
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+    print_success "NVM đã được cài đặt"
+fi
+
+# Install Node.js 20 if not exists
 if ! command -v node &> /dev/null; then
-    print_info "Đang cài Node.js 20.x..."
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-    sudo apt-get install -y nodejs
-    print_success "Node.js đã được cài đặt"
+    print_info "Đang cài Node.js 20..."
+    nvm install 20
+    nvm use 20
+    nvm alias default 20
+    print_success "Node.js 20 đã được cài đặt"
 else
     NODE_VERSION=$(node --version)
     print_success "Node.js đã có sẵn: $NODE_VERSION"
+
+    # Ensure using Node 20
+    if [[ ! "$NODE_VERSION" =~ ^v20 ]]; then
+        print_info "Đang chuyển sang Node.js 20..."
+        nvm install 20
+        nvm use 20
+        nvm alias default 20
+        print_success "Đã chuyển sang Node.js 20"
+    fi
 fi
 
 # ==============================================================================
@@ -170,37 +198,10 @@ else
 fi
 
 # ==============================================================================
-# 7. Setup UFW Firewall
+# 7. Tạo .env file template
 # ==============================================================================
 echo ""
-print_info "Bước 7: Cấu hình Firewall..."
-
-if command -v ufw &> /dev/null; then
-    # Allow SSH
-    sudo ufw allow OpenSSH
-    print_success "Đã cho phép SSH"
-
-    # Allow HTTP/HTTPS
-    sudo ufw allow 'Nginx Full'
-    print_success "Đã cho phép HTTP/HTTPS"
-
-    # Enable UFW (nếu chưa enable)
-    if ! sudo ufw status | grep -q "Status: active"; then
-        print_info "Bật UFW firewall..."
-        echo "y" | sudo ufw enable
-        print_success "UFW đã được bật"
-    else
-        print_success "UFW đã active"
-    fi
-else
-    print_info "UFW chưa được cài đặt, bỏ qua bước này"
-fi
-
-# ==============================================================================
-# 8. Tạo .env file template
-# ==============================================================================
-echo ""
-print_info "Bước 8: Kiểm tra .env file..."
+print_info "Bước 7: Kiểm tra .env file..."
 
 if [ ! -f ".env" ]; then
     print_info "Tạo file .env template..."
@@ -219,10 +220,10 @@ else
 fi
 
 # ==============================================================================
-# 9. Install dependencies và build
+# 8. Install dependencies và build
 # ==============================================================================
 echo ""
-print_info "Bước 9: Install dependencies và build..."
+print_info "Bước 8: Install dependencies và build..."
 
 read -p "Bạn có muốn install dependencies và build ngay bây giờ? (y/n) " -n 1 -r
 echo
@@ -256,10 +257,10 @@ else
 fi
 
 # ==============================================================================
-# 10. Setup PM2
+# 9. Setup PM2
 # ==============================================================================
 echo ""
-print_info "Bước 10: Setup PM2..."
+print_info "Bước 9: Setup PM2..."
 
 read -p "Bạn có muốn start PM2 ngay bây giờ? (y/n) " -n 1 -r
 echo
