@@ -328,13 +328,13 @@ export default function AdminOrdersPage() {
           {orders.length > 0 && (
             <div className="flex justify-center">
               <div className="flex items-center space-x-2">
-                <Button variant="outline" disabled>
+                <Button variant="outline" disabled onClick={() => {}}>
                   Trước
                 </Button>
-                <Button variant="default">1</Button>
-                <Button variant="outline">2</Button>
-                <Button variant="outline">3</Button>
-                <Button variant="outline">
+                <Button variant="default" onClick={() => {}}>1</Button>
+                <Button variant="outline" onClick={() => {}}>2</Button>
+                <Button variant="outline" onClick={() => {}}>3</Button>
+                <Button variant="outline" onClick={() => {}}>
                   Sau
                 </Button>
               </div>
