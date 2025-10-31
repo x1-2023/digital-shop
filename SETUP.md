@@ -286,7 +286,70 @@ docker compose logs -f app | grep -i session
 
 ---
 
-## 7. Development Commands
+## 7. Development Setup
+
+### Run Development Server on Ubuntu/Linux
+
+If you want to test on Ubuntu server before deploying to production:
+
+```bash
+# 1. Install Node.js (if not installed)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify installation
+node --version  # Should be v20.x or higher
+npm --version
+
+# 2. Clone repository
+git clone <your-repo-url>
+cd digital-shop
+
+# 3. Create .env file for development
+nano .env
+
+# Add these variables:
+DATABASE_URL="file:./dev.db"
+SESSION_SECRET="your-secret-key-min-32-chars"
+RESEND_API_KEY="your-resend-api-key"
+RESEND_FROM_EMAIL="no-reply@yourdomain.com"
+NEXT_PUBLIC_TELEGRAM_URL="https://t.me/your_channel"
+NODE_ENV="development"
+
+# 4. Install dependencies
+npm install
+
+# 5. Generate Prisma client
+npx prisma generate
+
+# 6. Setup database
+npx prisma db push
+
+# 7. Run development server
+npm run dev
+
+# The app will be available at:
+# - Local: http://localhost:3000
+# - Network: http://0.0.0.0:3000
+```
+
+### Access Dev Server from Outside
+
+If running on a remote Ubuntu server and want to access from your computer:
+
+```bash
+# Option 1: Use SSH tunnel (recommended for security)
+# On your local machine:
+ssh -L 3000:localhost:3000 user@your-server-ip
+
+# Then open in browser: http://localhost:3000
+
+# Option 2: Open port 3000 in firewall (less secure)
+sudo ufw allow 3000
+# Then access: http://your-server-ip:3000
+```
+
+### Development Commands
 
 ```bash
 # Install dependencies
@@ -294,6 +357,9 @@ npm install
 
 # Run development server
 npm run dev
+
+# Run dev without auto-restart
+npm run dev:only
 
 # Build for production
 npm run build
@@ -311,6 +377,24 @@ npx prettier --write .
 npx prisma generate
 npx prisma db push
 npx prisma studio
+
+# Database commands
+npm run db:migrate  # Run migrations
+npm run db:studio   # Open Prisma Studio
+npm run db:reset    # Reset database
+```
+
+### Stop Development Server
+
+```bash
+# Press Ctrl+C in the terminal where npm run dev is running
+
+# Or if running in background, find and kill the process:
+ps aux | grep "next dev"
+kill <process-id>
+
+# Or use pkill:
+pkill -f "next dev"
 ```
 
 ---
