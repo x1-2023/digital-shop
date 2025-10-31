@@ -1,0 +1,93 @@
+# ================================================
+# /etc/nginx/sites-available/webmmo.net
+# Next.js proxy @ 192.168.1.69:5000
+# Cloudflare mây xám (DNS only) vẫn ổn.
+# ================================================
+
+# -------------------------
+# HTTP: ACME + Redirect
+# -------------------------
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name webmmo.net www.webmmo.net;
+
+    # Cho Let's Encrypt HTTP-01 và renew sau này
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    # Mọi thứ còn lại → HTTPS
+    location / {
+        return 301 https://webmmo.net$request_uri;
+    }
+}
+
+# -------------------------
+# HTTPS: Reverse proxy Next.js
+# -------------------------
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name webmmo.net www.webmmo.net;
+
+    # Cert do certbot cấp (đảm bảo tồn tại)
+    ssl_certificate     /etc/letsencrypt/live/webmmo.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/webmmo.net/privkey.pem;
+
+    # TLS sane defaults
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    # Security headers cơ bản
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+
+    # HSTS: bật ngắn trước, confirm ổn rồi tăng max-age
+    add_header Strict-Transport-Security "max-age=86400; includeSubDomains; preload" always;
+
+    # Gzip nhẹ
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript application/xml image/svg+xml;
+    gzip_min_length 1024;
+
+    # Proxy tới Next.js PM2 (localhost:3000)
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket (cần map $connection_upgrade trong conf.d)
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        $connection_upgrade;
+
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+
+    # Static Next.js cho nhanh
+    location ~* ^/_next/static/ {
+        proxy_pass http://localhost:3000;
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800, immutable";
+    }
+
+    client_max_body_size 25m;
+
+    # Healthcheck đơn giản
+    location = /healthz {
+        return 200 "ok\n";
+        add_header Content-Type text/plain;
+    }
+}
