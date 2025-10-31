@@ -75,8 +75,21 @@ else
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+    # Add to shell profile if not exists
+    if ! grep -q 'NVM_DIR' ~/.bashrc; then
+        echo '' >> ~/.bashrc
+        echo '# NVM' >> ~/.bashrc
+        echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
+        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm' >> ~/.bashrc
+        echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion' >> ~/.bashrc
+        print_success "Đã thêm NVM vào ~/.bashrc"
+    fi
+
     print_success "NVM đã được cài đặt"
 fi
+
+# Reload bashrc to apply NVM
+source ~/.bashrc 2>/dev/null || true
 
 # Install Node.js 20 if not exists
 if ! command -v node &> /dev/null; then
