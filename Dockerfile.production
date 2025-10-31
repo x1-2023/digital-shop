@@ -87,7 +87,7 @@ COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
 # Create directories for SQLite database and uploads
-RUN mkdir -p /app/data /app/public/products && \
+RUN mkdir -p /app/data /app/public/products/images && \
     chown -R nextjs:nodejs /app/data /app/public && \
     chmod +x /app/docker-entrypoint.sh
 
