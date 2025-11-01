@@ -387,6 +387,19 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     if [ $? -eq 0 ]; then
         print_success "SSL certificate đã được cấp thành công!"
 
+        # Ensure WebSocket config exists (in case script is re-run)
+        if [ ! -f /etc/nginx/conf.d/websocket.conf ]; then
+            print_info "Tạo WebSocket config..."
+            cat > /etc/nginx/conf.d/websocket.conf <<'EOF'
+# WebSocket upgrade map
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+EOF
+            print_success "WebSocket config đã được tạo"
+        fi
+
         # Create final nginx config with SSL
         print_info "Tạo nginx config với SSL..."
         cat > "$NGINX_CONF" <<EOF
