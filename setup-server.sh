@@ -193,6 +193,17 @@ if [ -f "$NGINX_CONF" ]; then
     print_success "Đã backup config cũ"
 fi
 
+# Create WebSocket upgrade map config
+print_info "Tạo WebSocket config..."
+cat > /etc/nginx/conf.d/websocket.conf <<'EOF'
+# WebSocket upgrade map
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+EOF
+print_success "WebSocket config đã được tạo"
+
 # Create initial HTTP-only config for certbot
 print_info "Tạo config HTTP tạm thời cho Let's Encrypt..."
 cat > "$NGINX_CONF" <<EOF
