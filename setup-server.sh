@@ -32,13 +32,10 @@ print_info() {
 
 # Determine user
 if [ "$EUID" -eq 0 ]; then
-    # Running as root, ask for target user
+    # Running as root
+    TARGET_USER="root"
+    TARGET_HOME="/root"
     print_info "Script đang chạy với root"
-    read -p "Nhập tên user để deploy (default: root): " TARGET_USER
-    TARGET_USER=${TARGET_USER:-root}
-    TARGET_HOME=$(eval echo ~$TARGET_USER)
-    print_info "Sẽ deploy cho user: $TARGET_USER"
-    print_info "Home directory: $TARGET_HOME"
 else
     # Running as normal user
     TARGET_USER=$USER
@@ -53,16 +50,16 @@ echo ""
 print_info "Bước 1: Cài đặt Nginx..."
 
 if ! command -v nginx &> /dev/null; then
-    sudo apt update
-    sudo apt install -y nginx
+    apt update
+    apt install -y nginx
     print_success "Nginx đã được cài đặt"
 else
     print_success "Nginx đã có sẵn"
 fi
 
 # Start và enable nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
+systemctl start nginx
+systemctl enable nginx
 print_success "Nginx đã được khởi động và enable auto-start"
 
 # ==============================================================================
@@ -81,14 +78,8 @@ if [ -d "$NVM_DIR" ]; then
 else
     print_info "Đang cài NVM cho $TARGET_USER..."
 
-    # Install NVM as target user
-    if [ "$EUID" -eq 0 ] && [ "$TARGET_USER" != "root" ]; then
-        # Running as root, install for target user
-        su - $TARGET_USER -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash"
-    else
-        # Running as normal user or root installing for root
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-    fi
+    # Install NVM
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
 
     # Load nvm
     export NVM_DIR="$TARGET_HOME/.nvm"
@@ -154,11 +145,11 @@ echo ""
 print_info "Bước 4: Tạo thư mục cần thiết..."
 
 # Tạo thư mục cho maintenance page
-sudo mkdir -p /var/www
+mkdir -p /var/www
 print_success "Thư mục /var/www đã được tạo"
 
 # Tạo thư mục cho Let's Encrypt
-sudo mkdir -p /var/www/html/.well-known/acme-challenge
+mkdir -p /var/www/html/.well-known/acme-challenge
 print_success "Thư mục Let's Encrypt đã được tạo"
 
 # ==============================================================================
@@ -176,17 +167,17 @@ fi
 
 # Backup old config if exists
 if [ -f "/etc/nginx/sites-available/webmmo.net" ]; then
-    sudo cp /etc/nginx/sites-available/webmmo.net /etc/nginx/sites-available/webmmo.net.backup-$(date +%Y%m%d-%H%M%S)
+    cp /etc/nginx/sites-available/webmmo.net /etc/nginx/sites-available/webmmo.net.backup-$(date +%Y%m%d-%H%M%S)
     print_success "Đã backup config cũ"
 fi
 
 # Copy new config
-sudo cp webmmo.net /etc/nginx/sites-available/webmmo.net
+cp webmmo.net /etc/nginx/sites-available/webmmo.net
 print_success "Đã copy nginx config"
 
 # Create symlink
 if [ ! -L "/etc/nginx/sites-enabled/webmmo.net" ]; then
-    sudo ln -s /etc/nginx/sites-available/webmmo.net /etc/nginx/sites-enabled/webmmo.net
+    ln -s /etc/nginx/sites-available/webmmo.net /etc/nginx/sites-enabled/webmmo.net
     print_success "Đã tạo symlink"
 else
     print_success "Symlink đã tồn tại"
@@ -194,14 +185,14 @@ fi
 
 # Remove default site if exists
 if [ -f "/etc/nginx/sites-enabled/default" ]; then
-    sudo rm /etc/nginx/sites-enabled/default
+    rm /etc/nginx/sites-enabled/default
     print_success "Đã xóa default site"
 fi
 
 # Test nginx config
-if sudo nginx -t; then
+if nginx -t; then
     print_success "Nginx config hợp lệ"
-    sudo systemctl reload nginx
+    systemctl reload nginx
     print_success "Đã reload Nginx"
 else
     print_error "Nginx config có lỗi! Vui lòng kiểm tra lại."
@@ -221,7 +212,7 @@ if [ ! -f "public/maintenance.html" ]; then
 fi
 
 # Copy maintenance page
-sudo cp public/maintenance.html /var/www/maintenance.html
+cp public/maintenance.html /var/www/maintenance.html
 print_success "Đã copy trang bảo trì"
 
 # Make maintenance.sh executable
@@ -306,7 +297,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
     print_info "Đang setup PM2 startup..."
     pm2 save
-    sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp $HOME
+    env PATH=$PATH:/usr/bin pm2 startup systemd -u $TARGET_USER --hp $TARGET_HOME
     print_success "PM2 startup đã được cấu hình"
 else
     print_info "Bỏ qua PM2 setup. Bạn có thể chạy sau:"
