@@ -30,10 +30,20 @@ print_info() {
     echo -e "${YELLOW}→ $1${NC}"
 }
 
-# Check if running as root
+# Determine user
 if [ "$EUID" -eq 0 ]; then
-    print_error "Không chạy script này với root! Chạy với user thường có sudo."
-    exit 1
+    # Running as root, ask for target user
+    print_info "Script đang chạy với root"
+    read -p "Nhập tên user để deploy (default: root): " TARGET_USER
+    TARGET_USER=${TARGET_USER:-root}
+    TARGET_HOME=$(eval echo ~$TARGET_USER)
+    print_info "Sẽ deploy cho user: $TARGET_USER"
+    print_info "Home directory: $TARGET_HOME"
+else
+    # Running as normal user
+    TARGET_USER=$USER
+    TARGET_HOME=$HOME
+    print_info "Script đang chạy với user: $TARGET_USER"
 fi
 
 # ==============================================================================
@@ -62,34 +72,46 @@ echo ""
 print_info "Bước 2: Cài đặt Node.js 20.x với NVM..."
 
 # Check if nvm exists
-if [ -d "$HOME/.nvm" ]; then
+NVM_DIR="$TARGET_HOME/.nvm"
+if [ -d "$NVM_DIR" ]; then
     print_success "NVM đã có sẵn"
     # Load nvm
-    export NVM_DIR="$HOME/.nvm"
+    export NVM_DIR="$NVM_DIR"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 else
-    print_info "Đang cài NVM..."
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+    print_info "Đang cài NVM cho $TARGET_USER..."
+
+    # Install NVM as target user
+    if [ "$EUID" -eq 0 ] && [ "$TARGET_USER" != "root" ]; then
+        # Running as root, install for target user
+        su - $TARGET_USER -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash"
+    else
+        # Running as normal user or root installing for root
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+    fi
 
     # Load nvm
-    export NVM_DIR="$HOME/.nvm"
+    export NVM_DIR="$TARGET_HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
     # Add to shell profile if not exists
-    if ! grep -q 'NVM_DIR' ~/.bashrc; then
-        echo '' >> ~/.bashrc
-        echo '# NVM' >> ~/.bashrc
-        echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
-        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm' >> ~/.bashrc
-        echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion' >> ~/.bashrc
-        print_success "Đã thêm NVM vào ~/.bashrc"
+    BASHRC="$TARGET_HOME/.bashrc"
+    if ! grep -q 'NVM_DIR' "$BASHRC" 2>/dev/null; then
+        echo '' >> "$BASHRC"
+        echo '# NVM' >> "$BASHRC"
+        echo 'export NVM_DIR="$HOME/.nvm"' >> "$BASHRC"
+        echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm' >> "$BASHRC"
+        echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion' >> "$BASHRC"
+        print_success "Đã thêm NVM vào $BASHRC"
     fi
 
     print_success "NVM đã được cài đặt"
 fi
 
 # Reload bashrc to apply NVM
-source ~/.bashrc 2>/dev/null || true
+if [ -f "$TARGET_HOME/.bashrc" ]; then
+    source "$TARGET_HOME/.bashrc" 2>/dev/null || true
+fi
 
 # Install Node.js 20 if not exists
 if ! command -v node &> /dev/null; then
@@ -119,7 +141,7 @@ echo ""
 print_info "Bước 3: Cài đặt PM2..."
 
 if ! command -v pm2 &> /dev/null; then
-    sudo npm install -g pm2
+    npm install -g pm2
     print_success "PM2 đã được cài đặt"
 else
     print_success "PM2 đã có sẵn"
