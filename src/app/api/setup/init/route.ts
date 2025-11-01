@@ -44,14 +44,16 @@ export async function POST(req: NextRequest) {
     // But we'll ensure the database is accessible
     await prisma.$connect();
 
-    // Create admin user
+    // Create admin user with fixed ID and referral code
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
     const admin = await prisma.user.create({
       data: {
+        id: 'webmmoreward', // Fixed admin ID for transfer content
         email: adminEmail,
         password: hashedPassword,
         role: 'ADMIN',
+        referralCode: 'webmmoreward', // Fixed referral code for admin
         emailVerified: new Date(), // Auto-verify admin
       },
     });
