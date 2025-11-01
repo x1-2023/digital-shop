@@ -30,6 +30,33 @@ print_info() {
     echo -e "${YELLOW}→ $1${NC}"
 }
 
+# ==============================================================================
+# Ask for domain name
+# ==============================================================================
+echo ""
+print_info "Cấu hình domain cho website"
+echo ""
+read -p "Nhập domain của bạn (ví dụ: webmmo.net): " DOMAIN_NAME
+
+if [ -z "$DOMAIN_NAME" ]; then
+    print_error "Domain không được để trống!"
+    exit 1
+fi
+
+print_success "Domain: $DOMAIN_NAME"
+print_info "Sẽ setup cho cả www.$DOMAIN_NAME và $DOMAIN_NAME"
+
+# Ask for email for SSL
+echo ""
+read -p "Nhập email cho SSL certificate (ví dụ: admin@$DOMAIN_NAME): " SSL_EMAIL
+
+if [ -z "$SSL_EMAIL" ]; then
+    print_error "Email không được để trống!"
+    exit 1
+fi
+
+print_success "Email: $SSL_EMAIL"
+
 # Determine user
 if [ "$EUID" -eq 0 ]; then
     # Running as root
@@ -153,35 +180,40 @@ mkdir -p /var/www/html/.well-known/acme-challenge
 print_success "Thư mục Let's Encrypt đã được tạo"
 
 # ==============================================================================
-# 5. Copy nginx config
+# 5. Tạo nginx config với domain động
 # ==============================================================================
 echo ""
-print_info "Bước 5: Copy nginx config..."
+print_info "Bước 5: Tạo nginx config cho $DOMAIN_NAME..."
 
-# Check if webmmo.net config exists in repo
-if [ ! -f "webmmo.net" ]; then
-    print_error "Không tìm thấy file webmmo.net trong thư mục hiện tại!"
-    print_error "Hãy chạy script này từ thư mục gốc của project (~/digital-shop)"
-    exit 1
-fi
+NGINX_CONF="/etc/nginx/sites-available/$DOMAIN_NAME"
 
 # Backup old config if exists
-if [ -f "/etc/nginx/sites-available/webmmo.net" ]; then
-    cp /etc/nginx/sites-available/webmmo.net /etc/nginx/sites-available/webmmo.net.backup-$(date +%Y%m%d-%H%M%S)
+if [ -f "$NGINX_CONF" ]; then
+    cp "$NGINX_CONF" "$NGINX_CONF.backup-$(date +%Y%m%d-%H%M%S)"
     print_success "Đã backup config cũ"
 fi
 
-# Copy new config
-cp webmmo.net /etc/nginx/sites-available/webmmo.net
-print_success "Đã copy nginx config"
+# Create initial HTTP-only config for certbot
+print_info "Tạo config HTTP tạm thời cho Let's Encrypt..."
+cat > "$NGINX_CONF" <<EOF
+# HTTP server - For Let's Encrypt and redirect
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $DOMAIN_NAME www.$DOMAIN_NAME;
 
-# Create symlink
-if [ ! -L "/etc/nginx/sites-enabled/webmmo.net" ]; then
-    ln -s /etc/nginx/sites-available/webmmo.net /etc/nginx/sites-enabled/webmmo.net
-    print_success "Đã tạo symlink"
-else
-    print_success "Symlink đã tồn tại"
-fi
+    # Let's Encrypt webroot
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    # Temporary allow all for certbot verification
+    location / {
+        return 200 'Server is ready for SSL setup';
+        add_header Content-Type text/plain;
+    }
+}
+EOF
 
 # Remove default site if exists
 if [ -f "/etc/nginx/sites-enabled/default" ]; then
@@ -189,13 +221,18 @@ if [ -f "/etc/nginx/sites-enabled/default" ]; then
     print_success "Đã xóa default site"
 fi
 
-# Test nginx config
+# Create symlink
+if [ ! -L "/etc/nginx/sites-enabled/$DOMAIN_NAME" ]; then
+    ln -s "$NGINX_CONF" "/etc/nginx/sites-enabled/$DOMAIN_NAME"
+    print_success "Đã tạo symlink"
+fi
+
+# Test and reload nginx
 if nginx -t; then
-    print_success "Nginx config hợp lệ"
     systemctl reload nginx
-    print_success "Đã reload Nginx"
+    print_success "Nginx config tạm thời đã được tạo"
 else
-    print_error "Nginx config có lỗi! Vui lòng kiểm tra lại."
+    print_error "Nginx config có lỗi!"
     exit 1
 fi
 
@@ -307,6 +344,155 @@ else
 fi
 
 # ==============================================================================
+# 10. Setup SSL với Let's Encrypt
+# ==============================================================================
+echo ""
+print_info "Bước 10: Setup SSL certificate..."
+
+# Check if certbot is installed
+if ! command -v certbot &> /dev/null; then
+    print_info "Cài đặt Certbot..."
+    apt install -y certbot python3-certbot-nginx
+    print_success "Certbot đã được cài đặt"
+fi
+
+echo ""
+print_info "⚠️  Quan trọng: Đảm bảo domain $DOMAIN_NAME và www.$DOMAIN_NAME đã trỏ đúng IP server này!"
+echo ""
+read -p "Domain đã trỏ đúng IP chưa? Tiếp tục setup SSL? (y/n) " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    print_info "Đang xin SSL certificate từ Let's Encrypt..."
+
+    # Run certbot
+    certbot certonly --webroot -w /var/www/html \
+        -d $DOMAIN_NAME -d www.$DOMAIN_NAME \
+        --email $SSL_EMAIL \
+        --agree-tos \
+        --no-eff-email \
+        --non-interactive
+
+    if [ $? -eq 0 ]; then
+        print_success "SSL certificate đã được cấp thành công!"
+
+        # Create final nginx config with SSL
+        print_info "Tạo nginx config với SSL..."
+        cat > "$NGINX_CONF" <<EOF
+# HTTP: Redirect to HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $DOMAIN_NAME www.$DOMAIN_NAME;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    location / {
+        return 301 https://$DOMAIN_NAME\$request_uri;
+    }
+}
+
+# HTTPS: Main server
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name $DOMAIN_NAME www.$DOMAIN_NAME;
+
+    # SSL certificates
+    ssl_certificate     /etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem;
+
+    # SSL configuration
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+    add_header Strict-Transport-Security "max-age=86400; includeSubDomains; preload" always;
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript application/xml image/svg+xml;
+    gzip_min_length 1024;
+
+    # Proxy to Next.js PM2
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection \$connection_upgrade;
+
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+
+    # Static files cache
+    location ~* ^/_next/static/ {
+        proxy_pass http://localhost:3000;
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800, immutable";
+    }
+
+    client_max_body_size 25m;
+
+    # Health check
+    location = /healthz {
+        return 200 "ok\n";
+        add_header Content-Type text/plain;
+    }
+}
+EOF
+
+        # Update maintenance.sh with correct domain
+        if [ -f "maintenance.sh" ]; then
+            sed -i "s/webmmo\.net/$DOMAIN_NAME/g" maintenance.sh
+            print_success "Đã cập nhật maintenance.sh với domain mới"
+        fi
+
+        # Test and reload nginx
+        if nginx -t; then
+            systemctl reload nginx
+            print_success "Nginx đã được cấu hình với SSL!"
+        else
+            print_error "Nginx config có lỗi!"
+            exit 1
+        fi
+
+        # Setup auto-renewal
+        print_info "Setup auto-renewal SSL certificate..."
+        systemctl enable certbot.timer
+        systemctl start certbot.timer
+        print_success "SSL auto-renewal đã được setup!"
+
+    else
+        print_error "Không thể xin SSL certificate!"
+        print_info "Vui lòng kiểm tra:"
+        echo "  1. Domain đã trỏ đúng IP server chưa?"
+        echo "  2. Port 80 có bị firewall block không?"
+        echo "  3. Nginx có đang chạy không?"
+        echo ""
+        print_info "Bạn có thể chạy lại sau:"
+        echo "  certbot certonly --webroot -w /var/www/html -d $DOMAIN_NAME -d www.$DOMAIN_NAME --email $SSL_EMAIL"
+    fi
+else
+    print_info "Bỏ qua SSL setup. Bạn có thể chạy sau:"
+    echo "  certbot certonly --webroot -w /var/www/html -d $DOMAIN_NAME -d www.$DOMAIN_NAME --email $SSL_EMAIL"
+fi
+
+# ==============================================================================
 # Summary
 # ==============================================================================
 echo ""
@@ -314,31 +500,43 @@ echo "=========================================="
 echo "✅ Setup hoàn tất!"
 echo "=========================================="
 echo ""
-echo "📋 Các bước tiếp theo:"
+echo "📝 Thông tin hệ thống:"
+echo "   Domain: $DOMAIN_NAME"
+echo "   SSL Email: $SSL_EMAIL"
+echo "   User: $TARGET_USER"
+echo "   Home: $TARGET_HOME"
 echo ""
-echo "1. Cấu hình SSL với Let's Encrypt:"
-echo "   sudo apt install -y certbot python3-certbot-nginx"
-echo "   sudo certbot --nginx -d webmmo.net -d www.webmmo.net"
+echo "🌐 Website của bạn:"
+echo "   https://$DOMAIN_NAME"
+echo "   https://www.$DOMAIN_NAME"
 echo ""
-echo "2. Kiểm tra .env file và cập nhật thông tin thực:"
-echo "   nano .env"
+echo "📋 Các lệnh hữu ích:"
 echo ""
-echo "3. Nếu chưa build, chạy:"
-echo "   npm install && npx prisma generate && npm run build"
-echo ""
-echo "4. Nếu chưa start PM2, chạy:"
-echo "   pm2 start ecosystem.config.js"
-echo "   pm2 save"
-echo "   pm2 startup"
-echo ""
-echo "5. Kiểm tra status:"
+echo "1. Kiểm tra PM2:"
 echo "   pm2 status"
 echo "   pm2 logs digital-shop"
-echo "   sudo nginx -t"
+echo "   pm2 restart digital-shop"
 echo ""
-echo "6. Test maintenance mode:"
-echo "   ./maintenance.sh on"
-echo "   ./maintenance.sh off"
+echo "2. Kiểm tra Nginx:"
+echo "   nginx -t"
+echo "   systemctl status nginx"
+echo "   systemctl reload nginx"
+echo ""
+echo "3. Kiểm tra SSL:"
+echo "   certbot certificates"
+echo "   certbot renew --dry-run"
+echo ""
+echo "4. Maintenance mode:"
+echo "   ./maintenance.sh on   # Bật"
+echo "   ./maintenance.sh off  # Tắt"
+echo ""
+echo "5. Deploy code mới:"
+echo "   git pull"
+echo "   npm install"
+echo "   npm run build"
+echo "   pm2 reload digital-shop"
+echo ""
+echo "⚠️  Nhớ sửa file .env với thông tin thật của bạn!"
 echo ""
 echo "=========================================="
 echo "📖 Tài liệu: Xem file DEPLOY-PM2.md"
