@@ -18,7 +18,7 @@ import {
   Key
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import * as OTPAuth from 'otpauth';
+import { authenticator } from 'otplib';
 
 interface TwoFactorAccount {
   id: string;
@@ -71,16 +71,8 @@ export default function AuthenticatorPage() {
             throw new Error('Invalid secret length');
           }
 
-          const totp = new OTPAuth.TOTP({
-            issuer: account.issuer,
-            label: account.name,
-            algorithm: 'SHA1',
-            digits: 6,
-            period: 30,
-            secret: cleanSecret,
-          });
-
-          const code = totp.generate();
+          // Generate TOTP code using otplib
+          const code = authenticator.generate(cleanSecret);
           newCodes[account.id] = {
             code,
             timeRemaining,
@@ -100,14 +92,8 @@ export default function AuthenticatorPage() {
             throw new Error('Secret too short');
           }
 
-          const totp = new OTPAuth.TOTP({
-            algorithm: 'SHA1',
-            digits: 6,
-            period: 30,
-            secret: cleanSecret,
-          });
-
-          const code = totp.generate();
+          // Generate TOTP code using otplib
+          const code = authenticator.generate(cleanSecret);
           setQuickCode({
             code,
             timeRemaining,
