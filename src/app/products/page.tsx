@@ -292,6 +292,15 @@ export default function ProductsPage() {
                             width={400}
                             height={225}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            unoptimized
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '<div class="flex items-center justify-center h-full"><span class="text-6xl">📄</span></div>';
+                              }
+                            }}
                           />
                         </div>
                       ) : (
@@ -339,11 +348,12 @@ export default function ProductsPage() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Link href={`/products/${product.slug}`} className="flex-1">
-                          <Button variant="outline" className="w-full">
-                            <Eye className="h-4 w-4 mr-2" />
-                            Xem chi tiết
-                          </Button>
+                        <Link
+                          href={`/products/${product.slug}`}
+                          className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-2xl text-sm font-medium border border-border bg-transparent hover:bg-card hover:text-text-primary h-10 px-4 py-2 transition-colors"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Xem chi tiết
                         </Link>
                         <Button 
                           className="flex-1"
