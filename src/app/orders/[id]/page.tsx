@@ -35,8 +35,9 @@ interface Order {
     product: {
       id: string;
       name: string;
+      slug: string;
       type: 'FILE' | 'LICENSE' | 'APP';
-      images: string[];
+      images: string | null; // JSON string, not array
     };
     quantity: number;
     priceVnd: number;
@@ -47,22 +48,16 @@ interface Order {
     amountVnd: number;
     createdAt: string;
   }>;
-  licenses: Array<{
+  licenses?: Array<{
     id: string;
     codeOrJwt: string;
     status: string;
-    issuedAt: string;
+    issuedAt: string | null;
     product: {
       id: string;
       name: string;
       type: string;
     };
-  }>;
-  downloadUrls: Array<{
-    id: string;
-    name: string;
-    size: number;
-    downloadUrl: string;
   }>;
 }
 
@@ -243,12 +238,14 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {order.orderItems.map((item) => (
+                  {order.orderItems.map((item) => {
+                    const images = item.product.images ? JSON.parse(item.product.images) : [];
+                    return (
                     <div key={item.id} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
                       <div className="w-16 h-16 bg-card rounded-lg overflow-hidden flex-shrink-0">
-                        {item.product.images.length > 0 ? (
+                        {images.length > 0 ? (
                           <Image
-                            src={item.product.images[0]}
+                            src={images[0]}
                             alt={item.product.name}
                             width={64}
                             height={64}
@@ -278,7 +275,8 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -330,7 +328,7 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Licenses */}
-          {order.status === 'PAID' && order.licenses.length > 0 && (
+          {order.status === 'PAID' && order.licenses && order.licenses.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Licenses</CardTitle>
@@ -354,7 +352,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div className="flex justify-between items-center mt-2">
                         <span className="text-xs text-text-muted">
-                          Cấp lúc: {formatDate(license.issuedAt)}
+                          Cấp lúc: {license.issuedAt ? formatDate(license.issuedAt) : 'Chưa cấp'}
                         </span>
                         <Button
                           variant="outline"
@@ -372,42 +370,6 @@ export default function OrderDetailPage() {
             </Card>
           )}
 
-          {/* Downloads */}
-          {order.status === 'PAID' && order.downloadUrls.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tải xuống</CardTitle>
-                <CardDescription>
-                  Các file có thể tải xuống cho đơn hàng này
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {order.downloadUrls.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-5 w-5 text-brand" />
-                        <div>
-                          <h4 className="font-medium">{file.name}</h4>
-                          <p className="text-sm text-text-muted">
-                            {formatFileSize(file.size)}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(file.downloadUrl, '_blank')}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Tải xuống
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Order Status Info */}
           {order.status === 'PENDING' && (

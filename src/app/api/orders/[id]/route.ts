@@ -36,11 +36,24 @@ export async function GET(
                 id: true,
                 name: true,
                 slug: true,
+                type: true,
+                images: true,
               },
             },
           },
         },
         payments: true,
+        licenses: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                type: true,
+              },
+            },
+          },
+        },
       },
     });
 
