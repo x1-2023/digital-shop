@@ -39,10 +39,17 @@ interface ReferralInfo {
   };
 }
 
+interface AccountStats {
+  totalOrders: number;
+  totalSpentVnd: number;
+  totalProducts: number;
+}
+
 export default function AccountPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserSession | null>(null);
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
+  const [accountStats, setAccountStats] = useState<AccountStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -50,6 +57,7 @@ export default function AccountPage() {
   useEffect(() => {
     fetchSession();
     fetchReferralInfo();
+    fetchAccountStats();
   }, []);
 
   const fetchSession = async () => {
@@ -75,6 +83,18 @@ export default function AccountPage() {
       }
     } catch (error) {
       console.error('Error fetching referral info:', error);
+    }
+  };
+
+  const fetchAccountStats = async () => {
+    try {
+      const response = await fetch('/api/account/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setAccountStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching account stats:', error);
     }
   };
 
@@ -253,15 +273,17 @@ export default function AccountPage() {
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-text-muted">Tổng đơn hàng:</span>
-                    <span className="font-medium">0</span>
+                    <span className="font-medium">{accountStats?.totalOrders || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-text-muted">Đã chi tiêu:</span>
-                    <span className="font-medium">0 VND</span>
+                    <span className="font-medium">
+                      {new Intl.NumberFormat('vi-VN').format(accountStats?.totalSpentVnd || 0)} VND
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-text-muted">Sản phẩm đã mua:</span>
-                    <span className="font-medium">0</span>
+                    <span className="font-medium">{accountStats?.totalProducts || 0}</span>
                   </div>
                 </CardContent>
               </Card>

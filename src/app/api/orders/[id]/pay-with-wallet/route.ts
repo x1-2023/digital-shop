@@ -111,8 +111,46 @@ export async function POST(
         },
       });
 
-      // TODO: Create ProductLog entries for file delivery
-      // This will be implemented later with proper file line allocation
+      // Create ProductLog entries for product delivery
+      for (const item of order.orderItems) {
+        const product = item.product;
+
+        // Read file content if product has a file
+        let content = '';
+        if (product.fileUrl) {
+          try {
+            // For now, read the entire file content
+            // TODO: Implement proper line allocation for large files
+            const fs = await import('fs/promises');
+            const path = await import('path');
+            const filePath = path.join(process.cwd(), 'uploads', product.fileUrl);
+
+            try {
+              content = await fs.readFile(filePath, 'utf-8');
+            } catch (readError) {
+              console.error(`Failed to read file for product ${product.id}:`, readError);
+              content = 'Lỗi: Không thể đọc file sản phẩm. Vui lòng liên hệ support.';
+            }
+          } catch (importError) {
+            console.error('Failed to import fs/path modules:', importError);
+            content = 'Lỗi: Không thể truy cập file. Vui lòng liên hệ support.';
+          }
+        } else {
+          content = `Sản phẩm: ${product.name}\nSố lượng: ${item.quantity}\n\nChưa có nội dung được cung cấp.`;
+        }
+
+        await tx.productLog.create({
+          data: {
+            productId: product.id,
+            userId: session.user.id,
+            orderId: order.id,
+            action: 'PURCHASE',
+            quantity: item.quantity,
+            content: content,
+            notes: `Purchased ${item.quantity} item(s)`,
+          },
+        });
+      }
 
       return { order: updatedOrder, payment };
     });
