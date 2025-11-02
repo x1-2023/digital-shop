@@ -245,13 +245,22 @@ export default function AdminOrderDetailPage() {
                       <div key={item.id} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
                         <div className="w-16 h-16 bg-card rounded-lg overflow-hidden flex-shrink-0">
                           {item.product.images.length > 0 ? (
-                            <Image
-                              src={item.product.images[0]}
-                              alt={item.product.name}
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-cover"
-                            />
+                            <>
+                              <Image
+                                src={item.product.images[0]}
+                                alt={item.product.name}
+                                width={64}
+                                height={64}
+                                unoptimized
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                              <span className="hidden text-3xl flex items-center justify-center h-full">📦</span>
+                            </>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Package className="h-6 w-6 text-text-muted" />

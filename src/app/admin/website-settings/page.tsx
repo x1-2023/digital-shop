@@ -340,13 +340,22 @@ export default function WebsiteSettingsPage() {
                 {settings.websiteLogo && (
                   <div className="space-y-2">
                     <Label>Logo hiện tại:</Label>
-                    <Image
-                      src={settings.websiteLogo}
-                      alt="Current logo"
-                      width={80}
-                      height={80}
-                      className="h-20 w-auto object-contain border rounded"
-                    />
+                    <div className="relative">
+                      <Image
+                        src={settings.websiteLogo}
+                        alt="Current logo"
+                        width={80}
+                        height={80}
+                        unoptimized
+                        className="h-20 w-auto object-contain border rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <span className="hidden text-4xl">🖼️</span>
+                    </div>
                   </div>
                 )}
                 <div className="space-y-2">
@@ -384,13 +393,22 @@ export default function WebsiteSettingsPage() {
                 {settings.websiteFavicon && (
                   <div className="space-y-2">
                     <Label>Favicon hiện tại:</Label>
-                    <Image
-                      src={settings.websiteFavicon}
-                      alt="Current favicon"
-                      width={32}
-                      height={32}
-                      className="h-8 w-8 object-contain border rounded"
-                    />
+                    <div className="relative">
+                      <Image
+                        src={settings.websiteFavicon}
+                        alt="Current favicon"
+                        width={32}
+                        height={32}
+                        unoptimized
+                        className="h-8 w-8 object-contain border rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <span className="hidden text-2xl">⭐</span>
+                    </div>
                   </div>
                 )}
                 <div className="space-y-2">

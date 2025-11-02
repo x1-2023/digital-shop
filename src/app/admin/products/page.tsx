@@ -219,13 +219,22 @@ export default function AdminProductsPage() {
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-card rounded-lg overflow-hidden flex-shrink-0">
                             {images.length > 0 ? (
-                              <Image
-                                src={images[0]}
-                                alt={product.name}
-                                width={48}
-                                height={48}
-                                className="w-full h-full object-cover"
-                              />
+                              <>
+                                <Image
+                                  src={images[0]}
+                                  alt={product.name}
+                                  width={48}
+                                  height={48}
+                                  unoptimized
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                                <span className="hidden text-2xl flex items-center justify-center h-full">📦</span>
+                              </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <FileText className="h-4 w-4 text-text-muted" />

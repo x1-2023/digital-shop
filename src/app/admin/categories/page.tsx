@@ -349,10 +349,16 @@ export default function AdminCategoriesPage() {
                                 width={40}
                                 height={40}
                                 className="w-full h-full object-contain"
+                                unoptimized
+                                onError={(e) => {
+                                  // Fallback to emoji if image fails to load
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
                               />
-                            ) : (
-                              <span className="text-xl">📦</span>
-                            )}
+                            ) : null}
+                            <span className={cat.icon ? 'hidden text-xl' : 'text-xl'}>📦</span>
                           </div>
                         </TableCell>
                         <TableCell className="font-medium">{cat.name}</TableCell>
