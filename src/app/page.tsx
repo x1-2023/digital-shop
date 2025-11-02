@@ -146,22 +146,14 @@ export default async function Home() {
                   <div className="relative w-full bg-card-dark" style={{ paddingBottom: '56.25%' }}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       {images[0] ? (
-                        <>
-                          <Image
-                            src={images[0]}
-                            alt={product.name}
-                            width={300}
-                            height={200}
-                            className="w-full h-full object-cover"
-                            unoptimized
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                          <span className="hidden text-6xl">📄</span>
-                        </>
+                        <Image
+                          src={images[0]}
+                          alt={product.name}
+                          width={300}
+                          height={200}
+                          className="w-full h-full object-cover"
+                          unoptimized
+                        />
                       ) : (
                         <span className="text-6xl">
                           📄
