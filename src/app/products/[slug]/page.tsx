@@ -206,6 +206,15 @@ export default function ProductDetailPage() {
                     width={600}
                     height={400}
                     className="w-full h-full object-cover"
+                    unoptimized
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><span class="text-6xl">📄</span></div>';
+                      }
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -230,6 +239,7 @@ export default function ProductDetailPage() {
                         width={80}
                         height={80}
                         className="w-full h-full object-cover"
+                        unoptimized
                       />
                     </button>
                   ))}
@@ -251,11 +261,6 @@ export default function ProductDetailPage() {
                   <Badge variant="outline">
                     {product.stock > 0 ? `${product.stock} còn lại` : 'Hết hàng'}
                   </Badge>
-                  {product.totalLines && (
-                    <Badge variant="outline">
-                      {availableLines.toLocaleString()} lines
-                    </Badge>
-                  )}
                 </div>
                 
                 <CardTitle className="text-3xl mb-2">{product.name}</CardTitle>
@@ -273,13 +278,6 @@ export default function ProductDetailPage() {
 
                 {product.description && (
                   <p className="text-text-muted mb-6">{product.description}</p>
-                )}
-                
-                {product.fileName && (
-                  <div className="text-sm text-text-muted mb-4">
-                    <FileText className="h-4 w-4 inline mr-1" />
-                    File: <span className="font-mono">{product.fileName}</span>
-                  </div>
                 )}
               </div>
 
@@ -387,42 +385,12 @@ export default function ProductDetailPage() {
                           <span className="text-text-muted">Số lượng:</span>
                           <span>{product.stock} sản phẩm</span>
                         </div>
-                        {product.totalLines && (
-                          <>
-                            <div className="flex justify-between">
-                              <span className="text-text-muted">Tổng lines:</span>
-                              <span>{product.totalLines.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-text-muted">Lines còn lại:</span>
-                              <span>{availableLines.toLocaleString()}</span>
-                            </div>
-                          </>
-                        )}
                         <div className="flex justify-between">
                           <span className="text-text-muted">Ngày tạo:</span>
                           <span>{formatDate(product.createdAt)}</span>
                         </div>
                       </div>
                     </div>
-                    
-                    {product.fileName && (
-                      <div>
-                        <h4 className="font-semibold mb-2">File</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-text-muted">Tên file:</span>
-                            <span className="font-mono text-xs">{product.fileName}</span>
-                          </div>
-                          {product.totalLines && (
-                            <div className="flex justify-between">
-                              <span className="text-text-muted">Số dòng:</span>
-                              <span>{product.totalLines.toLocaleString()}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
