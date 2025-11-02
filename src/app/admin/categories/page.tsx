@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Edit, Trash2, Plus, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { generateSlug } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -28,6 +29,7 @@ export default function AdminCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     description: '',
     icon: ''
   });
@@ -55,19 +57,19 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const generateSlug = (name: string) => {
-    const sanitized = name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-    const random = Math.random().toString(36).substring(2, 6);
-    return `${sanitized}-${random}`;
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Auto-generate slug when name changes
+    if (name === 'name' && value && !editingId) {
+      setFormData(prev => ({
+        ...prev,
+        name: value,
+        slug: generateSlug(value)
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +93,7 @@ export default function AdminCategoriesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
-          slug: editingId ? undefined : generateSlug(formData.name),
+          slug: formData.slug || generateSlug(formData.name),
           description: formData.description,
           icon: formData.icon
         })
@@ -104,7 +106,7 @@ export default function AdminCategoriesPage() {
         description: editingId ? 'Danh mục đã cập nhật' : 'Danh mục đã tạo'
       });
 
-      setFormData({ name: '', description: '', icon: '' });
+      setFormData({ name: '', slug: '', description: '', icon: '' });
       setEditingId(null);
       setShowForm(false);
       fetchCategories();
@@ -143,6 +145,7 @@ export default function AdminCategoriesPage() {
     setEditingId(category.id);
     setFormData({
       name: category.name,
+      slug: category.slug || '',
       description: category.description || '',
       icon: category.icon || ''
     });
@@ -230,9 +233,24 @@ export default function AdminCategoriesPage() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="VD: Discord Accounts"
+                      placeholder="VD: Tài Khoản Discord"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="slug">Slug (URL)</Label>
+                    <Input
+                      id="slug"
+                      name="slug"
+                      value={formData.slug}
+                      onChange={handleInputChange}
+                      placeholder="tai-khoan-discord-0211"
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-text-muted mt-1">
+                      Tự động tạo từ tên. Có thể chỉnh sửa. Ví dụ: tai-khoan-discord-0211
+                    </p>
                   </div>
 
                   <div>

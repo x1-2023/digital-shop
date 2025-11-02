@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { generateSlug } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -20,6 +21,7 @@ interface Category {
 
 interface FormData {
   name: string;
+  slug: string;
   categoryId: string;
   description: string;
   priceVnd: number;
@@ -35,6 +37,7 @@ export default function CreateProductPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState<FormData>({
     name: '',
+    slug: '',
     categoryId: '',
     description: '',
     priceVnd: 0,
@@ -66,24 +69,24 @@ export default function CreateProductPage() {
     }
   };
 
-  const generateSlug = (name: string) => {
-    const sanitized = name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-    const random = Math.random().toString(36).substring(2, 8);
-    return `${sanitized}-${random}`;
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'priceVnd' || name === 'stock' || name === 'totalLines'
-        ? parseInt(value) || 0
-        : value
-    }));
+
+    // Auto-generate slug when name changes
+    if (name === 'name' && value) {
+      setFormData(prev => ({
+        ...prev,
+        name: value,
+        slug: generateSlug(value)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: name === 'priceVnd' || name === 'stock' || name === 'totalLines'
+          ? parseInt(value) || 0
+          : value
+      }));
+    }
   };
 
   const handleCategoryChange = (value: string) => {
@@ -293,7 +296,7 @@ export default function CreateProductPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
-          slug: generateSlug(formData.name),
+          slug: formData.slug,
           categoryId: formData.categoryId,
           description: formData.description,
           priceVnd: Number(formData.priceVnd) || 0,
@@ -360,9 +363,24 @@ export default function CreateProductPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Discord Premium Account"
+                    placeholder="Tài Khoản Discord"
                     required
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="slug">Slug (URL)</Label>
+                  <Input
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleInputChange}
+                    placeholder="tai-khoan-discord-0211"
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Tự động tạo từ tên sản phẩm. Có thể chỉnh sửa. Ví dụ: tai-khoan-discord-0211
+                  </p>
                 </div>
 
                 <div>
