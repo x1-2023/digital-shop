@@ -53,7 +53,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: { order },
+      order: order,
     });
   } catch (error) {
     console.error('Error fetching order:', error);
