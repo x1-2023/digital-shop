@@ -17,6 +17,7 @@ import {
   Shield,
   MonitorPlay,
   Gift,
+  X,
 } from 'lucide-react';
 
 const navigation = [
@@ -37,101 +38,148 @@ const navigation = [
   { name: 'Cài đặt', href: '/admin/settings', icon: Settings },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside style={{
-      width: '256px',
-      height: '100%',
-      backgroundColor: '#111318',
-      borderRight: '1px solid #22252E',
-      display: 'flex',
-      flexDirection: 'column',
-      flexShrink: 0,
-      overflowY: 'auto'
-    }}>
-      {/* Header */}
-      <div style={{
-        height: '64px',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '24px',
-        paddingRight: '24px',
-        borderBottom: '1px solid #22252E',
-        flexShrink: 0
-      }}>
-        <Link href="/" style={{
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={onClose}
+          style={{ display: isOpen ? 'block' : 'none' }}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className="fixed lg:static inset-y-0 left-0 z-50 lg:z-auto transition-transform duration-300 ease-in-out"
+        style={{
+          width: '256px',
+          height: '100%',
+          backgroundColor: '#111318',
+          borderRight: '1px solid #22252E',
+          display: 'flex',
+          flexDirection: 'column',
+          flexShrink: 0,
+          overflowY: 'auto',
+          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          height: '64px',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          textDecoration: 'none',
-          cursor: 'pointer'
+          justifyContent: 'space-between',
+          paddingLeft: '24px',
+          paddingRight: '24px',
+          borderBottom: '1px solid #22252E',
+          flexShrink: 0
         }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            backgroundColor: '#8B5CF6',
+          <Link href="/" style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            gap: '8px',
+            textDecoration: 'none',
+            cursor: 'pointer'
           }}>
-            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '12px' }}>WM</span>
-          </div>
-          <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#E6E8EC' }}>WebMMO Admin</span>
-        </Link>
-      </div>
-      
-      {/* Navigation */}
-      <nav style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-        padding: '16px',
-        overflowY: 'auto'
-      }}>
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || 
-            (item.href !== '/admin' && pathname.startsWith(item.href));
-          const Icon = item.icon;
-          
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '12px 12px',
-                fontSize: '14px',
-                fontWeight: '500',
-                borderRadius: '12px',
-                transition: 'all 0.2s',
-                textDecoration: 'none',
-                backgroundColor: isActive ? '#8B5CF6' : 'transparent',
-                color: isActive ? 'white' : '#9AA0AA'
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.backgroundColor = '#1A1D26';
-                  e.currentTarget.style.color = '#E6E8EC';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = '#9AA0AA';
-                }
-              }}
-            >
-              <Icon style={{ width: '20px', height: '20px', marginRight: '12px', flexShrink: 0 }} />
-              {item.name}
-            </Link>
-          );
-        })}
-      </nav>
-    </aside>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              backgroundColor: '#8B5CF6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '12px' }}>WM</span>
+            </div>
+            <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#E6E8EC' }}>WebMMO Admin</span>
+          </Link>
+
+          {/* Close button (mobile only) */}
+          <button
+            onClick={onClose}
+            className="lg:hidden"
+            style={{
+              padding: '8px',
+              borderRadius: '8px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: '#9AA0AA',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <X style={{ width: '20px', height: '20px' }} />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          padding: '16px',
+          overflowY: 'auto'
+        }}>
+          {navigation.map((item) => {
+            const isActive = pathname === item.href ||
+              (item.href !== '/admin' && pathname.startsWith(item.href));
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => {
+                  // Close sidebar on mobile when clicking a link
+                  if (window.innerWidth < 1024 && onClose) {
+                    onClose();
+                  }
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px 12px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  borderRadius: '12px',
+                  transition: 'all 0.2s',
+                  textDecoration: 'none',
+                  backgroundColor: isActive ? '#8B5CF6' : 'transparent',
+                  color: isActive ? 'white' : '#9AA0AA'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = '#1A1D26';
+                    e.currentTarget.style.color = '#E6E8EC';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#9AA0AA';
+                  }
+                }}
+              >
+                <Icon style={{ width: '20px', height: '20px', marginRight: '12px', flexShrink: 0 }} />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+    </>
   );
 }

@@ -22,6 +22,7 @@ interface AppShellProps {
 export function AppShell({ children, isAdmin = false }: AppShellProps) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Track online users with heartbeat
   useHeartbeat();
@@ -41,6 +42,24 @@ export function AppShell({ children, isAdmin = false }: AppShellProps) {
     fetchSession();
   }, []);
 
+  // Set initial sidebar state based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Listen for resize events
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (loading) {
     return <div style={{ minHeight: '100vh', backgroundColor: '#0B0B10' }} />;
   }
@@ -52,14 +71,14 @@ export function AppShell({ children, isAdmin = false }: AppShellProps) {
         height: '100vh',
         backgroundColor: '#0B0B10'
       }}>
-        <AdminSidebar />
+        <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden'
         }}>
-          <AdminHeader />
+          <AdminHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
           <main style={{
             flex: 1,
             overflowY: 'auto',

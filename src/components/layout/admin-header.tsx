@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Wallet, LogOut } from 'lucide-react';
+import { Wallet, LogOut, Menu } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -11,7 +11,11 @@ interface SessionUser {
   role: 'ADMIN' | 'BUYER';
 }
 
-export function AdminHeader() {
+interface AdminHeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const router = useRouter();
@@ -86,8 +90,29 @@ export function AdminHeader() {
       backdropFilter: 'blur(10px)',
       flexShrink: 0
     }}>
-      <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#E6E8EC' }}>
-        Tổng quan quản lý
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Mobile menu button */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden"
+          style={{
+            padding: '8px',
+            borderRadius: '8px',
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#9AA0AA',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Menu style={{ width: '24px', height: '24px' }} />
+        </button>
+
+        <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#E6E8EC' }}>
+          Tổng quan quản lý
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
