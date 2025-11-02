@@ -66,7 +66,7 @@ export default function OrdersPage() {
       const response = await fetch(`/api/orders?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setOrders(data.orders || []);
+        setOrders(data.data?.orders || []);
       } else {
         toast({
           variant: 'destructive',
