@@ -36,7 +36,6 @@ interface Order {
       id: string;
       name: string;
       slug: string;
-      type: 'FILE' | 'LICENSE' | 'APP';
       images: string | null; // JSON string, not array
     };
     quantity: number;
@@ -56,7 +55,6 @@ interface Order {
     product: {
       id: string;
       name: string;
-      type: string;
     };
   }>;
 }

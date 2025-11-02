@@ -36,7 +36,6 @@ export async function GET(
                 id: true,
                 name: true,
                 slug: true,
-                type: true,
                 images: true,
               },
             },
@@ -49,7 +48,6 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
-                type: true,
               },
             },
           },
