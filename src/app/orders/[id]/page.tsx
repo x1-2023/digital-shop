@@ -47,16 +47,6 @@ interface Order {
     amountVnd: number;
     createdAt: string;
   }>;
-  licenses?: Array<{
-    id: string;
-    codeOrJwt: string;
-    status: string;
-    issuedAt: string | null;
-    product: {
-      id: string;
-      name: string;
-    };
-  }>;
 }
 
 export default function OrderDetailPage() {
@@ -324,49 +314,6 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
           </div>
-
-          {/* Licenses */}
-          {order.status === 'PAID' && order.licenses && order.licenses.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Licenses</CardTitle>
-                <CardDescription>
-                  Các license đã được cấp cho đơn hàng này
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {order.licenses.map((license) => (
-                    <div key={license.id} className="p-4 border border-border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4 text-brand" />
-                          <span className="font-medium">{license.product.name}</span>
-                        </div>
-                        <Badge variant="success">Đã cấp</Badge>
-                      </div>
-                      <div className="bg-card p-3 rounded-lg font-mono text-sm break-all">
-                        {license.codeOrJwt}
-                      </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs text-text-muted">
-                          Cấp lúc: {license.issuedAt ? formatDate(license.issuedAt) : 'Chưa cấp'}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(license.codeOrJwt, 'License')}
-                        >
-                          <Copy className="h-3 w-3 mr-1" />
-                          Sao chép
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
 
           {/* Order Status Info */}

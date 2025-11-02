@@ -42,16 +42,6 @@ export async function GET(
           },
         },
         payments: true,
-        licenses: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
       },
     });
 
