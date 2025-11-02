@@ -146,6 +146,75 @@ export default function CreateProductPage() {
     }
   };
 
+  // Resize image to optimal size (800x450px - 16:9 aspect ratio)
+  const resizeImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          // Target dimensions (16:9 aspect ratio)
+          const targetWidth = 800;
+          const targetHeight = 450;
+
+          const canvas = document.createElement('canvas');
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Cannot get canvas context'));
+            return;
+          }
+
+          // Calculate scaling to cover the canvas while maintaining aspect ratio
+          const imgAspect = img.width / img.height;
+          const targetAspect = targetWidth / targetHeight;
+
+          let drawWidth, drawHeight, offsetX, offsetY;
+
+          if (imgAspect > targetAspect) {
+            // Image is wider - fit to height
+            drawHeight = targetHeight;
+            drawWidth = img.width * (targetHeight / img.height);
+            offsetX = (targetWidth - drawWidth) / 2;
+            offsetY = 0;
+          } else {
+            // Image is taller - fit to width
+            drawWidth = targetWidth;
+            drawHeight = img.height * (targetWidth / img.width);
+            offsetX = 0;
+            offsetY = (targetHeight - drawHeight) / 2;
+          }
+
+          // Draw image centered and cropped
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+          // Convert to blob with quality optimization
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Failed to create blob'));
+                return;
+              }
+              const resizedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+              resolve(resizedFile);
+            },
+            'image/jpeg',
+            0.85 // 85% quality for good balance
+          );
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -156,8 +225,12 @@ export default function CreateProductPage() {
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+
+        // Auto-resize image to 800x450px
+        const resizedFile = await resizeImage(file);
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', resizedFile);
         formData.append('type', 'image');
 
         const res = await fetch('/api/admin/products/upload', {
@@ -180,7 +253,7 @@ export default function CreateProductPage() {
 
       toast({
         title: 'Thành công',
-        description: `Đã upload ${uploadedImages.length} ảnh`
+        description: `Đã upload và tối ưu ${uploadedImages.length} ảnh (800x450px)`
       });
     } catch (error) {
       toast({
@@ -372,9 +445,16 @@ export default function CreateProductPage() {
                 <div className="border-2 border-dashed border-border rounded-lg p-6">
                   <div className="flex flex-col items-center space-y-4">
                     <Upload className="h-8 w-8 text-text-muted" />
-                    <div className="text-center">
+                    <div className="text-center space-y-2">
                       <p className="font-medium">Upload ảnh sản phẩm</p>
                       <p className="text-sm text-text-muted">JPG, PNG, WebP (Có thể chọn nhiều ảnh)</p>
+                      <div className="text-xs text-text-muted bg-card-dark px-3 py-2 rounded-lg inline-block">
+                        <p className="font-semibold text-brand mb-1">✨ Tự động tối ưu:</p>
+                        <p>• Tỷ lệ: 16:9 (phù hợp với giao diện)</p>
+                        <p>• Kích thước: 800x450px (tối ưu web)</p>
+                        <p>• Chất lượng: 85% (cân bằng dung lượng)</p>
+                        <p className="mt-1 text-success">→ Ảnh sẽ tự động crop và resize khi upload</p>
+                      </div>
                     </div>
                     <input
                       type="file"
