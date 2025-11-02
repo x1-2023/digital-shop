@@ -28,12 +28,12 @@ interface Order {
   currency: string;
   createdAt: string;
   updatedAt: string;
-  items: Array<{
+  orderItems: Array<{
     id: string;
     product: {
       id: string;
       name: string;
-      type: 'FILE' | 'LICENSE' | 'APP';
+      slug: string;
     };
     quantity: number;
     priceVnd: number;
@@ -180,14 +180,14 @@ export default function OrdersPage() {
                           {formatCurrency(order.totalAmountVnd)}
                         </div>
                         <div className="text-sm text-text-muted">
-                          {order.items.length} sản phẩm
+                          {order.orderItems.length} sản phẩm
                         </div>
                       </div>
                     </div>
 
                     {/* Order Items */}
                     <div className="space-y-2 mb-4">
-                      {order.items.map((item) => (
+                      {order.orderItems.map((item) => (
                         <div key={item.id} className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                           <div className="flex items-center space-x-3">
                             <FileText className="h-5 w-5" />
