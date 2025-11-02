@@ -155,7 +155,7 @@ export default function AdminCategoriesPage() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ name: '', description: '', icon: '' });
+    setFormData({ name: '', slug: '', description: '', icon: '' });
   };
 
   const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

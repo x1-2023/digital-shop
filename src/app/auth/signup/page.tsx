@@ -231,34 +231,6 @@ export default function SignupPage() {
                 )}
               </div>
 
-              {/* Referral Code */}
-              <div className="space-y-2">
-                <Label htmlFor="referralCode">
-                  Mã giới thiệu (tùy chọn)
-                  {formData.referralCode && (
-                    <Gift className="inline-block ml-1 h-3 w-3 text-green-500" />
-                  )}
-                </Label>
-                <Input
-                  id="referralCode"
-                  name="referralCode"
-                  type="text"
-                  placeholder="Nhập ID người dùng (VD: cm123456)"
-                  value={formData.referralCode}
-                  onChange={(e) => setFormData({ ...formData, referralCode: e.target.value.toLowerCase() })}
-                  maxLength={8}
-                />
-                {formData.referralCode && (
-                  <p className="text-xs text-green-500 flex items-center gap-1">
-                    <Gift className="h-3 w-3" />
-                    Bạn và người giới thiệu sẽ nhận được phần thưởng khi bạn nạp tiền lần đầu!
-                  </p>
-                )}
-                {errors.referralCode && (
-                  <p className="text-sm text-red-500">{errors.referralCode}</p>
-                )}
-              </div>
-
               {/* Confirm Password */}
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
@@ -297,6 +269,34 @@ export default function SignupPage() {
                     <CheckCircle2 className="h-3 w-3" />
                     Mật khẩu khớp
                   </p>
+                )}
+              </div>
+
+              {/* Referral Code */}
+              <div className="space-y-2">
+                <Label htmlFor="referralCode">
+                  Mã giới thiệu (tùy chọn)
+                  {formData.referralCode && (
+                    <Gift className="inline-block ml-1 h-3 w-3 text-green-500" />
+                  )}
+                </Label>
+                <Input
+                  id="referralCode"
+                  name="referralCode"
+                  type="text"
+                  placeholder="Nhập ID người dùng (VD: cm123456)"
+                  value={formData.referralCode}
+                  onChange={(e) => setFormData({ ...formData, referralCode: e.target.value.toLowerCase() })}
+                  maxLength={8}
+                />
+                {formData.referralCode && (
+                  <p className="text-xs text-green-500 flex items-center gap-1">
+                    <Gift className="h-3 w-3" />
+                    Bạn và người giới thiệu sẽ nhận được phần thưởng khi bạn nạp tiền lần đầu!
+                  </p>
+                )}
+                {errors.referralCode && (
+                  <p className="text-sm text-red-500">{errors.referralCode}</p>
                 )}
               </div>
 
