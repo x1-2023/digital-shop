@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifySessionToken } from '@/lib/jwt-session';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -34,24 +35,23 @@ export async function middleware(request: NextRequest) {
     }
 
     // Verify JWT and check for ADMIN role
-    try {
-      const jwt = await import('jsonwebtoken');
-      const token = sessionCookie.value;
-      const decoded = jwt.default.verify(token, process.env.JWT_SECRET!) as any;
+    const token = sessionCookie.value;
+    const decoded = verifySessionToken(token);
 
-      // Check if user has ADMIN role
-      if (decoded.role !== 'ADMIN') {
-        // Not an admin, redirect to home
-        return NextResponse.redirect(new URL('/', request.url));
-      }
-
-      return NextResponse.next();
-    } catch (error) {
-      // Invalid token, redirect to login
+    if (!decoded) {
+      // Invalid or expired token, redirect to login
       const url = new URL('/auth/signin', request.url);
       url.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(url);
     }
+
+    // Check if user has ADMIN role
+    if (decoded.role !== 'ADMIN') {
+      // Not an admin, redirect to home
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    return NextResponse.next();
   }
 
   // Protected routes (require authentication)
