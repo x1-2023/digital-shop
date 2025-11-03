@@ -78,6 +78,29 @@ export default function AdminDashboard() {
   const [timePeriod, setTimePeriod] = useState<'today' | 'month' | 'year' | 'total'>('today');
   const [onlineUsers, setOnlineUsers] = useState<{ total: number; guests: number; authenticated: number } | null>(null);
 
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const data = await res.json();
+          if (!data.user || data.user.role !== 'ADMIN') {
+            window.location.href = '/';
+            return;
+          }
+        } else {
+          window.location.href = '/auth/signin';
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to check admin access:', error);
+        window.location.href = '/';
+      }
+    };
+    checkAdminAccess();
+  }, []);
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {

@@ -23,9 +23,6 @@ export async function middleware(request: NextRequest) {
   });
 
   // Admin routes - require ADMIN role
-  // NOTE: We can't verify JWT in Edge Runtime middleware (no Node.js crypto support)
-  // So we just check for session cookie existence here
-  // Actual verification happens in the admin layout/pages
   if (pathname.startsWith('/admin')) {
     const sessionCookie = request.cookies.get('session');
 
@@ -36,9 +33,25 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Session cookie exists, let the page verify it
-    // This prevents Edge Runtime errors with JWT verification
-    return NextResponse.next();
+    // Verify JWT and check for ADMIN role
+    try {
+      const jwt = await import('jsonwebtoken');
+      const token = sessionCookie.value;
+      const decoded = jwt.default.verify(token, process.env.JWT_SECRET!) as any;
+
+      // Check if user has ADMIN role
+      if (decoded.role !== 'ADMIN') {
+        // Not an admin, redirect to home
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+
+      return NextResponse.next();
+    } catch (error) {
+      // Invalid token, redirect to login
+      const url = new URL('/auth/signin', request.url);
+      url.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(url);
+    }
   }
 
   // Protected routes (require authentication)
