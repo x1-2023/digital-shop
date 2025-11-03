@@ -304,7 +304,8 @@ export default function WalletPage() {
                 // Max attempts reached, show manual message
                 toast({
                   title: 'Yêu cầu đã được tạo',
-                  description: 'Nếu bạn đã chuyển khoản, tiền sẽ được cộng tự động trong vài phút.',
+                  description: 'Nếu bạn đã chuyển khoản, tiền sẽ được cộng tự động trong vài phút. Nếu quá 10 phút không thấy số dư thay đổi, vui lòng liên hệ admin.',
+                  duration: 8000, // Show longer
                 });
 
                 // Refresh history to show pending request
