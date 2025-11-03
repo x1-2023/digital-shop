@@ -53,13 +53,14 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={onClose}
-          style={{ display: isOpen ? 'block' : 'none' }}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className="fixed lg:static inset-y-0 left-0 z-50 lg:z-auto transition-transform duration-300 ease-in-out"
+        className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0`}
         style={{
           width: '256px',
           height: '100%',
@@ -69,7 +70,6 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
           flexDirection: 'column',
           flexShrink: 0,
           overflowY: 'auto',
-          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
         }}
       >
         {/* Header */}
