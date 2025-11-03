@@ -255,6 +255,15 @@ export default function WalletPage() {
           const historyData = await historyRes.json();
           setHistory(historyData.history || []);
         }
+      } else if (response.status === 429) {
+        // Rate limit error - show retry time
+        const retryAfter = data.retryAfter || 60;
+        const minutes = Math.ceil(retryAfter / 60);
+        toast({
+          variant: 'destructive',
+          title: 'Quá nhiều yêu cầu',
+          description: `Bạn đã tạo quá nhiều yêu cầu nạp tiền. Vui lòng thử lại sau ${minutes} phút.`,
+        });
       } else {
         toast({
           variant: 'destructive',
