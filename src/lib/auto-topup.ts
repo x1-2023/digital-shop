@@ -212,6 +212,27 @@ export async function processAutoTopup(
             transactionDate: transaction.date,
           },
         });
+
+        // 5. Log system activity
+        await tx.systemLog.create({
+          data: {
+            userId: depositRequest.userId,
+            userEmail: depositRequest.user.email,
+            action: 'DEPOSIT_AUTO',
+            targetType: 'DEPOSIT',
+            targetId: depositRequest.id.toString(),
+            amount: totalCredit,
+            description: `Auto-topup successful: ${totalCredit.toLocaleString('vi-VN')} VND (Base: ${creditAmount.toLocaleString('vi-VN')}, Bonus: ${bonusAmount.toLocaleString('vi-VN')})`,
+            metadata: JSON.stringify({
+              bankName,
+              bankTransactionId: transaction.id,
+              originalAmount: creditAmount,
+              bonusAmount,
+              bonusPercent,
+              totalAmount: totalCredit,
+            }),
+          },
+        });
       });
 
       result.details.push({
