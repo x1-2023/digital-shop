@@ -42,6 +42,14 @@ export async function GET(
           },
         },
         payments: true,
+        productLogs: {
+          select: {
+            id: true,
+            productId: true,
+            content: true,
+            quantity: true,
+          },
+        },
       },
     });
 

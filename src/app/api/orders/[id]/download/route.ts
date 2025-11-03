@@ -43,24 +43,27 @@ export async function GET(
       return NextResponse.json({ error: 'Order not paid' }, { status: 400 });
     }
 
-    // Generate download content from ProductLog
-    let downloadContent = '';
-    downloadContent += `Đơn hàng: ${order.id}\n`;
-    downloadContent += `Ngày mua: ${new Date(order.createdAt).toLocaleDateString('vi-VN')}\n`;
-    downloadContent += `Trạng thái: ${order.status}\n`;
-    downloadContent += `Tổng tiền: ${order.totalAmountVnd.toLocaleString('vi-VN')} VND\n\n`;
-    downloadContent += `=== CHI TIẾT SẢN PHẨM ===\n\n`;
+    // Generate simple download content - just order ID and product lines
+    let downloadContent = `${order.id}\n\n`;
 
-    // Group product logs by product
-    for (let i = 0; i < order.productLogs.length; i++) {
-      const log = order.productLogs[i];
-      const product = order.orderItems.find(item => item.productId === log.productId);
+    // Extract all product lines (skip headers and markers)
+    for (const log of order.productLogs) {
+      const content = log.content || '';
+      const lines = content.split('\n');
 
-      downloadContent += `Sản phẩm ${i + 1}: ${product?.product.name || 'Unknown'}\n`;
-      downloadContent += `Số lượng: ${log.quantity}\n\n`;
-      downloadContent += `Nội dung:\n`;
-      downloadContent += log.content || 'Chưa có nội dung';
-      downloadContent += `\n${'='.repeat(50)}\n\n`;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        // Only include actual content lines, skip headers and markers
+        if (trimmed &&
+            !trimmed.startsWith('===') &&
+            !trimmed.startsWith('Sản phẩm:') &&
+            !trimmed.startsWith('Số lượng:') &&
+            !trimmed.startsWith('Nội dung:') &&
+            !trimmed.match(/^\d+\.\s/) && // Skip numbered format
+            !trimmed.startsWith('⚠️')) {
+          downloadContent += `${trimmed}\n`;
+        }
+      }
     }
 
     // Create filename

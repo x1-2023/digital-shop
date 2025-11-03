@@ -6,22 +6,28 @@ import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-// Table components removed as unused
-import { 
-  Package, 
+import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Package,
   ArrowLeft,
   Download,
-  Copy,
   CheckCircle,
   Clock,
   XCircle,
   AlertCircle,
-  FileText
+  AlertTriangle
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
+
+interface ProductLine {
+  index: number;
+  content: string;
+  productName: string;
+  priceVnd: number;
+}
 
 interface Order {
   id: string;
@@ -36,7 +42,7 @@ interface Order {
       id: string;
       name: string;
       slug: string;
-      images: string | null; // JSON string, not array
+      images: string | null;
     };
     quantity: number;
     priceVnd: number;
@@ -47,12 +53,20 @@ interface Order {
     amountVnd: number;
     createdAt: string;
   }>;
+  productLogs?: Array<{
+    id: string;
+    productId: string;
+    content: string;
+    quantity: number;
+  }>;
 }
 
 export default function OrderDetailPage() {
   const params = useParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [productLines, setProductLines] = useState<ProductLine[]>([]);
+  const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -67,6 +81,44 @@ export default function OrderDetailPage() {
       if (response.ok) {
         const data = await response.json();
         setOrder(data.order);
+
+        // Parse product logs to extract individual lines
+        if (data.order.productLogs && data.order.productLogs.length > 0) {
+          const lines: ProductLine[] = [];
+          let globalIndex = 0;
+
+          data.order.productLogs.forEach((log: any) => {
+            const product = data.order.orderItems.find((item: any) => item.product.id === log.productId);
+            const productName = product?.product.name || 'Unknown';
+            const priceVnd = product?.priceVnd || 0;
+
+            // Extract lines from content
+            const content = log.content || '';
+            const contentLines = content.split('\n');
+
+            // Find lines that look like accounts (skip headers)
+            contentLines.forEach((line: string) => {
+              const trimmed = line.trim();
+              // Skip empty lines, headers, and section markers
+              if (trimmed &&
+                  !trimmed.startsWith('===') &&
+                  !trimmed.startsWith('Sản phẩm:') &&
+                  !trimmed.startsWith('Số lượng:') &&
+                  !trimmed.startsWith('Nội dung:') &&
+                  !trimmed.match(/^\d+\.\s/) && // Skip numbered list format "1. "
+                  !trimmed.startsWith('⚠️')) {
+                lines.push({
+                  index: globalIndex++,
+                  content: trimmed,
+                  productName,
+                  priceVnd,
+                });
+              }
+            });
+          });
+
+          setProductLines(lines);
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -101,13 +153,47 @@ export default function OrderDetailPage() {
     }
   };
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
+  const toggleSelectLine = (index: number) => {
+    const newSelected = new Set(selectedLines);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedLines(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLines.size === productLines.length) {
+      setSelectedLines(new Set());
+    } else {
+      setSelectedLines(new Set(productLines.map(l => l.index)));
+    }
+  };
+
+  const reportError = async () => {
+    if (selectedLines.size === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Vui lòng chọn ít nhất một sản phẩm để báo lỗi',
+      });
+      return;
+    }
+
+    // Get selected product lines
+    const selectedProducts = productLines.filter(l => selectedLines.has(l.index));
+    const errorReport = selectedProducts.map(p => `- ${p.productName}: ${p.content}`).join('\n');
+
+    // TODO: Send error report to admin API
+    console.log('Error report:', errorReport);
+
     toast({
-      variant: 'success',
-      title: 'Đã sao chép',
-      description: `${label} đã được sao chép vào clipboard`,
+      title: 'Đã gửi báo cáo',
+      description: `Đã báo lỗi ${selectedLines.size} sản phẩm. Admin sẽ xử lý trong thời gian sớm nhất.`,
     });
+
+    setSelectedLines(new Set());
   };
 
   const downloadOrder = async () => {
@@ -119,12 +205,12 @@ export default function OrderDetailPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `don-hang-${order.id}.txt`;
+        a.download = `${order.id.slice(0, 8)}.txt`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
+
         toast({
           title: 'Thành công',
           description: 'Đã tải xuống thông tin đơn hàng',
@@ -139,14 +225,6 @@ export default function OrderDetailPage() {
         description: 'Không thể tải xuống thông tin đơn hàng',
       });
     }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (isLoading) {
@@ -200,10 +278,18 @@ export default function OrderDetailPage() {
             </div>
             <div className="flex items-center space-x-4">
               {order.status === 'PAID' && (
-                <Button onClick={downloadOrder} variant="outline">
-                  <Download className="h-4 w-4 mr-2" />
-                  Tải xuống
-                </Button>
+                <>
+                  <Button onClick={downloadOrder} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Tải xuống hàng loạt
+                  </Button>
+                  {selectedLines.size > 0 && (
+                    <Button onClick={reportError} variant="destructive">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Báo lỗi ({selectedLines.size})
+                    </Button>
+                  )}
+                </>
               )}
               {getStatusBadge(order.status)}
               <Link href="/orders">
@@ -215,106 +301,108 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Order Items */}
+          {/* Products Table - Only show if paid and has product lines */}
+          {order.status === 'PAID' && productLines.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Sản phẩm đã mua</CardTitle>
-                <CardDescription>
-                  {order.orderItems.length} sản phẩm
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Sản phẩm đã mua</CardTitle>
+                    <CardDescription>
+                      {productLines.length} items
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="select-all"
+                      checked={selectedLines.size === productLines.length && productLines.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <label
+                      htmlFor="select-all"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      Chọn tất cả
+                    </label>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {order.orderItems.map((item) => {
-                    const images = item.product.images ? JSON.parse(item.product.images) : [];
-                    return (
-                    <div key={item.id} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
-                      <div className="w-16 h-16 bg-card rounded-lg overflow-hidden flex-shrink-0">
-                        {images.length > 0 ? (
-                          <Image
-                            src={images[0]}
-                            alt={item.product.name}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">Báo lỗi</TableHead>
+                      <TableHead>Sản phẩm</TableHead>
+                      <TableHead className="w-1/2">Nội dung</TableHead>
+                      <TableHead className="text-right">Giá trị</TableHead>
+                      <TableHead className="text-right">Postback</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {productLines.map((line) => (
+                      <TableRow key={line.index}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedLines.has(line.index)}
+                            onCheckedChange={() => toggleSelectLine(line.index)}
                           />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-6 w-6 text-text-muted" />
-                          </div>
-                        )}
-                      </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <FileText className="h-4 w-4" />
-                            <h4 className="font-medium">{item.product.name}</h4>
-                          </div>
-                        <p className="text-sm text-text-muted">
-                          Số lượng: {item.quantity}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">
-                          {formatCurrency(item.priceVnd * item.quantity)}
-                        </div>
-                        <div className="text-sm text-text-muted">
-                          {formatCurrency(item.priceVnd)}/sản phẩm
-                        </div>
-                      </div>
-                    </div>
-                    );
-                  })}
-                </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{line.productName}</TableCell>
+                        <TableCell className="font-mono text-sm">{line.content}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(line.priceVnd)}</TableCell>
+                        <TableCell className="text-right text-text-muted">-</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
+          )}
 
-            {/* Order Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Tóm tắt đơn hàng</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-text-muted">Tạm tính:</span>
-                    <span>{formatCurrency(order.totalAmountVnd)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-text-muted">Phí vận chuyển:</span>
-                    <span className="text-success">Miễn phí</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-text-muted">Thuế:</span>
-                    <span>0 VND</span>
-                  </div>
-                  <div className="border-t border-border pt-2">
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span>Tổng cộng:</span>
-                      <span className="text-brand">{formatCurrency(order.totalAmountVnd)}</span>
-                    </div>
+          {/* Order Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tóm tắt đơn hàng</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Tạm tính:</span>
+                  <span>{formatCurrency(order.totalAmountVnd)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Phí vận chuyển:</span>
+                  <span className="text-success">Miễn phí</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Thuế:</span>
+                  <span>0 VND</span>
+                </div>
+                <div className="border-t border-border pt-2">
+                  <div className="flex justify-between font-semibold text-lg">
+                    <span>Tổng cộng:</span>
+                    <span className="text-brand">{formatCurrency(order.totalAmountVnd)}</span>
                   </div>
                 </div>
+              </div>
 
-                {order.payments.length > 0 && (
-                  <div className="border-t border-border pt-4">
-                    <h4 className="font-medium mb-2">Thanh toán</h4>
-                    <div className="space-y-2">
-                      {order.payments.map((payment) => (
-                        <div key={payment.id} className="flex justify-between text-sm">
-                          <span className="text-text-muted">
-                            {payment.provider === 'MANUAL' ? 'Ví nội bộ' : payment.provider}
-                          </span>
-                          <span>{formatCurrency(payment.amountVnd)}</span>
-                        </div>
-                      ))}
-                    </div>
+              {order.payments.length > 0 && (
+                <div className="border-t border-border pt-4">
+                  <h4 className="font-medium mb-2">Thanh toán</h4>
+                  <div className="space-y-2">
+                    {order.payments.map((payment) => (
+                      <div key={payment.id} className="flex justify-between text-sm">
+                        <span className="text-text-muted">
+                          {payment.provider === 'MANUAL' ? 'Ví nội bộ' : payment.provider}
+                        </span>
+                        <span>{formatCurrency(payment.amountVnd)}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Order Status Info */}
           {order.status === 'PENDING' && (
@@ -337,6 +425,3 @@ export default function OrderDetailPage() {
     </AppShell>
   );
 }
-
-
-
