@@ -221,10 +221,11 @@ export default function WalletPage() {
 
   const handleConfirmTopup = async () => {
     if (!confirmData) return;
-    
+
     setIsCreating(true);
 
     try {
+      // Step 1: Create deposit request
       const response = await fetch('/api/wallet/topup/create', {
         method: 'POST',
         headers: {
@@ -241,20 +242,87 @@ export default function WalletPage() {
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: 'Tạo yêu cầu thành công',
-          description: 'Vui lòng chuyển khoản theo thông tin và chờ admin duyệt.',
-        });
+        const depositRequestId = data.data.id;
+
+        // Close confirmation dialog
         setIsConfirmOpen(false);
         setConfirmData(null);
         setTopupAmount('');
         setTopupNote('');
-        // Refresh history
-        const historyRes = await fetch('/api/wallet/history');
-        if (historyRes.ok) {
-          const historyData = await historyRes.json();
-          setHistory(historyData.history || []);
+
+        // Step 2: Check if auto-topup is enabled and trigger check
+        toast({
+          title: 'Đã tạo yêu cầu',
+          description: 'Đang kiểm tra giao dịch ngân hàng...',
+        });
+
+        // Start checking status (with max 3 attempts, 3 seconds apart)
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts) {
+          attempts++;
+
+          try {
+            const checkResponse = await fetch('/api/wallet/topup/check-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ depositRequestId }),
+            });
+
+            if (checkResponse.ok) {
+              const checkData = await checkResponse.json();
+
+              if (checkData.status === 'APPROVED') {
+                // Success!
+                toast({
+                  title: 'Nạp tiền thành công! 🎉',
+                  description: `Số dư mới: ${checkData.balance.toLocaleString('vi-VN')} VND`,
+                });
+
+                // Refresh wallet and history
+                const [walletRes, historyRes] = await Promise.all([
+                  fetch('/api/wallet/balance'),
+                  fetch('/api/wallet/history'),
+                ]);
+
+                if (walletRes.ok) {
+                  const walletData = await walletRes.json();
+                  setWallet(walletData);
+                }
+
+                if (historyRes.ok) {
+                  const historyData = await historyRes.json();
+                  setHistory(historyData.history || []);
+                }
+
+                break; // Exit loop
+              } else if (attempts < maxAttempts) {
+                // Still pending, wait and try again
+                await new Promise(resolve => setTimeout(resolve, 3000));
+              } else {
+                // Max attempts reached, show manual message
+                toast({
+                  title: 'Yêu cầu đã được tạo',
+                  description: 'Nếu bạn đã chuyển khoản, tiền sẽ được cộng tự động trong vài phút.',
+                });
+
+                // Refresh history to show pending request
+                const historyRes = await fetch('/api/wallet/history');
+                if (historyRes.ok) {
+                  const historyData = await historyRes.json();
+                  setHistory(historyData.history || []);
+                }
+              }
+            } else {
+              break; // API error, stop trying
+            }
+          } catch (checkError) {
+            console.error('Error checking status:', checkError);
+            break;
+          }
         }
+
       } else if (response.status === 429) {
         // Rate limit error - show retry time
         const retryAfter = data.retryAfter || 60;
