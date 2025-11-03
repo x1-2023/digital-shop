@@ -115,29 +115,90 @@ export async function POST(
       // Create ProductLog entries for product delivery
       for (const item of order.orderItems) {
         const product = item.product;
-
-        // Read file content if product has a file
         let content = '';
-        if (product.fileUrl) {
+        let lineIndices: number[] = [];
+
+        // Try to get licenses first (for license-based products)
+        const availableLicenses = await tx.license.findMany({
+          where: {
+            productId: product.id,
+            status: 'NEW',
+          },
+          take: item.quantity,
+        });
+
+        if (availableLicenses.length > 0) {
+          // Assign licenses to user
+          for (const license of availableLicenses) {
+            await tx.license.update({
+              where: { id: license.id },
+              data: {
+                status: 'BOUND',
+                boundEmail: session.user.email,
+                issuedAt: new Date(),
+              },
+            });
+          }
+
+          // Build content from licenses
+          content = `Sản phẩm: ${product.name}\nSố lượng: ${availableLicenses.length}\n\n`;
+          content += `=== LICENSE KEYS ===\n\n`;
+          availableLicenses.forEach((license, idx) => {
+            content += `${idx + 1}. ${license.codeOrJwt}\n`;
+          });
+
+          if (availableLicenses.length < item.quantity) {
+            content += `\n⚠️ Chỉ có ${availableLicenses.length}/${item.quantity} licenses có sẵn. Vui lòng liên hệ support để được hỗ trợ.`;
+          }
+        } else if (product.fileUrl) {
+          // Try to read from file
           try {
-            // For now, read the entire file content
-            // TODO: Implement proper line allocation for large files
             const fs = await import('fs/promises');
             const path = await import('path');
             const filePath = path.join(process.cwd(), 'uploads', product.fileUrl);
 
             try {
-              content = await fs.readFile(filePath, 'utf-8');
+              const fileContent = await fs.readFile(filePath, 'utf-8');
+              const lines = fileContent.split('\n').filter(line => line.trim());
+
+              // Calculate how many lines to take
+              const linesToTake = Math.min(item.quantity, lines.length - product.usedLines);
+              const startIndex = product.usedLines;
+              const endIndex = startIndex + linesToTake;
+
+              // Get lines
+              const takenLines = lines.slice(startIndex, endIndex);
+              lineIndices = Array.from({ length: linesToTake }, (_, i) => startIndex + i);
+
+              // Update product used lines
+              await tx.product.update({
+                where: { id: product.id },
+                data: {
+                  usedLines: endIndex,
+                },
+              });
+
+              // Build content
+              content = `Sản phẩm: ${product.name}\nSố lượng: ${takenLines.length}\n\n`;
+              content += `=== NỘI DUNG ===\n\n`;
+              takenLines.forEach((line, idx) => {
+                content += `${idx + 1}. ${line}\n`;
+              });
+
+              if (linesToTake < item.quantity) {
+                content += `\n⚠️ Chỉ có ${linesToTake}/${item.quantity} items có sẵn. Vui lòng liên hệ support.`;
+              }
             } catch (readError) {
               console.error(`Failed to read file for product ${product.id}:`, readError);
-              content = 'Lỗi: Không thể đọc file sản phẩm. Vui lòng liên hệ support.';
+              content = `Sản phẩm: ${product.name}\nSố lượng: ${item.quantity}\n\n⚠️ Lỗi: Không thể đọc file sản phẩm. Vui lòng liên hệ support để được hỗ trợ.`;
             }
           } catch (importError) {
             console.error('Failed to import fs/path modules:', importError);
-            content = 'Lỗi: Không thể truy cập file. Vui lòng liên hệ support.';
+            content = `Sản phẩm: ${product.name}\nSố lượng: ${item.quantity}\n\n⚠️ Lỗi: Không thể truy cập file. Vui lòng liên hệ support.`;
           }
         } else {
-          content = `Sản phẩm: ${product.name}\nSố lượng: ${item.quantity}\n\nChưa có nội dung được cung cấp.`;
+          // No file or licenses available
+          content = `Sản phẩm: ${product.name}\nSố lượng: ${item.quantity}\n\n⚠️ Sản phẩm này chưa có nội dung được cung cấp. Vui lòng liên hệ support để được hỗ trợ.`;
         }
 
         await tx.productLog.create({
@@ -147,6 +208,7 @@ export async function POST(
             orderId: order.id,
             action: 'PURCHASE',
             quantity: item.quantity,
+            lineIndices: lineIndices.length > 0 ? JSON.stringify(lineIndices) : null,
             content: content,
             notes: `Purchased ${item.quantity} item(s)`,
           },

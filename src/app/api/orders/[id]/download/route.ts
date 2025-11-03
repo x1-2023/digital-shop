@@ -51,7 +51,13 @@ export async function GET(
     downloadContent += `Tổng tiền: ${order.totalAmountVnd.toLocaleString('vi-VN')} VND\n\n`;
     downloadContent += `=== CHI TIẾT SẢN PHẨM ===\n\n`;
 
-    for (const log of order.productLogs) {
+    // Group product logs by product
+    for (let i = 0; i < order.productLogs.length; i++) {
+      const log = order.productLogs[i];
+      const product = order.orderItems.find(item => item.productId === log.productId);
+
+      downloadContent += `Sản phẩm ${i + 1}: ${product?.product.name || 'Unknown'}\n`;
+      downloadContent += `Số lượng: ${log.quantity}\n\n`;
       downloadContent += `Nội dung:\n`;
       downloadContent += log.content || 'Chưa có nội dung';
       downloadContent += `\n${'='.repeat(50)}\n\n`;
