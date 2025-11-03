@@ -518,3 +518,63 @@ enum AdPlacement {
   HEADER // Top of page
   FOOTER // Bottom of page
 }
+
+// System Activity Log - Track all important system events
+model SystemLog {
+  id          String   @id @default(cuid())
+  userId      String? // User who performed the action (null for system events)
+  userEmail   String? // Store email for reference
+  action      SystemLogAction
+  targetType  String? // e.g., "ORDER", "DEPOSIT", "WALLET", "PRODUCT"
+  targetId    String? // ID of the affected entity
+  amount      Float? // For money-related actions
+  description String // Human-readable description
+  metadata    String? // JSON string for additional data
+  ipAddress   String? // User's IP address
+  userAgent   String? // User's browser info
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("system_logs")
+}
+
+enum SystemLogAction {
+  // User actions
+  USER_REGISTER
+  USER_LOGIN
+  USER_LOGOUT
+
+  // Deposit/Topup actions
+  DEPOSIT_CREATE // User creates deposit request
+  DEPOSIT_APPROVE // Admin approves
+  DEPOSIT_REJECT // Admin rejects
+  DEPOSIT_AUTO // Auto-topup success
+
+  // Order actions
+  ORDER_CREATE
+  ORDER_PAID
+  ORDER_CANCELLED
+
+  // Wallet actions
+  WALLET_CREDIT // Money added
+  WALLET_DEBIT // Money deducted
+  WALLET_ADJUST // Admin manual adjustment
+
+  // Product actions
+  PRODUCT_PURCHASE
+  PRODUCT_DOWNLOAD
+
+  // Admin actions
+  ADMIN_LOGIN
+  ADMIN_SETTINGS_UPDATE
+
+  // Referral actions
+  REFERRAL_SIGNUP
+  REFERRAL_REWARD
+
+  // System events
+  SYSTEM_ERROR
+  SYSTEM_WARNING
+}
