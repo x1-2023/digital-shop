@@ -1,11 +1,11 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
@@ -36,8 +36,22 @@ export async function GET(request: NextRequest) {
       prisma.manualDepositRequest.count({ where }),
     ]);
 
+    // Map to frontend format
+    const mappedDeposits = deposits.map((deposit) => ({
+      id: deposit.id,
+      userEmail: deposit.user.email,
+      amount: deposit.amountVnd,
+      status: deposit.status,
+      createdAt: deposit.createdAt,
+      note: deposit.note,
+      adminNote: deposit.adminNote,
+      qrCode: deposit.qrCode,
+      transferContent: deposit.transferContent,
+      decidedAt: deposit.decidedAt,
+    }));
+
     return NextResponse.json({
-      deposits,
+      deposits: mappedDeposits,
       pagination: {
         page,
         limit,
@@ -50,6 +64,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
-
-
