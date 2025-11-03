@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { rejectDepositSchema } from '@/lib/validations';
 import { addEmailJob } from '@/lib/queues';
 import { logActivity, getRequestInfo } from '@/lib/user-activity';
+import { logDepositReject } from '@/lib/system-log';
 
 export async function POST(
   request: NextRequest,
@@ -82,6 +83,17 @@ export async function POST(
       ip,
       userAgent,
     });
+
+    // Log to system log
+    await logDepositReject(
+      session.user.id,
+      session.user.email,
+      depositRequest.userId,
+      depositRequest.user.email,
+      depositRequest.amountVnd,
+      depositId.toString(),
+      adminNote || 'No reason provided'
+    );
 
     return NextResponse.json({
       success: true,

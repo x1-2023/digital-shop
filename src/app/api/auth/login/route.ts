@@ -1,8 +1,9 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { verifyCredentials } from '@/lib/auth';
 import { createSessionToken } from '@/lib/jwt-session';
 import { cookies } from 'next/headers';
 import { checkRateLimit, getClientIdentifier, getRateLimitConfig } from '@/lib/rate-limit';
+import { logUserLogin, logAdminLogin } from '@/lib/system-log';
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,6 +45,17 @@ export async function POST(request: NextRequest) {
         { error: 'Email hoặc mật khẩu không đúng' },
         { status: 401 }
       );
+    }
+
+    // Log login attempt
+    const clientIp = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown';
+
+    if (user.role === 'ADMIN') {
+      await logAdminLogin(user.id, user.email, clientIp);
+    } else {
+      await logUserLogin(user.id, user.email, clientIp);
     }
 
     // Create JWT session token (signed and tamper-proof)

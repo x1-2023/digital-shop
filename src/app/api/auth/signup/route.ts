@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { customAlphabet } from 'nanoid';
 import { createSessionToken } from '@/lib/jwt-session';
 import { checkRateLimit, getClientIdentifier, getRateLimitConfig } from '@/lib/rate-limit';
+import { logUserRegister } from '@/lib/system-log';
 
 // Generate 8-character alphanumeric ID (lowercase)
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 8);
@@ -119,6 +120,12 @@ export async function POST(request: NextRequest) {
         // Don't fail signup if referral fails
       }
     }
+
+    // Log user registration
+    const clientIp = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown';
+    await logUserRegister(user.id, user.email, clientIp);
 
     // Create JWT session token
     const token = createSessionToken({

@@ -1,7 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { logOrderCreate } from '@/lib/system-log';
 
 const createOrderSchema = z.object({
   items: z.array(z.object({
@@ -270,6 +271,14 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Log order creation
+    await logOrderCreate(
+      session.user.id,
+      session.user.email,
+      order.id,
+      finalAmount
+    );
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { generateIdempotencyKey } from '@/lib/utils';
+import { logOrderPaid } from '@/lib/system-log';
 
 export async function POST(
   request: NextRequest,
@@ -151,6 +152,24 @@ export async function POST(
           },
         });
       }
+
+      // Log order payment
+      await tx.systemLog.create({
+        data: {
+          userId: session.user.id,
+          userEmail: session.user.email,
+          action: 'ORDER_PAID',
+          targetType: 'ORDER',
+          targetId: order.id,
+          amount: order.totalAmountVnd,
+          description: `User paid order: ${order.totalAmountVnd.toLocaleString('vi-VN')} VND`,
+          metadata: JSON.stringify({
+            orderId: order.id,
+            itemCount: order.orderItems.length,
+            paymentId: payment.id,
+          }),
+        },
+      });
 
       return { order: updatedOrder, payment };
     });
