@@ -441,7 +441,7 @@ export default function WalletPage() {
 
                 {/* Confirmation Dialog with QR Code */}
                 <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-                  <DialogContent className="max-w-md">
+                  <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Chi tiết yêu cầu nạp</DialogTitle>
                       <DialogDescription>
@@ -488,16 +488,16 @@ export default function WalletPage() {
 
                         <div className="space-y-2">
                           <p className="text-sm font-medium text-text-muted text-center">QR Code</p>
-                          <div className="flex justify-center bg-white p-4 rounded">
+                          <div className="flex justify-center bg-white p-3 rounded">
                             {confirmData.qrCode ? (
-                              <img 
-                                src={confirmData.qrCode} 
-                                alt="QR Code" 
-                                className="w-64 h-64"
+                              <img
+                                src={confirmData.qrCode}
+                                alt="QR Code"
+                                className="w-48 h-48"
                               />
                             ) : (
-                              <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded">
-                                <p className="text-gray-500">QR Code không khả dụng</p>
+                              <div className="w-48 h-48 flex items-center justify-center bg-gray-100 rounded">
+                                <p className="text-gray-500 text-sm">QR Code không khả dụng</p>
                               </div>
                             )}
                           </div>
