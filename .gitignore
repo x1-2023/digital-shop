@@ -72,14 +72,14 @@ production.db
 # Docker volumes
 /data/
 
-# Product uploads
+# Product images (public access needed for browser display)
 /public/products/*
 !/public/products/.gitkeep
 !/public/products/images/
 /public/products/images/*
 !/public/products/images/.gitkeep
 
-# Uploads directory - ignore files but keep structure
+# Product files (uploads directory - private access via API only)
 /uploads/*
 !/uploads/.gitkeep
 !/uploads/products/

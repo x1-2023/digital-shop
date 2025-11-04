@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
       // Generate filename: combolist-xxxxx.txt
       const randomId = generateRandomId(6);
       const fileName = `combolist-${randomId}.txt`;
-      const filePath = path.join(process.cwd(), 'public', 'products', fileName);
+      const filePath = path.join(process.cwd(), 'uploads', 'products', fileName);
 
       // Ensure directory exists
-      const dirPath = path.join(process.cwd(), 'public', 'products');
+      const dirPath = path.join(process.cwd(), 'uploads', 'products');
       if (!existsSync(dirPath)) {
         await mkdir(dirPath, { recursive: true });
       }
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: {
           fileName,
-          fileUrl: `/products/${fileName}`,
+          fileUrl: `products/${fileName}`,
           totalLines: lines.length,
           fileContent: content, // Send back full content for storage
         },

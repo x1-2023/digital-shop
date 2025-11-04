@@ -38,6 +38,11 @@ mkdir -p public/products public/products/images
 chmod -R 755 uploads/ public/products/
 chown -R $(whoami):$(whoami) uploads/ public/products/
 
+# Migrate product files from public to uploads (one-time migration)
+echo "🔄 Migrating product files to uploads/products/..."
+chmod +x scripts/migrate-product-files.sh
+bash scripts/migrate-product-files.sh
+
 # Restart PM2 with updated config
 echo "🔄 Restarting PM2..."
 pm2 restart ecosystem.config.js --update-env
