@@ -1,0 +1,68 @@
+═══════════════════════════════════════════════════════════════
+  HƯỚNG DẪN DEPLOY NHANH - Auto-topup Daemon
+═══════════════════════════════════════════════════════════════
+
+📦 Các thay đổi trong commit này:
+
+1. ✅ Auto-topup cron chuyển sang daemon (chạy liên tục)
+2. ✅ Fix website settings cache (footer sẽ update ngay lập tức)
+3. ✅ UI improvements cho order buttons
+
+═══════════════════════════════════════════════════════════════
+
+🚀 DEPLOY TRÊN SERVER (5 bước):
+
+1. Pull code mới:
+   cd /root/digital-shop
+   git pull origin main
+
+2. Install node-cron (nếu chưa có):
+   npm install node-cron
+
+3. Stop process cũ:
+   pm2 stop auto-topup-cron
+
+4. Start daemon mới:
+   pm2 start ecosystem.config.js --only auto-topup-cron
+
+5. Kiểm tra:
+   pm2 list
+   pm2 logs auto-topup-cron
+
+═══════════════════════════════════════════════════════════════
+
+✨ KẾT QUẢ MONG ĐỢI:
+
+• pm2 list sẽ hiển thị status "online" (không còn "stopped")
+• Logs sẽ in ra mỗi 5 phút
+• Daemon sẽ chạy ngay lập tức khi start
+
+═══════════════════════════════════════════════════════════════
+
+📋 COMMANDS HỮU ÍCH:
+
+# Xem logs real-time
+pm2 logs auto-topup-cron
+
+# Xem status chi tiết
+pm2 show auto-topup-cron
+
+# Restart nếu cần
+pm2 restart auto-topup-cron
+
+# Test API thủ công
+curl -X POST http://localhost:3000/api/cron/auto-topup
+
+═══════════════════════════════════════════════════════════════
+
+⚙️ CẤU HÌNH:
+
+Thời gian: Mỗi 5 phút (có thể đổi trong scripts/auto-topup-daemon.js)
+Timezone: Asia/Ho_Chi_Minh
+Auto-restart: Có (nếu crash)
+
+═══════════════════════════════════════════════════════════════
+
+📚 Xem chi tiết trong DEPLOY-CRON.md
+
+═══════════════════════════════════════════════════════════════

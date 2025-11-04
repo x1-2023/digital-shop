@@ -1,0 +1,63 @@
+═══════════════════════════════════════════════════════════════
+  SETUP AUTO-TOPUP VỚI SYSTEM CRONTAB (Ubuntu)
+═══════════════════════════════════════════════════════════════
+
+🔧 4 BƯỚC ĐƠN GIẢN:
+
+1️⃣ Pull code & setup script:
+   cd /root/digital-shop
+   git pull origin main
+   chmod +x scripts/auto-topup-simple.sh
+
+2️⃣ Xóa PM2 cron (nếu đang chạy):
+   pm2 delete auto-topup-cron
+   pm2 save
+
+3️⃣ Thêm vào crontab:
+   crontab -e
+
+   Thêm dòng này:
+   */5 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
+
+   (Save: Ctrl+X, Y, Enter)
+
+4️⃣ Verify:
+   crontab -l
+   tail -f /root/digital-shop/logs/auto-topup.log
+
+═══════════════════════════════════════════════════════════════
+
+✅ KẾT QUẢ:
+• Cron chạy mỗi 5 phút tự động
+• Không cần PM2 quản lý
+• Logs đơn giản, dễ đọc
+• Ổn định, không bị stop
+
+═══════════════════════════════════════════════════════════════
+
+📋 COMMANDS NHANH:
+
+# Xem log realtime
+tail -f /root/digital-shop/logs/auto-topup.log
+
+# Xem crontab
+crontab -l
+
+# Test thủ công
+/root/digital-shop/scripts/auto-topup-simple.sh
+
+# Test API
+curl -X POST http://localhost:3000/api/cron/auto-topup
+
+═══════════════════════════════════════════════════════════════
+
+⚠️ LƯU Ý:
+- Nếu đổi PORT của Next.js, phải sửa trong script .sh
+- Logs tự động giữ 5000 dòng cuối
+- Cron chạy trong background, không cần PM2
+
+═══════════════════════════════════════════════════════════════
+
+📚 Chi tiết: Xem DEPLOY-SYSTEM-CRON.md
+
+═══════════════════════════════════════════════════════════════
