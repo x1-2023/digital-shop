@@ -9,7 +9,7 @@ export async function GET(
   const params = await props.params;
   try {
     const session = await getSession();
-    
+
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -17,16 +17,33 @@ export async function GET(
       );
     }
 
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, role: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Build where clause: admin can view all orders, user can only view their own
+    const where: any = { id: params.id };
+    if (user.role !== 'ADMIN') {
+      where.userId = user.id;
+    }
+
     const order = await prisma.order.findFirst({
-      where: {
-        id: params.id,
-        userId: session.user.id,
-      },
+      where,
       include: {
         user: {
           select: {
             id: true,
             email: true,
+            role: true,
           },
         },
         orderItems: {
