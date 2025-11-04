@@ -266,7 +266,7 @@ export default function AdminOrdersPage() {
                     <TableRow key={order.id}>
                       <TableCell>
                         <div className="font-mono text-sm">
-                          #{order.id.slice(0, 8)}
+                          #{order.id.slice(0, 10)}
                         </div>
                       </TableCell>
                       <TableCell>

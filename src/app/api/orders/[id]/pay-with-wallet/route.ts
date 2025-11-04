@@ -117,6 +117,7 @@ export async function POST(
         const product = item.product;
         let content = '';
         let lineIndices: number[] = [];
+        let individualLines: string[] = [];
 
         // Try to get licenses first (for license-based products)
         const availableLicenses = await tx.license.findMany({
@@ -145,6 +146,7 @@ export async function POST(
           content += `=== LICENSE KEYS ===\n\n`;
           availableLicenses.forEach((license, idx) => {
             content += `${idx + 1}. ${license.codeOrJwt}\n`;
+            individualLines.push(license.codeOrJwt); // Store individual lines
           });
 
           if (availableLicenses.length < item.quantity) {
@@ -183,6 +185,7 @@ export async function POST(
               content += `=== NỘI DUNG ===\n\n`;
               takenLines.forEach((line, idx) => {
                 content += `${idx + 1}. ${line}\n`;
+                individualLines.push(line); // Store individual lines
               });
 
               if (linesToTake < item.quantity) {
@@ -201,7 +204,7 @@ export async function POST(
           content = `Sản phẩm: ${product.name}\nSố lượng: ${item.quantity}\n\n⚠️ Sản phẩm này chưa có nội dung được cung cấp. Vui lòng liên hệ support để được hỗ trợ.`;
         }
 
-        await tx.productLog.create({
+        const productLog = await tx.productLog.create({
           data: {
             productId: product.id,
             userId: session.user.id,
@@ -213,6 +216,21 @@ export async function POST(
             notes: `Purchased ${item.quantity} item(s)`,
           },
         });
+
+        // Create individual ProductLineItems for warranty tracking
+        for (const line of individualLines) {
+          await tx.productLineItem.create({
+            data: {
+              productLogId: productLog.id,
+              orderId: order.id,
+              productName: product.name,
+              content: line,
+              priceVnd: item.priceVnd,
+              status: 'NORMAL',
+              errorReported: false,
+            },
+          });
+        }
       }
 
       // Log order payment

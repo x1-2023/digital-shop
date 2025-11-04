@@ -361,7 +361,7 @@ export default function AdminDashboard() {
                     {recentOrders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-mono text-xs">
-                          {order.id.slice(0, 8)}...
+                          {order.id.slice(0, 10)}...
                         </TableCell>
                         <TableCell>{order.userEmail}</TableCell>
                         <TableCell>{formatCurrency(order.totalAmount)}</TableCell>

@@ -111,11 +111,38 @@ model ProductLog {
   createdAt   DateTime @default(now())
 
   // Relations
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order         Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productLines  ProductLineItem[]
 
   @@map("product_logs")
+}
+
+// Individual product line items for warranty/error tracking
+model ProductLineItem {
+  id            String              @id @default(cuid())
+  productLogId  String
+  orderId       String
+  productName   String
+  content       String // The actual account/license/content
+  priceVnd      Float
+  status        ProductLineStatus   @default(NORMAL)
+  errorReported Boolean             @default(false) // User marked as error
+  replacement   String? // Admin's replacement content
+  adminNote     String? // Admin's note about this line
+  rejectedAt    DateTime? // When admin rejected warranty
+  replacedAt    DateTime? // When admin replaced
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  // Relations
+  productLog ProductLog @relation(fields: [productLogId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([errorReported])
+  @@index([status])
+  @@map("product_line_items")
 }
 
 model File {
@@ -450,6 +477,20 @@ enum AutoTopupStatus {
   FAILED
 }
 
+enum ErrorReportStatus {
+  PENDING // Waiting for admin review
+  PROCESSING // Admin is handling
+  RESOLVED // Issue resolved (refunded, replaced, etc.)
+  REJECTED // Not a valid error
+}
+
+enum ProductLineStatus {
+  NORMAL // Normal product, no issues
+  ERROR_REPORTED // User reported error
+  REPLACED // Admin replaced with new content
+  WARRANTY_REJECTED // Admin rejected warranty claim
+}
+
 // 2FA Authenticator
 model TwoFactorAccount {
   id        String   @id @default(cuid())
@@ -538,6 +579,27 @@ model SystemLog {
   @@index([action])
   @@index([createdAt])
   @@map("system_logs")
+}
+
+// Error Report / Warranty System
+model ErrorReport {
+  id               String            @id @default(cuid())
+  userId           String
+  userEmail        String
+  orderId          String
+  status           ErrorReportStatus @default(PENDING)
+  reportedProducts String // JSON array of reported products with details
+  adminNote        String? // Admin's response/note
+  resolution       String? // How the issue was resolved
+  resolvedAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("error_reports")
 }
 
 enum SystemLogAction {

@@ -18,6 +18,7 @@ import {
   MonitorPlay,
   Gift,
   X,
+  AlertCircle,
 } from 'lucide-react';
 
 const navigation = [
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Danh mục', href: '/admin/categories', icon: Layers },
   { name: 'Sản phẩm', href: '/admin/products', icon: Package },
   { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Báo cáo lỗi', href: '/admin/error-reports', icon: AlertCircle },
   { name: 'Mã giảm giá', href: '/admin/coupons', icon: Tag },
   { name: 'Yêu cầu nạp', href: '/admin/topups', icon: CreditCard },
   { name: 'Ví người dùng', href: '/admin/wallets', icon: Wallet },

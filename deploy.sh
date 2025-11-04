@@ -1,6 +1,5 @@
 #!/bin/bash
-
-# Deploy script for production server
+set -e
 
 echo "🚀 Starting deployment..."
 
@@ -12,17 +11,37 @@ git pull origin main
 echo "📦 Installing dependencies..."
 npm install
 
+# Backup database
+echo "🗄️  Backing up database..."
+cp prisma/production.db prisma/production.db.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || echo "No existing database to backup"
+
+# Sync database schema
+echo "🗄️  Syncing database schema..."
+npx prisma db push
+
+# Generate Prisma Client
+echo "⚙️  Generating Prisma Client..."
+npx prisma generate
+
 # Build the application
 echo "🔨 Building application..."
 npm run build
 
-# Restart the application (adjust based on your setup)
-echo "🔄 Restarting application..."
-# If using PM2:
-# pm2 restart digital-shop
-# If using Docker:
-# docker-compose down && docker-compose up -d
-# If using systemd:
-# sudo systemctl restart digital-shop
+# Make cron script executable
+echo "🔧 Setting permissions..."
+chmod +x scripts/auto-topup-cron.js
 
+# Restart PM2 with updated config
+echo "🔄 Restarting PM2..."
+pm2 restart ecosystem.config.js --update-env
+
+echo ""
 echo "✅ Deployment complete!"
+echo ""
+echo "📊 PM2 Status:"
+pm2 list
+echo ""
+echo "📋 View Logs:"
+echo "  Main app:  pm2 logs digital-shop"
+echo "  Cron job:  pm2 logs auto-topup-cron"
+echo "  All logs:  pm2 logs"

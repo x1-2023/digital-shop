@@ -167,7 +167,7 @@ export default function OrdersPage() {
                       <div className="flex items-center space-x-4">
                         <div>
                           <h3 className="font-semibold text-lg">
-                            Đơn hàng #{order.id.slice(0, 8)}
+                            Đơn hàng #{order.id.slice(0, 10)}
                           </h3>
                           <p className="text-sm text-text-muted">
                             {formatDate(order.createdAt)}

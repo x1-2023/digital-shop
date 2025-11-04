@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Package,
@@ -16,17 +17,29 @@ import {
   Clock,
   XCircle,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  Upload,
+  RefreshCw
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
-interface ProductLine {
-  index: number;
-  content: string;
+interface ProductLineItem {
+  id: string;
+  productLogId: string;
+  orderId: string;
   productName: string;
+  content: string;
   priceVnd: number;
+  status: 'NORMAL' | 'ERROR_REPORTED' | 'REPLACED' | 'WARRANTY_REJECTED';
+  errorReported: boolean;
+  replacement: string | null;
+  adminNote: string | null;
+  rejectedAt: string | null;
+  replacedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Order {
@@ -53,25 +66,22 @@ interface Order {
     amountVnd: number;
     createdAt: string;
   }>;
-  productLogs?: Array<{
-    id: string;
-    productId: string;
-    content: string;
-    quantity: number;
-  }>;
 }
 
 export default function OrderDetailPage() {
   const params = useParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [productLines, setProductLines] = useState<ProductLine[]>([]);
-  const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set());
+  const [productLines, setProductLines] = useState<ProductLineItem[]>([]);
+  const [selectedLines, setSelectedLines] = useState<Set<string>>(new Set());
+  const [bulkErrorText, setBulkErrorText] = useState('');
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (params.id) {
       fetchOrder(params.id as string);
+      fetchProductLines(params.id as string);
     }
   }, [params.id]);
 
@@ -81,49 +91,11 @@ export default function OrderDetailPage() {
       if (response.ok) {
         const data = await response.json();
         setOrder(data.order);
-
-        // Parse product logs to extract individual lines
-        if (data.order.productLogs && data.order.productLogs.length > 0) {
-          const lines: ProductLine[] = [];
-          let globalIndex = 0;
-
-          data.order.productLogs.forEach((log: any) => {
-            const product = data.order.orderItems.find((item: any) => item.product.id === log.productId);
-            const productName = product?.product.name || 'Unknown';
-            const priceVnd = product?.priceVnd || 0;
-
-            // Extract lines from content
-            const content = log.content || '';
-            const contentLines = content.split('\n');
-
-            // Find lines that look like accounts (skip headers)
-            contentLines.forEach((line: string) => {
-              const trimmed = line.trim();
-              // Skip empty lines, headers, and section markers
-              if (trimmed &&
-                  !trimmed.startsWith('===') &&
-                  !trimmed.startsWith('Sản phẩm:') &&
-                  !trimmed.startsWith('Số lượng:') &&
-                  !trimmed.startsWith('Nội dung:') &&
-                  !trimmed.match(/^\d+\.\s/) && // Skip numbered list format "1. "
-                  !trimmed.startsWith('⚠️')) {
-                lines.push({
-                  index: globalIndex++,
-                  content: trimmed,
-                  productName,
-                  priceVnd,
-                });
-              }
-            });
-          });
-
-          setProductLines(lines);
-        }
       } else {
         toast({
           variant: 'destructive',
           title: 'Lỗi',
-          description: 'Không tìm thấy đơn hàng',
+          description: 'Không thể tải thông tin đơn hàng',
         });
       }
     } catch (error) {
@@ -131,69 +103,121 @@ export default function OrderDetailPage() {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
-        description: 'Không thể tải thông tin đơn hàng',
+        description: 'Có lỗi xảy ra khi tải đơn hàng',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'PAID':
-        return <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" />Đã thanh toán</Badge>;
-      case 'PENDING':
-        return <Badge variant="warning"><Clock className="w-3 h-3 mr-1" />Chờ thanh toán</Badge>;
-      case 'EXPIRED':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Hết hạn</Badge>;
-      case 'REVIEW_REQUIRED':
-        return <Badge variant="warning"><AlertCircle className="w-3 h-3 mr-1" />Cần xem xét</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const fetchProductLines = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}/product-lines`);
+      if (response.ok) {
+        const data = await response.json();
+        setProductLines(data.productLines || []);
+      }
+    } catch (error) {
+      console.error('Error fetching product lines:', error);
     }
   };
 
-  const toggleSelectLine = (index: number) => {
-    const newSelected = new Set(selectedLines);
-    if (newSelected.has(index)) {
-      newSelected.delete(index);
-    } else {
-      newSelected.add(index);
+  const toggleSelectLine = async (lineId: string) => {
+    try {
+      // Toggle in UI immediately
+      const newSelected = new Set(selectedLines);
+      if (newSelected.has(lineId)) {
+        newSelected.delete(lineId);
+      } else {
+        newSelected.add(lineId);
+      }
+      setSelectedLines(newSelected);
+
+      // Call API to toggle error status
+      const response = await fetch(`/api/product-lines/${lineId}/toggle-error`, {
+        method: 'PATCH',
+      });
+
+      if (response.ok) {
+        // Refresh product lines to get updated status
+        if (params.id) {
+          fetchProductLines(params.id as string);
+        }
+      } else {
+        throw new Error('Failed to toggle error status');
+      }
+    } catch (error) {
+      console.error('Error toggling line:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể cập nhật trạng thái báo lỗi',
+      });
+      // Revert UI change
+      const revertSelected = new Set(selectedLines);
+      if (revertSelected.has(lineId)) {
+        revertSelected.delete(lineId);
+      } else {
+        revertSelected.add(lineId);
+      }
+      setSelectedLines(revertSelected);
     }
-    setSelectedLines(newSelected);
   };
 
   const toggleSelectAll = () => {
     if (selectedLines.size === productLines.length) {
       setSelectedLines(new Set());
     } else {
-      setSelectedLines(new Set(productLines.map(l => l.index)));
+      setSelectedLines(new Set(productLines.map(l => l.id)));
     }
   };
 
-  const reportError = async () => {
-    if (selectedLines.size === 0) {
+  const bulkUploadErrors = async () => {
+    if (!order || !bulkErrorText.trim()) {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
-        description: 'Vui lòng chọn ít nhất một sản phẩm để báo lỗi',
+        description: 'Vui lòng nhập ít nhất một sản phẩm lỗi',
       });
       return;
     }
 
-    // Get selected product lines
-    const selectedProducts = productLines.filter(l => selectedLines.has(l.index));
-    const errorReport = selectedProducts.map(p => `- ${p.productName}: ${p.content}`).join('\n');
+    try {
+      // Split by lines
+      const lines = bulkErrorText.split('\n').filter(l => l.trim());
 
-    // TODO: Send error report to admin API
-    console.log('Error report:', errorReport);
+      const response = await fetch(`/api/orders/${order.id}/bulk-report-error`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          errorContents: lines,
+        }),
+      });
 
-    toast({
-      title: 'Đã gửi báo cáo',
-      description: `Đã báo lỗi ${selectedLines.size} sản phẩm. Admin sẽ xử lý trong thời gian sớm nhất.`,
-    });
+      const data = await response.json();
 
-    setSelectedLines(new Set());
+      if (response.ok && data.success) {
+        toast({
+          title: 'Thành công',
+          description: data.message,
+        });
+        setBulkErrorText('');
+        setShowBulkUpload(false);
+        // Refresh product lines
+        fetchProductLines(order.id);
+      } else {
+        throw new Error(data.error || 'Failed to upload');
+      }
+    } catch (error) {
+      console.error('Error bulk uploading errors:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể tải lên sản phẩm lỗi',
+      });
+    }
   };
 
   const downloadOrder = async () => {
@@ -205,7 +229,7 @@ export default function OrderDetailPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${order.id.slice(0, 8)}.txt`;
+        a.download = `${order.id.slice(0, 10)}.txt`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -227,6 +251,55 @@ export default function OrderDetailPage() {
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" />Đã thanh toán</Badge>;
+      case 'PENDING':
+        return <Badge variant="warning"><Clock className="w-3 h-3 mr-1" />Chờ thanh toán</Badge>;
+      case 'EXPIRED':
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Hết hạn</Badge>;
+      case 'REVIEW_REQUIRED':
+        return <Badge variant="warning"><AlertCircle className="w-3 h-3 mr-1" />Cần xem xét</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const getLineStatusBadge = (line: ProductLineItem) => {
+    if (line.status === 'REPLACED' && line.replacement) {
+      return <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" />Đã thay thế</Badge>;
+    }
+    if (line.status === 'WARRANTY_REJECTED') {
+      return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Từ chối BH</Badge>;
+    }
+    if (line.status === 'ERROR_REPORTED') {
+      return <Badge variant="warning"><AlertTriangle className="w-3 h-3 mr-1" />Đang xử lý</Badge>;
+    }
+    return null;
+  };
+
+  const getDisplayContent = (line: ProductLineItem) => {
+    // If replaced, show replacement content
+    if (line.replacement) {
+      return line.replacement;
+    }
+    // Otherwise show original content
+    return line.content;
+  };
+
+  // Calculate days since order paid
+  const getDaysSincePaid = () => {
+    if (!order || order.status !== 'PAID') return null;
+    const paidDate = new Date(order.updatedAt);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - paidDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysLeft = getDaysSincePaid() ? 30 - getDaysSincePaid()! : null;
+
   if (isLoading) {
     return (
       <AppShell>
@@ -247,12 +320,12 @@ export default function OrderDetailPage() {
           <Card>
             <CardContent className="text-center py-12">
               <Package className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Đơn hàng không tồn tại</h3>
-              <p className="text-text-muted mb-6">Đơn hàng bạn tìm kiếm không tồn tại hoặc đã bị xóa</p>
+              <h3 className="text-lg font-semibold mb-2">Không tìm thấy đơn hàng</h3>
+              <p className="text-text-muted mb-6">Đơn hàng không tồn tại hoặc bạn không có quyền truy cập</p>
               <Link href="/orders">
                 <Button>
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Quay lại danh sách
+                  Quay lại danh sách đơn hàng
                 </Button>
               </Link>
             </CardContent>
@@ -270,27 +343,13 @@ export default function OrderDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-text-primary">
-                Đơn hàng #{order.id.slice(0, 8)}
+                Đơn hàng #{order.id.slice(0, 10)}
               </h1>
               <p className="text-text-muted">
                 Đặt lúc {formatDate(order.createdAt)}
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              {order.status === 'PAID' && (
-                <>
-                  <Button onClick={downloadOrder} variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Tải xuống hàng loạt
-                  </Button>
-                  {selectedLines.size > 0 && (
-                    <Button onClick={reportError} variant="destructive">
-                      <AlertTriangle className="h-4 w-4 mr-2" />
-                      Báo lỗi ({selectedLines.size})
-                    </Button>
-                  )}
-                </>
-              )}
               {getStatusBadge(order.status)}
               <Link href="/orders">
                 <Button variant="outline">
@@ -301,33 +360,126 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Products Table - Only show if paid and has product lines */}
+          {/* 30-day warning */}
+          {order.status === 'PAID' && daysLeft !== null && daysLeft > 0 && (
+            <Card className="border-warning bg-warning/10">
+              <CardContent className="p-4">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-warning">Thông báo quan trọng</p>
+                    <p className="text-sm text-text-muted">
+                      Đơn hàng sẽ bị xóa sản phẩm sau <span className="font-bold text-warning">{daysLeft} ngày</span> nữa.
+                      Vui lòng lưu về máy để tránh mất hàng!
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Order Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Thông tin đơn hàng</CardTitle>
+              <CardDescription>Chi tiết đơn hàng và thanh toán</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-text-muted">Tổng tiền</p>
+                    <p className="text-2xl font-bold text-brand">{formatCurrency(order.totalAmountVnd)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-text-muted">Phương thức thanh toán</p>
+                    <p className="text-sm">Ví nội bộ</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-text-muted">Trạng thái</p>
+                    {getStatusBadge(order.status)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-text-muted">Cập nhật lần cuối</p>
+                    <p className="text-sm">{formatDate(order.updatedAt)}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Product Lines Table */}
           {order.status === 'PAID' && productLines.length > 0 && (
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Sản phẩm đã mua</CardTitle>
-                    <CardDescription>
-                      {productLines.length} items
-                    </CardDescription>
+                    <CardDescription>{productLines.length} items</CardDescription>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="select-all"
-                      checked={selectedLines.size === productLines.length && productLines.length > 0}
-                      onCheckedChange={toggleSelectAll}
-                    />
-                    <label
-                      htmlFor="select-all"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowBulkUpload(!showBulkUpload)}
                     >
-                      Chọn tất cả
-                    </label>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Tải lên sản phẩm lỗi
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={downloadOrder}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Tải xuống hàng loạt
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchProductLines(order.id)}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Làm mới
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Bulk Upload Section */}
+                {showBulkUpload && (
+                  <div className="mb-6 p-4 border border-border rounded-lg bg-card-hover">
+                    <p className="text-sm font-medium mb-2">Paste sản phẩm lỗi (mỗi dòng 1 sản phẩm)</p>
+                    <Textarea
+                      value={bulkErrorText}
+                      onChange={(e) => setBulkErrorText(e.target.value)}
+                      placeholder="account1&#10;account2&#10;account3"
+                      rows={5}
+                      className="mb-3"
+                    />
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setShowBulkUpload(false);
+                          setBulkErrorText('');
+                        }}
+                      >
+                        Hủy
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={bulkUploadErrors}
+                      >
+                        Gửi báo cáo
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -335,22 +487,44 @@ export default function OrderDetailPage() {
                       <TableHead>Sản phẩm</TableHead>
                       <TableHead className="w-1/2">Nội dung</TableHead>
                       <TableHead className="text-right">Giá trị</TableHead>
-                      <TableHead className="text-right">Postback</TableHead>
+                      <TableHead className="text-center">Trạng thái</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {productLines.map((line) => (
-                      <TableRow key={line.index}>
+                      <TableRow
+                        key={line.id}
+                        className={line.replacement ? 'bg-success/10' : ''}
+                      >
                         <TableCell>
                           <Checkbox
-                            checked={selectedLines.has(line.index)}
-                            onCheckedChange={() => toggleSelectLine(line.index)}
+                            checked={line.errorReported}
+                            onCheckedChange={() => toggleSelectLine(line.id)}
+                            disabled={line.status === 'WARRANTY_REJECTED'}
                           />
                         </TableCell>
                         <TableCell className="font-medium">{line.productName}</TableCell>
-                        <TableCell className="font-mono text-sm">{line.content}</TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {line.replacement && (
+                              <div className="font-mono text-sm text-success line-through">
+                                {line.content}
+                              </div>
+                            )}
+                            <div className={`font-mono text-sm ${line.replacement ? 'text-success font-semibold' : ''}`}>
+                              {getDisplayContent(line)}
+                            </div>
+                            {line.adminNote && (
+                              <div className="text-xs text-text-muted italic">
+                                Ghi chú: {line.adminNote}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-right">{formatCurrency(line.priceVnd)}</TableCell>
-                        <TableCell className="text-right text-text-muted">-</TableCell>
+                        <TableCell className="text-center">
+                          {getLineStatusBadge(line)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -359,63 +533,35 @@ export default function OrderDetailPage() {
             </Card>
           )}
 
-          {/* Order Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tóm tắt đơn hàng</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-text-muted">Tạm tính:</span>
-                  <span>{formatCurrency(order.totalAmountVnd)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-text-muted">Phí vận chuyển:</span>
-                  <span className="text-success">Miễn phí</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-text-muted">Thuế:</span>
-                  <span>0 VND</span>
-                </div>
-                <div className="border-t border-border pt-2">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Tổng cộng:</span>
-                    <span className="text-brand">{formatCurrency(order.totalAmountVnd)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {order.payments.length > 0 && (
-                <div className="border-t border-border pt-4">
-                  <h4 className="font-medium mb-2">Thanh toán</h4>
-                  <div className="space-y-2">
-                    {order.payments.map((payment) => (
-                      <div key={payment.id} className="flex justify-between text-sm">
-                        <span className="text-text-muted">
-                          {payment.provider === 'MANUAL' ? 'Ví nội bộ' : payment.provider}
-                        </span>
-                        <span>{formatCurrency(payment.amountVnd)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Order Status Info */}
-          {order.status === 'PENDING' && (
+          {/* Order Items (if not paid yet) */}
+          {order.status !== 'PAID' && (
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-3 text-warning">
-                  <Clock className="h-5 w-5" />
-                  <div>
-                    <h4 className="font-medium">Chờ thanh toán</h4>
-                    <p className="text-sm text-text-muted">
-                      Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh toán để nhận sản phẩm.
-                    </p>
-                  </div>
+              <CardHeader>
+                <CardTitle>Sản phẩm trong đơn</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {order.orderItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
+                      <div className="flex items-center space-x-4">
+                        <Package className="h-8 w-8 text-brand" />
+                        <div>
+                          <h4 className="font-medium">{item.product.name}</h4>
+                          <p className="text-sm text-text-muted">
+                            Số lượng: {item.quantity}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-brand">
+                          {formatCurrency(item.priceVnd * item.quantity)}
+                        </div>
+                        <div className="text-sm text-text-muted">
+                          {formatCurrency(item.priceVnd)} x {item.quantity}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
