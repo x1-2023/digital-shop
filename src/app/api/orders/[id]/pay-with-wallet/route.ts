@@ -117,7 +117,7 @@ export async function POST(
         const product = item.product;
         let content = '';
         let lineIndices: number[] = [];
-        let individualLines: string[] = [];
+        const individualLines: string[] = [];
 
         // Try to get licenses first (for license-based products)
         const availableLicenses = await tx.license.findMany({
