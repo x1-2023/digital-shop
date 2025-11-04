@@ -39,8 +39,11 @@ export async function GET(request: NextRequest) {
     // Map to frontend format
     const mappedDeposits = deposits.map((deposit) => ({
       id: deposit.id,
-      userEmail: deposit.user.email,
-      amount: deposit.amountVnd,
+      user: {
+        id: deposit.user.id,
+        email: deposit.user.email,
+      },
+      amountVnd: deposit.amountVnd,
       status: deposit.status,
       createdAt: deposit.createdAt,
       note: deposit.note,
