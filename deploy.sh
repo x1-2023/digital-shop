@@ -34,8 +34,9 @@ chmod +x scripts/auto-topup-cron.js
 # Ensure uploads directory exists and has correct permissions
 echo "📁 Setting up uploads directory..."
 mkdir -p uploads/products uploads/images
-chmod -R 755 uploads/
-chown -R $(whoami):$(whoami) uploads/
+mkdir -p public/products public/products/images
+chmod -R 755 uploads/ public/products/
+chown -R $(whoami):$(whoami) uploads/ public/products/
 
 # Restart PM2 with updated config
 echo "🔄 Restarting PM2..."
