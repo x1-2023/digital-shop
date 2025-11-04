@@ -55,6 +55,7 @@ export default function AdminErrorReportsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [adminNote, setAdminNote] = useState('');
   const [resolution, setResolution] = useState('');
+  const [replacement, setReplacement] = useState('');
   const [newStatus, setNewStatus] = useState<string>('');
   const { toast } = useToast();
 
@@ -121,12 +122,23 @@ export default function AdminErrorReportsPage() {
     setSelectedReport(report);
     setAdminNote(report.adminNote || '');
     setResolution(report.resolution || '');
+    setReplacement('');
     setNewStatus(report.status);
     setDialogOpen(true);
   };
 
   const handleUpdateReport = async () => {
     if (!selectedReport) return;
+
+    // Validate: if status is RESOLVED and productLineId exists, replacement is required
+    if (newStatus === 'RESOLVED' && selectedReport.productLineId && !replacement.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Vui lòng nhập sản phẩm thay thế khi chấp nhận bảo hành',
+      });
+      return;
+    }
 
     try {
       const response = await fetch(`/api/admin/error-reports/${selectedReport.id}`, {
@@ -138,6 +150,7 @@ export default function AdminErrorReportsPage() {
           status: newStatus,
           adminNote,
           resolution,
+          replacement: replacement.trim() || undefined,
         }),
       });
 
@@ -443,6 +456,25 @@ export default function AdminErrorReportsPage() {
                   rows={3}
                 />
               </div>
+
+              {/* Replacement Product (only if productLineId exists and status is RESOLVED) */}
+              {selectedReport.productLineId && newStatus === 'RESOLVED' && (
+                <div>
+                  <p className="text-sm font-medium text-text-muted mb-2">
+                    Sản phẩm thay thế <span className="text-destructive">*</span>
+                  </p>
+                  <Textarea
+                    value={replacement}
+                    onChange={(e) => setReplacement(e.target.value)}
+                    placeholder="Nhập nội dung sản phẩm thay thế (ví dụ: email:password)"
+                    rows={2}
+                    className={!replacement.trim() ? 'border-destructive' : ''}
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Sản phẩm thay thế sẽ được hiển thị cho khách hàng khi bảo hành được chấp nhận
+                  </p>
+                </div>
+              )}
 
               {/* Resolution */}
               <div>

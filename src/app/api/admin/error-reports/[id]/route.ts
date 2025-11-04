@@ -30,7 +30,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { status, adminNote, resolution } = body;
+    const { status, adminNote, resolution, replacement } = body;
 
     // Validate status
     const validStatuses = ['PENDING', 'PROCESSING', 'RESOLVED', 'REJECTED'];
@@ -38,6 +38,18 @@ export async function PATCH(
       return NextResponse.json(
         { success: false, error: 'Invalid status' },
         { status: 400 }
+      );
+    }
+
+    // Get error report first to check productLineId
+    const existingReport = await prisma.errorReport.findUnique({
+      where: { id },
+    });
+
+    if (!existingReport) {
+      return NextResponse.json(
+        { success: false, error: 'Error report not found' },
+        { status: 404 }
       );
     }
 
@@ -56,19 +68,46 @@ export async function PATCH(
       data: updateData,
     });
 
+    // If there's a replacement and productLineId exists, update the product line
+    if (existingReport.productLineId) {
+      if (status === 'RESOLVED' && replacement) {
+        // Accept warranty - replace product
+        await prisma.productLineItem.update({
+          where: { id: existingReport.productLineId },
+          data: {
+            replacement: replacement,
+            status: 'REPLACED',
+            adminNote: adminNote || 'Đã thay thế sản phẩm',
+            replacedAt: new Date(),
+          },
+        });
+      } else if (status === 'REJECTED') {
+        // Reject warranty
+        await prisma.productLineItem.update({
+          where: { id: existingReport.productLineId },
+          data: {
+            status: 'WARRANTY_REJECTED',
+            adminNote: adminNote || 'Từ chối bảo hành',
+            rejectedAt: new Date(),
+          },
+        });
+      }
+    }
+
     // Log admin action
     await prisma.systemLog.create({
       data: {
         userId: user.id,
         userEmail: user.email,
-        action: 'ADMIN_SETTINGS_UPDATE',
+        action: 'ADMIN_ACTION',
         targetType: 'ERROR_REPORT',
         targetId: errorReport.id,
-        description: `Admin updated error report status to ${status || 'updated'}`,
+        description: `Admin ${status === 'RESOLVED' ? 'resolved' : status === 'REJECTED' ? 'rejected' : 'updated'} error report${replacement ? ' with replacement' : ''}`,
         metadata: JSON.stringify({
           reportId: errorReport.id,
           orderId: errorReport.orderId,
           newStatus: status,
+          hasReplacement: !!replacement,
         }),
       },
     });
