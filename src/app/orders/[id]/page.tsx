@@ -450,6 +450,7 @@ export default function OrderDetailPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => setShowBulkUpload(!showBulkUpload)}
+                      className="border-2 border-red-500 hover:bg-red-50"
                     >
                       <Upload className="h-4 w-4 mr-2" />
                       Tải lên sản phẩm lỗi
@@ -458,6 +459,7 @@ export default function OrderDetailPage() {
                       variant="outline"
                       size="sm"
                       onClick={downloadOrder}
+                      className="border-2 border-green-500 hover:bg-green-50"
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Tải xuống hàng loạt

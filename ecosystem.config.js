@@ -22,10 +22,12 @@ module.exports = {
     },
     {
       name: 'auto-topup-cron',
-      script: './scripts/auto-topup-cron.js',
-      cron_restart: '*/5 * * * *', // Run every 5 minutes
-      autorestart: false,
+      script: './scripts/auto-topup-daemon.js',
+      autorestart: true,
       watch: false,
+      max_restarts: 10,
+      min_uptime: '10s',
+      restart_delay: 5000,
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
@@ -34,6 +36,7 @@ module.exports = {
       error_file: './logs/cron-error.log',
       out_file: './logs/cron-out.log',
       time: true,
+      merge_logs: true,
     },
   ],
 };

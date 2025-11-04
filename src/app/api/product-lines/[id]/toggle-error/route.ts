@@ -72,7 +72,7 @@ export async function PATCH(
           productLineId: productLine.id,
           productName: productLine.productName,
           originalContent: productLine.content,
-          userNote: 'Đánh dấu lỗi từ giao diện',
+          userNote: 'Sản phẩm lỗi, vui lòng kiểm tra.',
           status: 'PENDING',
         },
       });
