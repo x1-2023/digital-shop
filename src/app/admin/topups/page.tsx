@@ -208,7 +208,7 @@ export default function AdminTopupsPage() {
                       <TableCell className="font-mono text-xs">
                         #{deposit.id}
                       </TableCell>
-                      <TableCell>{deposit.user.email}</TableCell>
+                      <TableCell>{deposit.user?.email || 'N/A'}</TableCell>
                       <TableCell className="font-medium">
                         {formatCurrency(deposit.amountVnd)}
                       </TableCell>
@@ -277,7 +277,7 @@ export default function AdminTopupsPage() {
                   </div>
                   <div>
                     <Label>Khách hàng</Label>
-                    <p className="text-sm">{selectedDeposit.user.email}</p>
+                    <p className="text-sm">{selectedDeposit.user?.email || 'N/A'}</p>
                   </div>
                   <div>
                     <Label>Số tiền</Label>
