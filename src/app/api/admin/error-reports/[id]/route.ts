@@ -99,7 +99,7 @@ export async function PATCH(
       data: {
         userId: user.id,
         userEmail: user.email,
-        action: 'ADMIN_ACTION',
+        action: 'ADMIN_SETTINGS_UPDATE',
         targetType: 'ERROR_REPORT',
         targetId: errorReport.id,
         description: `Admin ${status === 'RESOLVED' ? 'resolved' : status === 'REJECTED' ? 'rejected' : 'updated'} error report${replacement ? ' with replacement' : ''}`,
