@@ -16,7 +16,7 @@ export async function GET(
       );
     }
 
-    const { id: orderId } = params;
+    const { id: orderId } = await params;
 
     // Get user
     const user = await prisma.user.findUnique({
