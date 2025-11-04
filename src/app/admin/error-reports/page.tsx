@@ -34,8 +34,12 @@ interface ErrorReport {
   userId: string;
   userEmail: string;
   orderId: string;
+  productLineId: string | null;
+  productName: string | null;
+  originalContent: string | null;
+  userNote: string | null;
   status: 'PENDING' | 'PROCESSING' | 'RESOLVED' | 'REJECTED';
-  reportedProducts: string;
+  reportedProducts: string | null; // Legacy field
   adminNote: string | null;
   resolution: string | null;
   resolvedAt: string | null;
@@ -274,7 +278,11 @@ export default function AdminErrorReportsPage() {
                 </TableHeader>
                 <TableBody>
                   {reports.map((report) => {
-                    const products = JSON.parse(report.reportedProducts || '[]');
+                    // Support both new schema (productLineId) and legacy schema (reportedProducts)
+                    const productCount = report.productLineId
+                      ? 1
+                      : (report.reportedProducts ? JSON.parse(report.reportedProducts).length : 0);
+
                     return (
                       <TableRow key={report.id}>
                         <TableCell>
@@ -293,7 +301,7 @@ export default function AdminErrorReportsPage() {
                           </Link>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm">{products.length} sản phẩm</div>
+                          <div className="text-sm">{productCount} sản phẩm</div>
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(report.status)}
@@ -364,24 +372,47 @@ export default function AdminErrorReportsPage() {
                 <p className="text-sm font-medium text-text-muted mb-2">Sản phẩm báo lỗi</p>
                 <Card>
                   <CardContent className="p-4">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Sản phẩm</TableHead>
-                          <TableHead>Nội dung</TableHead>
-                          <TableHead className="text-right">Giá trị</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {JSON.parse(selectedReport.reportedProducts || '[]').map((product: any, idx: number) => (
-                          <TableRow key={idx}>
-                            <TableCell>{product.productName}</TableCell>
-                            <TableCell className="font-mono text-sm">{product.content}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(product.priceVnd)}</TableCell>
+                    {selectedReport.productLineId ? (
+                      /* New schema: single product line */
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-sm font-medium text-text-muted">Sản phẩm</p>
+                          <p className="text-sm">{selectedReport.productName || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-text-muted">Nội dung</p>
+                          <p className="text-sm font-mono bg-card p-2 rounded border border-border">
+                            {selectedReport.originalContent || 'N/A'}
+                          </p>
+                        </div>
+                        {selectedReport.userNote && (
+                          <div>
+                            <p className="text-sm font-medium text-text-muted">Ghi chú của khách hàng</p>
+                            <p className="text-sm">{selectedReport.userNote}</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Legacy schema: multiple products in JSON */
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Sản phẩm</TableHead>
+                            <TableHead>Nội dung</TableHead>
+                            <TableHead className="text-right">Giá trị</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {JSON.parse(selectedReport.reportedProducts || '[]').map((product: any, idx: number) => (
+                            <TableRow key={idx}>
+                              <TableCell>{product.productName}</TableCell>
+                              <TableCell className="font-mono text-sm">{product.content}</TableCell>
+                              <TableCell className="text-right">{formatCurrency(product.priceVnd)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
                   </CardContent>
                 </Card>
               </div>
