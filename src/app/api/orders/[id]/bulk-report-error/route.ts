@@ -66,18 +66,21 @@ export async function POST(
         line.content.trim() === trimmedContent
       );
 
-      if (productLine && !productLine.errorReported) {
-        // Update product line status
-        const updatedLine = await prisma.productLineItem.update({
-          where: { id: productLine.id },
-          data: {
-            errorReported: true,
-            status: 'ERROR_REPORTED',
-          },
-        });
-        updated.push(updatedLine);
+      if (productLine) {
+        // Only create new error report if not already reported
+        if (!productLine.errorReported) {
+          // Update product line status
+          const updatedLine = await prisma.productLineItem.update({
+            where: { id: productLine.id },
+            data: {
+              errorReported: true,
+              status: 'ERROR_REPORTED',
+            },
+          });
+          updated.push(updatedLine);
+        }
 
-        // Create ErrorReport
+        // Always create ErrorReport (even if already marked, allows multiple reports)
         const errorReport = await prisma.errorReport.create({
           data: {
             orderId: orderId,

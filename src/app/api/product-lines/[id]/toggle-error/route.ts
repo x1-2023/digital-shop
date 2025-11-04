@@ -61,9 +61,52 @@ export async function PATCH(
       },
     });
 
+    // If marking as error, create ErrorReport record
+    let errorReport = null;
+    if (newErrorStatus) {
+      errorReport = await prisma.errorReport.create({
+        data: {
+          userId: productLine.productLog.order.userId,
+          userEmail: productLine.productLog.order.user.email,
+          orderId: productLine.orderId,
+          productLineId: productLine.id,
+          productName: productLine.productName,
+          originalContent: productLine.content,
+          userNote: 'Đánh dấu lỗi từ giao diện',
+          status: 'PENDING',
+        },
+      });
+
+      // Log system activity
+      await prisma.systemLog.create({
+        data: {
+          userId: productLine.productLog.order.userId,
+          userEmail: productLine.productLog.order.user.email,
+          action: 'SYSTEM_WARNING',
+          targetType: 'ERROR_REPORT',
+          targetId: errorReport.id,
+          description: `User marked product line as error for order ${productLine.orderId.slice(0, 10)}`,
+          metadata: JSON.stringify({
+            orderId: productLine.orderId,
+            productLineId: productLine.id,
+            productName: productLine.productName,
+          }),
+        },
+      });
+    } else {
+      // If unmarking error, delete the ErrorReport if it exists
+      await prisma.errorReport.deleteMany({
+        where: {
+          productLineId: productLine.id,
+          status: 'PENDING', // Only delete pending reports
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       productLine: updated,
+      errorReport,
     });
   } catch (error) {
     console.error('Error toggling product line error status:', error);

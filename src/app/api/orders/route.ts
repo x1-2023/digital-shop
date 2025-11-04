@@ -15,7 +15,7 @@ const createOrderSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -23,14 +23,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true },
+    });
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    const where: any = {
-      userId: session.user.id,
-    };
+    const where: any = {};
+
+    // Only filter by userId if not admin
+    if (user?.role !== 'ADMIN') {
+      where.userId = session.user.id;
+    }
 
     if (status && status !== 'all') {
       where.status = status;
@@ -53,6 +62,7 @@ export async function GET(request: NextRequest) {
                   id: true,
                   name: true,
                   slug: true,
+                  type: true,
                 },
               },
             },
@@ -68,16 +78,27 @@ export async function GET(request: NextRequest) {
       prisma.order.count({ where }),
     ]);
 
+    // Format response to match admin page expectations
+    const formattedOrders = orders.map((order: any) => ({
+      id: order.id,
+      status: order.status,
+      totalAmountVnd: order.totalAmountVnd,
+      currency: order.currency,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      user: order.user,
+      items: order.orderItems,
+      payments: order.payments,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: {
-        orders,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
+      orders: formattedOrders,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
       },
     });
   } catch (error) {
