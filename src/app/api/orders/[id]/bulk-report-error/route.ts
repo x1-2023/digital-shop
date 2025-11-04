@@ -57,13 +57,14 @@ export async function POST(
       const trimmedContent = errorContent.trim();
       if (!trimmedContent) continue;
 
-      // Find product line with matching content
-      const productLine = await prisma.productLineItem.findFirst({
-        where: {
-          orderId: orderId,
-          content: trimmedContent,
-        },
+      // Find product line with matching content (handle line endings)
+      const allLines = await prisma.productLineItem.findMany({
+        where: { orderId: orderId },
       });
+
+      const productLine = allLines.find(line =>
+        line.content.trim() === trimmedContent
+      );
 
       if (productLine && !productLine.errorReported) {
         // Update product line status
