@@ -587,8 +587,12 @@ model ErrorReport {
   userId           String
   userEmail        String
   orderId          String
+  productLineId    String? // Reference to ProductLineItem
+  productName      String? // Product name for this error
+  originalContent  String? // Original product content
+  userNote         String? // User's description of the issue
   status           ErrorReportStatus @default(PENDING)
-  reportedProducts String // JSON array of reported products with details
+  reportedProducts String? // JSON array of reported products (legacy field)
   adminNote        String? // Admin's response/note
   resolution       String? // How the issue was resolved
   resolvedAt       DateTime?
@@ -597,6 +601,7 @@ model ErrorReport {
 
   @@index([userId])
   @@index([orderId])
+  @@index([productLineId])
   @@index([status])
   @@index([createdAt])
   @@map("error_reports")
