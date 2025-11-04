@@ -28,7 +28,7 @@ interface Order {
   currency: string;
   createdAt: string;
   updatedAt: string;
-  orderItems: Array<{
+  items: Array<{
     id: string;
     product: {
       id: string;
@@ -66,7 +66,7 @@ export default function OrdersPage() {
       const response = await fetch(`/api/orders?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setOrders(data.data?.orders || []);
+        setOrders(data.orders || []);
       } else {
         toast({
           variant: 'destructive',
@@ -180,14 +180,14 @@ export default function OrdersPage() {
                           {formatCurrency(order.totalAmountVnd)}
                         </div>
                         <div className="text-sm text-text-muted">
-                          {order.orderItems.length} sản phẩm
+                          {order.items.length} sản phẩm
                         </div>
                       </div>
                     </div>
 
                     {/* Order Items */}
                     <div className="space-y-2 mb-4">
-                      {order.orderItems.map((item) => (
+                      {order.items.map((item) => (
                         <div key={item.id} className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                           <div className="flex items-center space-x-3">
                             <FileText className="h-5 w-5" />
