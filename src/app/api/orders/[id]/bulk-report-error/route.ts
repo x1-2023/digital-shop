@@ -81,6 +81,7 @@ export async function POST(
           data: {
             orderId: orderId,
             userId: order.userId,
+            userEmail: order.user.email,
             productLineId: productLine.id,
             productName: productLine.productName,
             originalContent: productLine.content,
