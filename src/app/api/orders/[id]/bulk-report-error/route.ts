@@ -51,6 +51,8 @@ export async function POST(
 
     // Find matching product lines by content and mark as error
     const updated = [];
+    const errorReportIds = [];
+
     for (const errorContent of errorContents) {
       const trimmedContent = errorContent.trim();
       if (!trimmedContent) continue;
@@ -64,6 +66,7 @@ export async function POST(
       });
 
       if (productLine && !productLine.errorReported) {
+        // Update product line status
         const updatedLine = await prisma.productLineItem.update({
           where: { id: productLine.id },
           data: {
@@ -72,6 +75,20 @@ export async function POST(
           },
         });
         updated.push(updatedLine);
+
+        // Create ErrorReport
+        const errorReport = await prisma.errorReport.create({
+          data: {
+            orderId: orderId,
+            userId: order.userId,
+            productLineId: productLine.id,
+            productName: productLine.productName,
+            originalContent: productLine.content,
+            userNote: 'Báo lỗi hàng loạt',
+            status: 'PENDING',
+          },
+        });
+        errorReportIds.push(errorReport.id);
       }
     }
 
@@ -79,6 +96,7 @@ export async function POST(
       success: true,
       message: `Đã báo lỗi ${updated.length} sản phẩm`,
       updatedCount: updated.length,
+      errorReportIds,
     });
   } catch (error) {
     console.error('Error bulk reporting products:', error);
