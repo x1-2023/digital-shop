@@ -5,7 +5,7 @@ import { processAllBanks } from '@/lib/auto-topup';
  * Manual trigger endpoint for auto-topup processing
  * Can be called by external cron services or for testing
  */
-export async function GET() {
+async function handleAutoTopup() {
   try {
     console.log('[API] Manual auto-topup trigger');
 
@@ -26,4 +26,13 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+// Support both GET and POST methods
+export async function GET() {
+  return handleAutoTopup();
+}
+
+export async function POST() {
+  return handleAutoTopup();
 }
