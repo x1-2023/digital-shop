@@ -52,6 +52,12 @@ filesToFix.forEach((filePath) => {
     'const { id } = await params;'
   );
 
+  // Fix the destructuring with renaming (e.g., id: orderId)
+  content = content.replace(
+    /const \{ id: (\w+) \} = params;/g,
+    'const { id: $1 } = await params;'
+  );
+
   fs.writeFileSync(fullPath, content, 'utf8');
   console.log(`✅ Fixed ${filePath}`);
 });

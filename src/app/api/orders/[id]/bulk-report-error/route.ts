@@ -16,7 +16,7 @@ export async function POST(
       );
     }
 
-    const { id: orderId } = params;
+    const { id: orderId } = await params;
     const body = await request.json();
     const { errorContents } = body; // Array of error content strings
 
