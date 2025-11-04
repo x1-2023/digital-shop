@@ -67,7 +67,9 @@ export async function sendPasswordResetEmail(
   email: string,
   resetToken: string
 ): Promise<boolean> {
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password/${resetToken}`;
+  // Use APP_URL for server-side, fallback to NEXT_PUBLIC_APP_URL, then localhost
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const resetUrl = `${baseUrl}/auth/reset-password/${resetToken}`;
 
   const subject = 'Đặt lại mật khẩu - WebMMO';
   
@@ -191,7 +193,9 @@ export async function sendVerificationEmail(
   email: string,
   verificationToken: string
 ): Promise<boolean> {
-  const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email/${verificationToken}`;
+  // Use APP_URL for server-side, fallback to NEXT_PUBLIC_APP_URL, then localhost
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const verifyUrl = `${baseUrl}/auth/verify-email/${verificationToken}`;
 
   const subject = 'Xác thực email - WebMMO';
   
