@@ -16,8 +16,8 @@
 3️⃣ Thêm vào crontab:
    crontab -e
 
-   Thêm dòng này:
-   */5 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
+   Thêm dòng này (chạy mỗi 2 phút):
+   */2 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
 
    (Save: Ctrl+X, Y, Enter)
 
@@ -28,7 +28,7 @@
 ═══════════════════════════════════════════════════════════════
 
 ✅ KẾT QUẢ:
-• Cron chạy mỗi 5 phút tự động
+• Cron chạy mỗi 2 phút tự động
 • Không cần PM2 quản lý
 • Logs đơn giản, dễ đọc
 • Ổn định, không bị stop

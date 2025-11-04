@@ -41,8 +41,8 @@ pm2 save
 # Mở crontab editor
 crontab -e
 
-# Thêm dòng này vào cuối file (chạy mỗi 5 phút)
-*/5 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
+# Thêm dòng này vào cuối file (chạy mỗi 2 phút)
+*/2 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
 
 # Save và exit (Ctrl+X, Y, Enter nếu dùng nano)
 ```
@@ -56,7 +56,7 @@ crontab -l
 
 Bạn sẽ thấy:
 ```
-*/5 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
+*/2 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
 ```
 
 ### Bước 5: Kiểm tra logs
@@ -77,7 +77,10 @@ tail -n 50 /root/digital-shop/logs/auto-topup.log
 # Mỗi 1 phút
 */1 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
 
-# Mỗi 5 phút (mặc định)
+# Mỗi 2 phút (mặc định)
+*/2 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
+
+# Mỗi 5 phút
 */5 * * * * /root/digital-shop/scripts/auto-topup-simple.sh
 
 # Mỗi 10 phút
