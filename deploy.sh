@@ -31,6 +31,12 @@ npm run build
 echo "🔧 Setting permissions..."
 chmod +x scripts/auto-topup-cron.js
 
+# Ensure uploads directory exists and has correct permissions
+echo "📁 Setting up uploads directory..."
+mkdir -p uploads/products uploads/images
+chmod -R 755 uploads/
+chown -R $(whoami):$(whoami) uploads/
+
 # Restart PM2 with updated config
 echo "🔄 Restarting PM2..."
 pm2 restart ecosystem.config.js --update-env
