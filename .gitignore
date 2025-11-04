@@ -75,3 +75,13 @@ production.db
 # Product uploads
 /public/products/*
 !/public/products/.gitkeep
+
+# Uploads directory - ignore files but keep structure
+/uploads/*
+!/uploads/.gitkeep
+!/uploads/products/
+!/uploads/images/
+/uploads/products/*
+!/uploads/products/.gitkeep
+/uploads/images/*
+!/uploads/images/.gitkeep
