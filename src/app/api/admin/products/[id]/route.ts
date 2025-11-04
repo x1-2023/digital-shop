@@ -167,20 +167,11 @@ export async function DELETE(
       );
     }
 
-    // Check if product has orders
-    const orderCount = await prisma.orderItem.count({
-      where: { productId: params.id },
-    });
-
-    if (orderCount > 0) {
-      return NextResponse.json(
-        { error: 'Không thể xóa sản phẩm đã có đơn hàng' },
-        { status: 400 }
-      );
-    }
-
-    await prisma.product.delete({
+    // Soft delete: Set active = false instead of hard delete
+    // This preserves order history while hiding product from shop
+    await prisma.product.update({
       where: { id: params.id },
+      data: { active: false },
     });
 
     // Log admin action
