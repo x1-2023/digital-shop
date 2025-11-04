@@ -134,7 +134,7 @@ export async function POST(
             await tx.license.update({
               where: { id: license.id },
               data: {
-                status: 'BOUND',
+                status: 'ISSUED',
                 boundEmail: session.user.email,
                 issuedAt: new Date(),
               },
