@@ -13,6 +13,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
+        APP_URL: 'https://webmmo.net',
       },
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',
