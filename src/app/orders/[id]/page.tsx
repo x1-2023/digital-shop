@@ -410,6 +410,32 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Old Orders - Simple Download */}
+          {order.status === 'PAID' && productLines.length === 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Sản phẩm đã mua</CardTitle>
+                <CardDescription>Tải xuống thông tin sản phẩm</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Package className="h-16 w-16 mx-auto mb-4 text-brand opacity-50" />
+                  <p className="text-text-muted mb-6">
+                    Đơn hàng của bạn đã được thanh toán thành công.<br />
+                    Nhấn nút bên dưới để tải xuống thông tin sản phẩm.
+                  </p>
+                  <Button
+                    size="lg"
+                    onClick={downloadOrder}
+                  >
+                    <Download className="h-5 w-5 mr-2" />
+                    Tải xuống sản phẩm
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Product Lines Table */}
           {order.status === 'PAID' && productLines.length > 0 && (
             <Card>
