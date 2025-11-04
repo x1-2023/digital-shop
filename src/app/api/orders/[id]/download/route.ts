@@ -43,31 +43,58 @@ export async function GET(
       return NextResponse.json({ error: 'Order not paid' }, { status: 400 });
     }
 
-    // Generate simple download content - just order ID and product lines
-    let downloadContent = `${order.id}\n\n`;
+    // Try to get from ProductLineItems first (new system)
+    const productLines = await prisma.productLineItem.findMany({
+      where: { orderId: order.id },
+      orderBy: { createdAt: 'asc' },
+    });
 
-    // Extract all product lines (skip headers and markers)
-    for (const log of order.productLogs) {
-      const content = log.content || '';
-      const lines = content.split('\n');
+    let downloadContent = '';
 
-      for (const line of lines) {
-        const trimmed = line.trim();
-        // Only include actual content lines, skip headers and markers
-        if (trimmed &&
-            !trimmed.startsWith('===') &&
-            !trimmed.startsWith('Sản phẩm:') &&
-            !trimmed.startsWith('Số lượng:') &&
-            !trimmed.startsWith('Nội dung:') &&
-            !trimmed.match(/^\d+\.\s/) && // Skip numbered format
-            !trimmed.startsWith('⚠️')) {
-          downloadContent += `${trimmed}\n`;
+    if (productLines.length > 0) {
+      // New system: use ProductLineItems
+      downloadContent = `Đơn hàng #${order.id.slice(0, 10)}\n`;
+      downloadContent += `Tổng: ${order.totalAmountVnd.toLocaleString('vi-VN')} đ\n`;
+      downloadContent += `Ngày đặt: ${new Date(order.createdAt).toLocaleString('vi-VN')}\n\n`;
+      downloadContent += `${'='.repeat(60)}\n\n`;
+
+      for (const line of productLines) {
+        // Show replacement if exists, otherwise original
+        const content = line.replacement || line.content;
+        downloadContent += `${content}\n`;
+      }
+    } else {
+      // Old system: extract from ProductLog
+      downloadContent = `Đơn hàng #${order.id.slice(0, 10)}\n`;
+      downloadContent += `Tổng: ${order.totalAmountVnd.toLocaleString('vi-VN')} đ\n`;
+      downloadContent += `Ngày đặt: ${new Date(order.createdAt).toLocaleString('vi-VN')}\n\n`;
+      downloadContent += `${'='.repeat(60)}\n\n`;
+
+      for (const log of order.productLogs) {
+        const content = log.content || '';
+        const lines = content.split('\n');
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          // Extract numbered format (1. content) or plain content
+          const match = trimmed.match(/^\d+\.\s+(.+)$/);
+          if (match) {
+            downloadContent += `${match[1]}\n`;
+          } else if (trimmed &&
+                     !trimmed.startsWith('===') &&
+                     !trimmed.startsWith('Sản phẩm:') &&
+                     !trimmed.startsWith('Số lượng:') &&
+                     !trimmed.startsWith('LICENSE KEYS') &&
+                     !trimmed.startsWith('NỘI DUNG') &&
+                     !trimmed.startsWith('⚠️')) {
+            downloadContent += `${trimmed}\n`;
+          }
         }
       }
     }
 
     // Create filename
-    const filename = `don-hang-${order.id}.txt`;
+    const filename = `${order.id.slice(0, 10)}.txt`;
 
     // Return as downloadable file
     return new NextResponse(downloadContent, {
