@@ -23,6 +23,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
+import { ReviewList } from '@/components/reviews/ReviewList';
+import { ReviewStats } from '@/components/reviews/ReviewStats';
 
 interface Product {
   id: string;
@@ -53,6 +56,7 @@ export default function ProductDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [reviewRefresh, setReviewRefresh] = useState(0);
   const { toast } = useToast();
   const { addToCart, updateQuantity, isInCart, getItemQuantity } = useCart();
 
@@ -269,11 +273,6 @@ export default function ProductDetailPage() {
                   <div className="text-3xl font-bold text-brand">
                     {formatCurrency(product.priceVnd)}
                   </div>
-                  <div className="flex items-center space-x-1 text-sm text-text-muted">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>4.8</span>
-                    <span>(128 đánh giá)</span>
-                  </div>
                 </div>
 
                 {product.description && (
@@ -397,15 +396,46 @@ export default function ProductDetailPage() {
             </TabsContent>
             
             <TabsContent value="reviews" className="mt-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center py-8">
-                    <Star className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
-                    <h3 className="text-lg font-semibold mb-2">Chưa có đánh giá</h3>
-                    <p className="text-text-muted">Hãy là người đầu tiên đánh giá sản phẩm này</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                {/* Review Stats */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Đánh giá sản phẩm</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ReviewStats
+                      productSlug={product.slug}
+                      refreshTrigger={reviewRefresh}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Review Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Viết đánh giá</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ReviewForm
+                      productSlug={product.slug}
+                      onSuccess={() => setReviewRefresh(prev => prev + 1)}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Review List */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Tất cả đánh giá</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ReviewList
+                      productSlug={product.slug}
+                      refreshTrigger={reviewRefresh}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
