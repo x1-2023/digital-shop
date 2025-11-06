@@ -83,6 +83,15 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
 
+  // ESLint config - disable warnings during build
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+
   // Disable static optimization for pages with dynamic content
   // This prevents "Event handlers cannot be passed to Client Component props" errors during build
   skipTrailingSlashRedirect: true,

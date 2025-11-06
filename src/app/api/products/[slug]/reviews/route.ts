@@ -39,7 +39,7 @@ export async function POST(
       where: {
         userId: session.user.id,
         status: 'PAID',
-        items: {
+        orderItems: {
           some: { productId: product.id }
         }
       }
