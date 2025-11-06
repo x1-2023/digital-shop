@@ -23,9 +23,9 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 // Default configurations (can be overridden)
 export const RATE_LIMIT_CONFIGS = {
   // Auth endpoints - Very strict
-  LOGIN: { limit: 5, window: 5 * 60 * 1000, blockDuration: 15 * 60 * 1000 }, // 5 per 5min, block 15min
-  SIGNUP: { limit: 3, window: 60 * 60 * 1000, blockDuration: 60 * 60 * 1000 }, // 3 per hour, block 1h
-  FORGOT_PASSWORD: { limit: 3, window: 60 * 60 * 1000, blockDuration: 60 * 60 * 1000 },
+  LOGIN: { limit: 10, window: 5 * 60 * 1000, blockDuration: 5 * 60 * 1000 }, // 10 per 5min, block 5min
+  SIGNUP: { limit: 10, window: 60 * 60 * 1000 }, // 10 per hour, no block
+  FORGOT_PASSWORD: { limit: 5, window: 60 * 60 * 1000 }, // 5 per hour, no block
 
   // Wallet operations
   TOPUP_REQUEST: { limit: 5, window: 60 * 60 * 1000 }, // 5 per hour
