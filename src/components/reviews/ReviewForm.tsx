@@ -136,7 +136,7 @@ export function ReviewForm({ productSlug, onSuccess }: ReviewFormProps) {
           htmlFor="anonymous"
           className="text-sm cursor-pointer select-none"
         >
-          Đánh giá ẩn danh (hiện "Người dùng ẩn danh")
+          Đánh giá ẩn danh (hiện &quot;Người dùng ẩn danh&quot;)
         </label>
       </div>
 
