@@ -95,20 +95,24 @@ export async function POST(
       return updatedDeposit;
     });
 
-    // Send email notification
-    await addEmailJob({
-      type: 'topup-approved',
-      email: depositRequest.user.email,
-      amount: depositRequest.amountVnd,
-      adminNote,
-    });
+    // Send email notification (non-critical, catch errors)
+    try {
+      await addEmailJob({
+        type: 'topup-approved',
+        email: depositRequest.user.email,
+        amount: depositRequest.amountVnd,
+        adminNote,
+      });
+    } catch (emailError) {
+      console.error('[Approve Deposit] Email job error:', emailError);
+    }
 
     // Process referral rewards for manual deposit
     try {
       const { processReferralRewards } = await import('@/lib/referral');
       await processReferralRewards(depositRequest.userId, depositRequest.amountVnd);
     } catch (referralError) {
-      console.error('[ManualDeposit] Referral reward error:', referralError);
+      console.error('[Approve Deposit] Referral reward error:', referralError);
     }
 
     // Send Discord webhook notification (async, don't wait)
@@ -123,44 +127,53 @@ export async function POST(
           amount: depositRequest.amountVnd,
           status: 'APPROVED',
           method: 'MANUAL',
-        }).catch(err => console.error('Webhook error:', err));
+        }).catch(err => console.error('[Approve Deposit] Webhook error:', err));
       }
     } catch (webhookError) {
-      console.error('Failed to send webhook notification:', webhookError);
+      console.error('[Approve Deposit] Failed to send webhook notification:', webhookError);
     }
 
-    // Log admin action
-    const { ip, userAgent } = getRequestInfo(request);
-    await logActivity(session.user.id, 'ADMIN_DEPOSIT_APPROVE', {
-      targetType: 'DEPOSIT',
-      targetId: depositId.toString(),
-      metadata: {
-        userId: depositRequest.userId,
-        userEmail: depositRequest.user.email,
-        amount: depositRequest.amountVnd,
-        adminNote,
-      },
-      ip,
-      userAgent,
-    });
+    // Log admin action (non-critical, catch errors)
+    try {
+      const { ip, userAgent } = getRequestInfo(request);
+      await logActivity(session.user.id, 'ADMIN_DEPOSIT_APPROVE', {
+        targetType: 'DEPOSIT',
+        targetId: depositId.toString(),
+        metadata: {
+          userId: depositRequest.userId,
+          userEmail: depositRequest.user.email,
+          amount: depositRequest.amountVnd,
+          adminNote,
+        },
+        ip,
+        userAgent,
+      });
+    } catch (activityError) {
+      console.error('[Approve Deposit] Activity log error:', activityError);
+    }
 
-    // Log to system log
-    await logDepositApprove(
-      session.user.id,
-      session.user.email,
-      depositRequest.userId,
-      depositRequest.user.email,
-      depositRequest.amountVnd,
-      depositId.toString()
-    );
+    // Log to system log (non-critical, catch errors)
+    try {
+      await logDepositApprove(
+        session.user.id,
+        session.user.email,
+        depositRequest.userId,
+        depositRequest.user.email,
+        depositRequest.amountVnd,
+        depositId.toString()
+      );
+    } catch (systemLogError) {
+      console.error('[Approve Deposit] System log error:', systemLogError);
+    }
 
     return NextResponse.json({
       success: true,
       data: result,
+      message: 'Deposit approved successfully',
     });
   } catch (error) {
     console.error('Approve deposit error:', error);
-    
+
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
         { error: 'Dữ liệu không hợp lệ', details: error.message },
@@ -168,7 +181,15 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    // Log detailed error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : '';
+    console.error('[Approve Deposit] Detailed error:', { errorMessage, errorStack, depositId: params.id });
+
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    }, { status: 500 });
   }
 }
 
