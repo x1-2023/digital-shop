@@ -114,7 +114,7 @@ export async function POST(
     if (error instanceof z.ZodError) {
       return NextResponse.json({
         error: 'Dữ liệu không hợp lệ',
-        details: error.errors
+        details: error.issues
       }, { status: 400 });
     }
 
