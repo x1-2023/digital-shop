@@ -100,5 +100,56 @@ export function truncateText(text: string, maxLength: number): string {
   return text.slice(0, maxLength) + '...';
 }
 
+/**
+ * Mask email for privacy in reviews/public display
+ * Examples:
+ * - admin@webmmo.net => adm***@***.net
+ * - qug2210@gmail.com => qug***@***.com
+ * - a@b.c => a***@***.c
+ */
+export function maskEmail(email: string): string {
+  const [localPart, domain] = email.split('@');
+
+  if (!domain) return email; // Invalid email, return as-is
+
+  // Mask local part (keep first 3 chars or all if shorter than 2)
+  const visibleLocal = localPart.length <= 2
+    ? localPart[0]
+    : localPart.substring(0, 3);
+
+  // Mask domain (keep only TLD)
+  const domainParts = domain.split('.');
+  const tld = domainParts[domainParts.length - 1];
+
+  return `${visibleLocal}***@***.${tld}`;
+}
+
+/**
+ * Get display name for review
+ * Priority: Anonymous > Masked Email
+ */
+export function getReviewDisplayName(
+  email: string,
+  isAnonymous: boolean
+): string {
+  if (isAnonymous) {
+    return "Người dùng ẩn danh";
+  }
+  return maskEmail(email);
+}
+
+/**
+ * Get avatar initial for review
+ */
+export function getReviewAvatar(
+  email: string,
+  isAnonymous: boolean
+): string {
+  if (isAnonymous) {
+    return "?";
+  }
+  return email[0].toUpperCase();
+}
+
 
 

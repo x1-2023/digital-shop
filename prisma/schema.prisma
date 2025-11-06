@@ -34,6 +34,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   referrals           Referral[]             @relation("Referrer")
   referredBy          Referral?              @relation("Referee")
+  reviews             Review[]
 
   @@map("users")
 }
@@ -94,6 +95,7 @@ model Product {
   productLogs ProductLog[]
   files       File[]
   licenses    License[]
+  reviews     Review[]
 
   @@map("products")
 }
@@ -195,6 +197,7 @@ model Order {
   orderItems   OrderItem[]
   downloadLogs DownloadLog[]
   productLogs  ProductLog[]
+  reviews      Review[]
 
   @@map("orders")
 }
@@ -644,4 +647,49 @@ enum SystemLogAction {
   // System events
   SYSTEM_ERROR
   SYSTEM_WARNING
+}
+
+// ===========================
+// Review System
+// ===========================
+
+model Review {
+  id        String   @id @default(cuid())
+
+  // Relations
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  orderId   String   // Must purchase before review
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Review data
+  rating    Int      // 1-5 stars
+  comment   String?  @db.Text
+
+  // Privacy
+  isAnonymous Boolean @default(false) // Show as "Người dùng ẩn danh"
+
+  // Moderation
+  status    ReviewStatus @default(PUBLISHED)
+  adminNote String?      @db.Text // Admin note if hidden/deleted
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId]) // One review per user per product
+  @@index([productId, status])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+enum ReviewStatus {
+  PUBLISHED // Hiện công khai
+  HIDDEN    // Admin ẩn
+  DELETED   // Đã xóa
 }
