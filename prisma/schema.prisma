@@ -668,14 +668,14 @@ model Review {
 
   // Review data
   rating    Int      // 1-5 stars
-  comment   String?  @db.Text
+  comment   String?
 
   // Privacy
   isAnonymous Boolean @default(false) // Show as "Người dùng ẩn danh"
 
   // Moderation
   status    ReviewStatus @default(PUBLISHED)
-  adminNote String?      @db.Text // Admin note if hidden/deleted
+  adminNote String?  // Admin note if hidden/deleted
 
   // Timestamps
   createdAt DateTime @default(now())
