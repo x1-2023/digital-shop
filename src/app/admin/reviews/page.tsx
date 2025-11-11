@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AdminShell } from '@/components/layout/admin-shell';
+import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -204,7 +204,7 @@ export default function AdminReviewsPage() {
   };
 
   return (
-    <AdminShell>
+    <AppShell>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -392,6 +392,6 @@ export default function AdminReviewsPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminShell>
+    </AppShell>
   );
 }

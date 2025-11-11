@@ -19,6 +19,7 @@ import {
   Gift,
   X,
   AlertCircle,
+  Star,
 } from 'lucide-react';
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Danh mục', href: '/admin/categories', icon: Layers },
   { name: 'Sản phẩm', href: '/admin/products', icon: Package },
   { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Đánh giá', href: '/admin/reviews', icon: Star },
   { name: 'Báo cáo lỗi', href: '/admin/error-reports', icon: AlertCircle },
   { name: 'Mã giảm giá', href: '/admin/coupons', icon: Tag },
   { name: 'Yêu cầu nạp', href: '/admin/topups', icon: CreditCard },
