@@ -65,8 +65,11 @@ interface RecentOrder {
 
 interface PendingDeposit {
   id: string;
-  userEmail: string;
-  amount: number;
+  user: {
+    id: string;
+    email: string;
+  };
+  amountVnd: number;
   status: string;
   createdAt: string;
 }
@@ -380,9 +383,9 @@ export default function AdminDashboard() {
                         <TableCell className="font-mono text-xs text-text-muted">
                           #{deposit.id}
                         </TableCell>
-                        <TableCell className="font-medium">{deposit.userEmail}</TableCell>
+                        <TableCell className="font-medium">{deposit.user?.email || 'N/A'}</TableCell>
                         <TableCell className="text-right font-bold text-success">
-                          +{formatCurrency(deposit.amount)}
+                          +{formatCurrency(deposit.amountVnd)}
                         </TableCell>
                         <TableCell className="text-right text-xs text-text-muted">
                           {formatDate(deposit.createdAt)}
