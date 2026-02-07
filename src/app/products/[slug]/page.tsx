@@ -422,9 +422,6 @@ export default function ProductDetailPage() {
                                       <FileText className="w-6 h-6 text-text-muted opacity-50" />
                                     </div>
                                   )}
-                                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                                    <p className="text-white text-[10px] font-bold truncate">HuuthangCao</p>
-                                  </div>
                                 </div>
                                 <div className="p-2.5">
                                   <p className="text-xs font-medium line-clamp-2 leading-snug mb-1.5 h-8">{rp.name}</p>
