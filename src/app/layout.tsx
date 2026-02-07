@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/session-provider";
 import { getWebsiteSettings } from "@/lib/website-settings";
+import { SupportWidget } from "@/components/layout/support-widget";
 
 // Force dynamic rendering to prevent static generation errors with client components
 export const dynamic = 'force-dynamic';
@@ -36,6 +37,8 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,6 +49,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>
           {children}
+          <SupportWidget />
         </Providers>
       </body>
     </html>

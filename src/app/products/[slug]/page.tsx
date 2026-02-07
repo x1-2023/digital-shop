@@ -389,7 +389,7 @@ export default function ProductDetailPage() {
                         <Info className="w-3 h-3 text-white" />
                       </div>
                       <span className="text-sm text-blue-900 dark:text-blue-100 font-medium">
-                        {product.name} - Bảo hành trọn đời - Support 24/7
+                        {product.name} - Giao dịch tự động - Support 24/7
                       </span>
                     </div>
                   )}
