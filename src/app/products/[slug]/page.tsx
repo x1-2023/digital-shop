@@ -201,14 +201,14 @@ export default function ProductDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Product Images */}
-            <div className="space-y-4">
-              <div className="aspect-square bg-card rounded-2xl overflow-hidden">
+            <div className="space-y-4 flex flex-col items-center">
+              <div className="aspect-square bg-card rounded-2xl overflow-hidden w-full max-w-[493px]">
                 {images.length > 0 ? (
                   <Image
                     src={images[selectedImage]}
                     alt={product.name}
-                    width={600}
-                    height={400}
+                    width={493}
+                    height={493}
                     className="w-full h-full object-cover"
                     unoptimized
                     onError={(e) => {
