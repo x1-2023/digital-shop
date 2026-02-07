@@ -1,15 +1,16 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Crown, Wallet } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
-// Default Mock Data (fallback if no data from DB)
-const DEFAULT_TOP_SPENDERS = [
-    { id: '1', name: 'Enak***', totalSpent: 15200000, avatarUrl: '', rank: 1 },
-    { id: '2', name: 'Air***', totalSpent: 8500000, avatarUrl: '', rank: 2 },
-    { id: '3', name: 'liq***', totalSpent: 5200000, avatarUrl: '', rank: 3 },
+// Fallback mock data khi API fail hoặc chưa có data
+const FALLBACK_SPENDERS = [
+    { id: '1', name: 'Ena***', totalSpent: 15200000, avatarUrl: null, rank: 1 },
+    { id: '2', name: 'Air***', totalSpent: 8500000, avatarUrl: null, rank: 2 },
+    { id: '3', name: 'liq***', totalSpent: 5200000, avatarUrl: null, rank: 3 },
 ];
 
 interface TopSpender {
@@ -20,12 +21,28 @@ interface TopSpender {
     rank: number;
 }
 
-interface TopSpendersProps {
-    spenders?: TopSpender[];
-}
+export function TopSellers() {
+    const [spenders, setSpenders] = useState<TopSpender[]>(FALLBACK_SPENDERS);
 
-export function TopSellers({ spenders }: TopSpendersProps) {
-    const displaySpenders = spenders && spenders.length > 0 ? spenders : DEFAULT_TOP_SPENDERS;
+    useEffect(() => {
+        const fetchTopSellers = async () => {
+            try {
+                const res = await fetch('/api/top-sellers');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.spenders && data.spenders.length > 0) {
+                        setSpenders(data.spenders);
+                    }
+                    // If empty spenders, keep fallback
+                }
+            } catch (error) {
+                console.error('Error fetching top sellers:', error);
+                // Keep fallback data on error
+            }
+        };
+
+        fetchTopSellers();
+    }, []);
 
     // Get current month name
     const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
@@ -44,7 +61,7 @@ export function TopSellers({ spenders }: TopSpendersProps) {
                 </p>
             </CardHeader>
             <CardContent className="pt-4 space-y-3">
-                {displaySpenders.slice(0, 3).map((user) => (
+                {spenders.slice(0, 5).map((user) => (
                     <div key={user.id} className="flex items-center gap-3 group cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 p-2 rounded-lg transition-colors">
                         {/* Rank Badge */}
                         <div className={`
