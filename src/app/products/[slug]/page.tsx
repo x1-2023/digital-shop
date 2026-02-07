@@ -209,7 +209,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column: Image Card */}
             <div className="lg:col-span-5">
-              <div className="bg-card rounded-2xl shadow-sm border border-border/50 overflow-hidden h-fit">
+              <div className="bg-card rounded-2xl shadow-sm border border-border/50 overflow-hidden h-full flex flex-col">
                 {/* Header Status Bar (Reference Style) */}
                 <div className="flex w-full text-[10px] font-bold text-white uppercase tracking-wider text-center h-8">
                   {isOutOfStock ? (
@@ -235,9 +235,9 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                <div className="p-4">
+                <div className="p-4 flex-1 flex flex-col">
                   {/* Product Image */}
-                  <div className="relative aspect-square rounded-xl overflow-hidden mb-4">
+                  <div className="relative aspect-square rounded-xl overflow-hidden mb-4 w-[90%] mx-auto">
                     {images.length > 0 ? (
                       <Image
                         src={images[selectedImage]}
@@ -286,7 +286,7 @@ export default function ProductDetailPage() {
                   )}
 
                   {/* Check Live Section in a Box */}
-                  <div className="border border-border rounded-lg p-3 bg-card-dark/50">
+                  <div className="border border-border rounded-lg p-3 bg-card-dark/50 mt-auto">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="bg-gray-200 dark:bg-gray-700 rounded-full p-1">
                         <Info className="w-3 h-3 text-text-muted" />
