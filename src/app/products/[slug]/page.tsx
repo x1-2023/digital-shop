@@ -235,7 +235,7 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                <div className="p-4 flex-1 flex flex-col">
+                <div className="p-4">
                   {/* Product Image */}
                   <div className="relative aspect-square rounded-xl overflow-hidden mb-4 w-[90%] mx-auto">
                     {images.length > 0 ? (
@@ -286,7 +286,7 @@ export default function ProductDetailPage() {
                   )}
 
                   {/* Check Live Section in a Box */}
-                  <div className="border border-border rounded-lg p-3 bg-card-dark/50 mt-auto">
+                  <div className="border border-border rounded-lg p-3 bg-card-dark/50">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="bg-gray-200 dark:bg-gray-700 rounded-full p-1">
                         <Info className="w-3 h-3 text-text-muted" />
