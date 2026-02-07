@@ -150,16 +150,16 @@ export default function CreateProductPage() {
     }
   };
 
-  // Resize image to optimal size (800x450px - 16:9 aspect ratio)
+  // Resize image to optimal size (493x493px - 1:1 square)
   const resizeImage = (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new window.Image();
         img.onload = () => {
-          // Target dimensions (16:9 aspect ratio)
-          const targetWidth = 800;
-          const targetHeight = 450;
+          // Target dimensions (1:1 square)
+          const targetWidth = 493;
+          const targetHeight = 493;
 
           const canvas = document.createElement('canvas');
           canvas.width = targetWidth;
@@ -230,7 +230,7 @@ export default function CreateProductPage() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
-        // Auto-resize image to 800x450px
+        // Auto-resize image to 493x493px
         const resizedFile = await resizeImage(file);
 
         const formData = new FormData();
@@ -257,7 +257,7 @@ export default function CreateProductPage() {
 
       toast({
         title: 'Thành công',
-        description: `Đã upload và tối ưu ${uploadedImages.length} ảnh (800x450px)`
+        description: `Đã upload và tối ưu ${uploadedImages.length} ảnh (493x493px)`
       });
       toast({
         variant: 'destructive',
@@ -467,8 +467,8 @@ export default function CreateProductPage() {
                     <p className="text-sm text-text-muted">JPG, PNG, WebP (Có thể chọn nhiều ảnh)</p>
                     <div className="text-xs text-text-muted bg-card-dark px-3 py-2 rounded-lg inline-block">
                       <p className="font-semibold text-brand mb-1">✨ Tự động tối ưu:</p>
-                      <p>• Tỷ lệ: 16:9 (phù hợp với giao diện)</p>
-                      <p>• Kích thước: 800x450px (tối ưu web)</p>
+                      <p>• Tỷ lệ: 1:1 (vuông, phù hợp với giao diện)</p>
+                      <p>• Kích thước: 493x493px (tối ưu web)</p>
                       <p>• Chất lượng: 85% (cân bằng dung lượng)</p>
                       <p className="mt-1 text-success">→ Ảnh sẽ tự động crop và resize khi upload</p>
                     </div>

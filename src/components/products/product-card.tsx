@@ -30,7 +30,7 @@ export function ProductCard({ product }: { product: Product }) {
         <>
             <div className="group relative bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg hover:shadow-brand/5 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
                 {/* Image Section */}
-                <div className="relative w-full aspect-video bg-secondary/30 overflow-hidden">
+                <div className="relative w-full aspect-square bg-secondary/30 overflow-hidden">
                     {images[0] ? (
                         <Image
                             src={images[0]}

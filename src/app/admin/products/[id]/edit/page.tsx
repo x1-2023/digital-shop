@@ -254,15 +254,15 @@ export default function EditProductPage() {
     }
   };
 
-  // Resize image to optimal size (800x450px - 16:9 aspect ratio)
+  // Resize image to optimal size (493x493px - 1:1 square)
   const resizeImage = (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new window.Image();
         img.onload = () => {
-          const targetWidth = 800;
-          const targetHeight = 450;
+          const targetWidth = 493;
+          const targetHeight = 493;
           const canvas = document.createElement('canvas');
           canvas.width = targetWidth;
           canvas.height = targetHeight;
@@ -345,7 +345,7 @@ export default function EditProductPage() {
 
       toast({
         title: 'Thành công',
-        description: `Đã upload và tối ưu ${uploadedImages.length} ảnh (800x450px)`
+        description: `Đã upload và tối ưu ${uploadedImages.length} ảnh (493x493px)`
       });
     } catch (error) {
       toast({
@@ -683,8 +683,8 @@ export default function EditProductPage() {
                     type="button"
                     onClick={() => setRestockMode('append')}
                     className={`p-3 rounded-lg border-2 text-left transition-all ${restockMode === 'append'
-                        ? 'border-green-500 bg-green-500/10'
-                        : 'border-border hover:border-border/80'
+                      ? 'border-green-500 bg-green-500/10'
+                      : 'border-border hover:border-border/80'
                       }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
@@ -697,8 +697,8 @@ export default function EditProductPage() {
                     type="button"
                     onClick={() => setRestockMode('replace')}
                     className={`p-3 rounded-lg border-2 text-left transition-all ${restockMode === 'replace'
-                        ? 'border-amber-500 bg-amber-500/10'
-                        : 'border-border hover:border-border/80'
+                      ? 'border-amber-500 bg-amber-500/10'
+                      : 'border-border hover:border-border/80'
                       }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
@@ -785,8 +785,8 @@ export default function EditProductPage() {
                       <p className="text-sm text-text-muted">JPG, PNG, WebP (Có thể chọn nhiều ảnh)</p>
                       <div className="text-xs text-text-muted bg-card-dark px-3 py-2 rounded-lg inline-block">
                         <p className="font-semibold text-brand mb-1">✨ Tự động tối ưu:</p>
-                        <p>• Tỷ lệ: 16:9 (phù hợp với giao diện)</p>
-                        <p>• Kích thước: 800x450px (tối ưu web)</p>
+                        <p>• Tỷ lệ: 1:1 (vuông, phù hợp với giao diện)</p>
+                        <p>• Kích thước: 493x493px (tối ưu web)</p>
                         <p>• Chất lượng: 85% (cân bằng dung lượng)</p>
                         <p className="mt-1 text-success">→ Ảnh sẽ tự động crop và resize khi upload</p>
                       </div>

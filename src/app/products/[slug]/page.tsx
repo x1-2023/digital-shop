@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Product Images */}
             <div className="space-y-4">
-              <div className="aspect-video bg-card rounded-2xl overflow-hidden">
+              <div className="aspect-square bg-card rounded-2xl overflow-hidden">
                 {images.length > 0 ? (
                   <Image
                     src={images[selectedImage]}

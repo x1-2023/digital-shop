@@ -264,7 +264,7 @@ export default function ProductsPage() {
                     <CardHeader className="p-0">
                       <div className="relative">
                         {images.length > 0 ? (
-                          <div className="aspect-video bg-card overflow-hidden">
+                          <div className="aspect-square bg-card overflow-hidden">
                             <Image
                               src={images[0]}
                               alt={product.name}
@@ -283,7 +283,7 @@ export default function ProductsPage() {
                             />
                           </div>
                         ) : (
-                          <div className="aspect-video bg-card flex items-center justify-center">
+                          <div className="aspect-square bg-card flex items-center justify-center">
                             <FileText className="h-12 w-12 text-text-muted opacity-50" />
                           </div>
                         )}
