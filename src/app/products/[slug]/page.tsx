@@ -209,82 +209,83 @@ export default function ProductDetailPage() {
           <div className="bg-card rounded-2xl border border-border p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left: Product Image */}
-              <div className="space-y-4 flex flex-col items-center">
-                <div className="relative aspect-square bg-secondary/30 rounded-xl overflow-hidden w-full max-w-[493px]">
-                  {/* Status Badges on Image */}
-                  <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-                    {isOutOfStock ? (
-                      <Badge className="bg-red-500 text-white border-0 px-3 py-1 text-xs font-bold uppercase">
-                        Hết hàng
-                      </Badge>
+              <div className="w-full max-w-[493px] mx-auto">
+                <div className="border border-border rounded-2xl overflow-hidden bg-card">
+                  {/* Product Image */}
+                  <div className="relative aspect-square bg-secondary/30 overflow-hidden">
+                    {/* Status Badges on Image */}
+                    <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+                      {isOutOfStock ? (
+                        <Badge className="bg-red-500 text-white border-0 px-3 py-1 text-xs font-bold uppercase">
+                          Hết hàng
+                        </Badge>
+                      ) : (
+                        <>
+                          <Badge className="bg-green-500 text-white border-0 px-2 py-1 text-xs font-bold">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            CÒN HÀNG
+                          </Badge>
+                          <Badge className="bg-yellow-500 text-white border-0 px-2 py-1 text-xs font-bold">
+                            <Zap className="w-3 h-3 mr-1" />
+                            TỰ ĐỘNG
+                          </Badge>
+                          <Badge className="bg-blue-500 text-white border-0 px-2 py-1 text-xs font-bold">
+                            <Truck className="w-3 h-3 mr-1" />
+                            GỬI NGAY
+                          </Badge>
+                        </>
+                      )}
+                    </div>
+
+                    {images.length > 0 ? (
+                      <Image
+                        src={images[selectedImage]}
+                        alt={product.name}
+                        width={493}
+                        height={493}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><span class="text-6xl">📄</span></div>';
+                          }
+                        }}
+                      />
                     ) : (
-                      <>
-                        <Badge className="bg-green-500 text-white border-0 px-2 py-1 text-xs font-bold">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          CÒN HÀNG
-                        </Badge>
-                        <Badge className="bg-yellow-500 text-white border-0 px-2 py-1 text-xs font-bold">
-                          <Zap className="w-3 h-3 mr-1" />
-                          TỰ ĐỘNG
-                        </Badge>
-                        <Badge className="bg-blue-500 text-white border-0 px-2 py-1 text-xs font-bold">
-                          <Truck className="w-3 h-3 mr-1" />
-                          GỬI NGAY
-                        </Badge>
-                      </>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FileText className="h-16 w-16 text-text-muted opacity-50" />
+                      </div>
                     )}
                   </div>
 
-                  {images.length > 0 ? (
-                    <Image
-                      src={images[selectedImage]}
-                      alt={product.name}
-                      width={493}
-                      height={493}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent) {
-                          parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><span class="text-6xl">📄</span></div>';
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <FileText className="h-16 w-16 text-text-muted opacity-50" />
+                  {/* Image Thumbnails */}
+                  {images.length > 1 && (
+                    <div className="flex space-x-2 overflow-x-auto p-3 border-t border-border">
+                      {images.map((image: string, index: number) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedImage(index)}
+                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition ${selectedImage === index ? 'border-brand' : 'border-border hover:border-brand/50'
+                            }`}
+                        >
+                          <Image
+                            src={image}
+                            alt={`${product.name} ${index + 1}`}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                        </button>
+                      ))}
                     </div>
                   )}
-                </div>
 
-                {/* Image Thumbnails */}
-                {images.length > 1 && (
-                  <div className="flex space-x-2 overflow-x-auto">
-                    {images.map((image: string, index: number) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImage(index)}
-                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition ${selectedImage === index ? 'border-brand' : 'border-border hover:border-brand/50'
-                          }`}
-                      >
-                        <Image
-                          src={image}
-                          alt={`${product.name} ${index + 1}`}
-                          width={64}
-                          height={64}
-                          className="w-full h-full object-cover"
-                          unoptimized
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Check Live Section */}
-                <div className="w-full max-w-[493px]">
-                  <div className="bg-card-dark border border-border rounded-lg p-4">
+                  {/* Check Live Section */}
+                  <div className="border-t border-border p-4">
                     <div className="flex items-center gap-2 mb-1">
                       <Info className="w-4 h-4 text-blue-400" />
                       <span className="font-semibold text-sm">Check Live</span>
