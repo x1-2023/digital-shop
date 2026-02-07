@@ -16,8 +16,13 @@ import {
   Upload,
   Package,
   Loader2,
-  Trash2
+  Trash2,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  Plus
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -72,6 +77,8 @@ export default function EditProductPage() {
     images: [] as string[],
   });
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [isRestocking, setIsRestocking] = useState(false);
+  const [restockMode, setRestockMode] = useState<'append' | 'replace'>('append');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -169,6 +176,81 @@ export default function EditProductPage() {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // === RESTOCK HANDLER ===
+  const handleRestock = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.txt')) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Vui lòng chọn file .txt',
+      });
+      return;
+    }
+
+    setIsRestocking(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('type', 'product');
+      uploadFormData.append('restockMode', restockMode);
+      uploadFormData.append('productId', params.id as string);
+
+      const res = await fetch('/api/admin/products/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Upload failed');
+      }
+
+      const result = await res.json();
+      const data = result.data;
+
+      // Update local form state
+      setFormData((prev) => ({
+        ...prev,
+        totalLines: data.totalLines,
+        usedLines: data.usedLines,
+        stock: data.stock,
+        ...(data.fileName ? { fileName: data.fileName } : {}),
+      }));
+
+      // Update product state too
+      if (product) {
+        setProduct({
+          ...product,
+          totalLines: data.totalLines,
+          usedLines: data.usedLines,
+          stock: data.stock,
+        });
+      }
+
+      toast({
+        variant: 'success',
+        title: restockMode === 'append' ? 'Đã bổ sung hàng' : 'Đã thay thế file',
+        description:
+          restockMode === 'append'
+            ? `Thêm ${data.addedLines} dòng mới. Tổng: ${data.totalLines} dòng`
+            : `File mới: ${data.totalLines} dòng. Stock đã reset.`,
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: error.message || 'Không thể upload file',
+      });
+    } finally {
+      setIsRestocking(false);
+      // Reset file input
+      e.target.value = '';
     }
   };
 
@@ -554,6 +636,136 @@ export default function EditProductPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Restock Section */}
+          <Card className="border-amber-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 text-amber-500" />
+                Bổ sung hàng
+              </CardTitle>
+              <CardDescription>
+                Upload file .txt để bổ sung hoặc thay thế stock sản phẩm
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Stock Status */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-card-dark rounded-lg p-3 text-center">
+                  <p className="text-xs text-text-muted">Tổng dòng</p>
+                  <p className="text-lg font-bold text-foreground">{formData.totalLines}</p>
+                </div>
+                <div className="bg-card-dark rounded-lg p-3 text-center">
+                  <p className="text-xs text-text-muted">Đã bán</p>
+                  <p className="text-lg font-bold text-red-500">{formData.usedLines}</p>
+                </div>
+                <div className="bg-card-dark rounded-lg p-3 text-center">
+                  <p className="text-xs text-text-muted">Còn lại</p>
+                  <p className={`text-lg font-bold ${formData.stock <= 5 ? 'text-amber-500' : 'text-green-500'}`}>
+                    {formData.stock}
+                  </p>
+                </div>
+              </div>
+
+              {/* Low stock warning */}
+              {formData.stock <= 5 && (
+                <div className="flex items-center gap-2 bg-amber-500/10 text-amber-500 rounded-lg px-3 py-2 text-sm">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span>{formData.stock === 0 ? 'Hết hàng! Cần bổ sung ngay.' : `Sắp hết hàng! Chỉ còn ${formData.stock} items.`}</span>
+                </div>
+              )}
+
+              {/* Restock Mode Selection */}
+              <div className="space-y-2">
+                <Label>Chế độ bổ sung</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRestockMode('append')}
+                    className={`p-3 rounded-lg border-2 text-left transition-all ${restockMode === 'append'
+                        ? 'border-green-500 bg-green-500/10'
+                        : 'border-border hover:border-border/80'
+                      }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Plus className="w-4 h-4 text-green-500" />
+                      <span className="font-semibold text-sm">Nối thêm</span>
+                    </div>
+                    <p className="text-xs text-text-muted">Thêm dòng mới vào cuối file hiện tại</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRestockMode('replace')}
+                    className={`p-3 rounded-lg border-2 text-left transition-all ${restockMode === 'replace'
+                        ? 'border-amber-500 bg-amber-500/10'
+                        : 'border-border hover:border-border/80'
+                      }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <RefreshCw className="w-4 h-4 text-amber-500" />
+                      <span className="font-semibold text-sm">Thay thế</span>
+                    </div>
+                    <p className="text-xs text-text-muted">Xóa file cũ, upload file hoàn toàn mới</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Replace warning */}
+              {restockMode === 'replace' && (
+                <div className="flex items-center gap-2 bg-destructive/10 text-destructive rounded-lg px-3 py-2 text-sm">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span>File cũ sẽ bị thay thế hoàn toàn. usedLines sẽ reset về 0.</span>
+                </div>
+              )}
+
+              {/* File Upload */}
+              <div className="border-2 border-dashed border-border rounded-lg p-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <Upload className="h-6 w-6 text-text-muted" />
+                  <div className="text-center">
+                    <p className="font-medium text-sm">
+                      {restockMode === 'append' ? 'Upload file để nối thêm' : 'Upload file thay thế'}
+                    </p>
+                    <p className="text-xs text-text-muted">Chỉ chấp nhận file .txt (mỗi dòng = 1 item)</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".txt"
+                    onChange={handleRestock}
+                    className="hidden"
+                    id="restockUpload"
+                    disabled={isRestocking}
+                  />
+                  <label htmlFor="restockUpload">
+                    <Button
+                      type="button"
+                      variant={restockMode === 'replace' ? 'destructive' : 'default'}
+                      disabled={isRestocking}
+                      asChild
+                    >
+                      <span>
+                        {isRestocking ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Đang xử lý...</>
+                        ) : restockMode === 'append' ? (
+                          <><Plus className="w-4 h-4 mr-2" />Chọn file bổ sung</>
+                        ) : (
+                          <><RefreshCw className="w-4 h-4 mr-2" />Chọn file thay thế</>
+                        )}
+                      </span>
+                    </Button>
+                  </label>
+                </div>
+              </div>
+
+              {/* Current file info */}
+              {formData.fileName && (
+                <div className="flex items-center gap-2 text-sm text-text-muted">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <span>File hiện tại: <strong>{formData.fileName}</strong></span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Images */}
           <Card>
