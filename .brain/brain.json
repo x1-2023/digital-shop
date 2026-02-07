@@ -1,0 +1,98 @@
+{
+    "meta": {
+        "schema_version": "1.1.0",
+        "awf_version": "3.3.0"
+    },
+    "project": {
+        "name": "Digital Shop",
+        "type": "Next.js Web App",
+        "status": "In Development"
+    },
+    "tech_stack": {
+        "frontend": {
+            "framework": "Next.js",
+            "ui": "TailwindCSS",
+            "icons": "Lucide React"
+        },
+        "backend": {
+            "runtime": "Node.js",
+            "db_orm": "Prisma",
+            "auth": "JWT"
+        },
+        "database": {
+            "type": "SQLite",
+            "orm": "Prisma"
+        }
+    },
+    "database_schema": {
+        "tables": [
+            "User",
+            "Order",
+            "Product",
+            "Category",
+            "Wallet",
+            "ManualDepositRequest",
+            "Settings",
+            "AutoTopupLog",
+            "Payment"
+        ],
+        "relationships": [
+            "User-Order",
+            "Order-OrderItem",
+            "User-Wallet"
+        ]
+    },
+    "api_endpoints": [
+        {
+            "path": "/api/auth/login",
+            "method": "POST",
+            "desc": "Login with rate limiting"
+        },
+        {
+            "path": "/api/auth/signup",
+            "method": "POST",
+            "desc": "Signup with strict validation"
+        },
+        {
+            "path": "/api/products",
+            "method": "GET",
+            "desc": "List products (optimized with select)"
+        },
+        {
+            "path": "/api/orders",
+            "method": "POST",
+            "desc": "Create order"
+        },
+        {
+            "path": "/api/wallet/topup/create",
+            "method": "POST",
+            "desc": "Create deposit request"
+        },
+        {
+            "path": "/api/wallet/topup/check-status",
+            "method": "POST",
+            "desc": "Check deposit status & trigger bank sync"
+        }
+    ],
+    "features": [
+        "Authentication (JWT, Rate Limit, Zod)",
+        "Product Management",
+        "Order System",
+        "Wallet & Topup (Manual + Auto Bank Sync)",
+        "Direct Auto-Deposit (NAP syntax)"
+    ],
+    "knowledge_items": {
+        "patterns": [
+            "Service Layer Pattern in /lib",
+            "API Route Handlers"
+        ],
+        "gotchas": [
+            "Payment model uses amountVnd not amount",
+            "Native Image constructor conflict in Edit Page"
+        ],
+        "conventions": [
+            "Use auto-topup.ts for bank logic",
+            "Use central auth validators"
+        ]
+    }
+}

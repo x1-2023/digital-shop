@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -178,171 +178,168 @@ export default function AdminErrorReportsPage() {
 
   if (isLoading) {
     return (
-      <AppShell isAdmin>
-        <div className="flex-1 p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-card rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="h-24 bg-card rounded"></div>
-              <div className="h-24 bg-card rounded"></div>
-              <div className="h-24 bg-card rounded"></div>
-            </div>
-            <div className="h-64 bg-card rounded"></div>
+      <div className="flex-1 p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-card rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="h-24 bg-card rounded"></div>
+            <div className="h-24 bg-card rounded"></div>
+            <div className="h-24 bg-card rounded"></div>
           </div>
+          <div className="h-64 bg-card rounded"></div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6">
-        <div className="space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-text-primary">Quản lý báo cáo lỗi</h1>
-            <p className="text-text-muted">
-              Xem và xử lý các báo cáo lỗi từ khách hàng
-            </p>
-          </div>
+    <div className="flex-1 p-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Quản lý báo cáo lỗi</h1>
+          <p className="text-text-muted">
+            Xem và xử lý các báo cáo lỗi từ khách hàng
+          </p>
+        </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-text-muted">Chờ xử lý</p>
-                    <p className="text-2xl font-bold text-warning">{getPendingCount()}</p>
-                  </div>
-                  <Clock className="h-8 w-8 text-warning" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-text-muted">Đang xử lý</p>
-                    <p className="text-2xl font-bold text-brand">{getProcessingCount()}</p>
-                  </div>
-                  <AlertCircle className="h-8 w-8 text-brand" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-text-muted">Đã xử lý</p>
-                    <p className="text-2xl font-bold text-success">{getResolvedCount()}</p>
-                  </div>
-                  <CheckCircle className="h-8 w-8 text-success" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filters */}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <Filter className="h-4 w-4 text-text-muted" />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Trạng thái" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tất cả</SelectItem>
-                    <SelectItem value="PENDING">Chờ xử lý</SelectItem>
-                    <SelectItem value="PROCESSING">Đang xử lý</SelectItem>
-                    <SelectItem value="RESOLVED">Đã xử lý</SelectItem>
-                    <SelectItem value="REJECTED">Từ chối</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-text-muted">Chờ xử lý</p>
+                  <p className="text-2xl font-bold text-warning">{getPendingCount()}</p>
+                </div>
+                <Clock className="h-8 w-8 text-warning" />
               </div>
             </CardContent>
           </Card>
 
-          {/* Reports Table */}
-          {reports.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Package className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">Chưa có báo cáo lỗi</h3>
-                <p className="text-text-muted">Chưa có báo cáo lỗi nào trong hệ thống</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Mã báo cáo</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead>Đơn hàng</TableHead>
-                    <TableHead>Số sản phẩm</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead>Ngày tạo</TableHead>
-                    <TableHead>Hành động</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reports.map((report) => {
-                    // Support both new schema (productLineId) and legacy schema (reportedProducts)
-                    const productCount = report.productLineId
-                      ? 1
-                      : (report.reportedProducts ? JSON.parse(report.reportedProducts).length : 0);
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-text-muted">Đang xử lý</p>
+                  <p className="text-2xl font-bold text-brand">{getProcessingCount()}</p>
+                </div>
+                <AlertCircle className="h-8 w-8 text-brand" />
+              </div>
+            </CardContent>
+          </Card>
 
-                    return (
-                      <TableRow key={report.id}>
-                        <TableCell>
-                          <div className="font-mono text-sm">
-                            #{report.id.slice(0, 10)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">{report.userEmail}</div>
-                        </TableCell>
-                        <TableCell>
-                          <Link href={`/admin/orders/${report.orderId}`}>
-                            <div className="font-mono text-sm text-brand hover:underline">
-                              #{report.orderId.slice(0, 10)}
-                            </div>
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">{productCount} sản phẩm</div>
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(report.status)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm text-text-muted">
-                            {formatDate(report.createdAt)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openReportDialog(report)}
-                          >
-                            <Eye className="h-3 w-3 mr-1" />
-                            Xem
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-text-muted">Đã xử lý</p>
+                  <p className="text-2xl font-bold text-success">{getResolvedCount()}</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-success" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Filters */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <Filter className="h-4 w-4 text-text-muted" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="PENDING">Chờ xử lý</SelectItem>
+                  <SelectItem value="PROCESSING">Đang xử lý</SelectItem>
+                  <SelectItem value="RESOLVED">Đã xử lý</SelectItem>
+                  <SelectItem value="REJECTED">Từ chối</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Reports Table */}
+        {reports.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Package className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">Chưa có báo cáo lỗi</h3>
+              <p className="text-text-muted">Chưa có báo cáo lỗi nào trong hệ thống</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mã báo cáo</TableHead>
+                  <TableHead>Khách hàng</TableHead>
+                  <TableHead>Đơn hàng</TableHead>
+                  <TableHead>Số sản phẩm</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Ngày tạo</TableHead>
+                  <TableHead>Hành động</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reports.map((report) => {
+                  // Support both new schema (productLineId) and legacy schema (reportedProducts)
+                  const productCount = report.productLineId
+                    ? 1
+                    : (report.reportedProducts ? JSON.parse(report.reportedProducts).length : 0);
+
+                  return (
+                    <TableRow key={report.id}>
+                      <TableCell>
+                        <div className="font-mono text-sm">
+                          #{report.id.slice(0, 10)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">{report.userEmail}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/admin/orders/${report.orderId}`}>
+                          <div className="font-mono text-sm text-brand hover:underline">
+                            #{report.orderId.slice(0, 10)}
+                          </div>
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">{productCount} sản phẩm</div>
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(report.status)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-text-muted">
+                          {formatDate(report.createdAt)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openReportDialog(report)}
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Xem
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
       </div>
+
 
       {/* Report Detail Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -499,6 +496,7 @@ export default function AdminErrorReportsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AppShell>
+    </div>
   );
 }
+

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ export default function AdminCategoriesPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCategories = async () => {
     try {
@@ -111,6 +111,7 @@ export default function AdminCategoriesPage() {
       setShowForm(false);
       fetchCategories();
     } catch (error) {
+      console.error(error);
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -203,202 +204,200 @@ export default function AdminCategoriesPage() {
   };
 
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Quản lý danh mục</h1>
-              <p className="text-text-muted">Tạo và quản lý các danh mục sản phẩm</p>
-            </div>
-            <Button onClick={() => setShowForm(true)} disabled={showForm}>
-              <Plus className="h-4 w-4 mr-2" />
-              Thêm danh mục
-            </Button>
+    <div className="flex-1 p-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Quản lý danh mục</h1>
+            <p className="text-text-muted">Tạo và quản lý các danh mục sản phẩm</p>
           </div>
+          <Button onClick={() => setShowForm(true)} disabled={showForm}>
+            <Plus className="h-4 w-4 mr-2" />
+            Thêm danh mục
+          </Button>
+        </div>
 
-          {/* Form */}
-          {showForm && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{editingId ? 'Cập nhật' : 'Thêm'} danh mục</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Tên danh mục *</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="VD: Tài Khoản Discord"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="slug">Slug (URL)</Label>
-                    <Input
-                      id="slug"
-                      name="slug"
-                      value={formData.slug}
-                      onChange={handleInputChange}
-                      placeholder="tai-khoan-discord-0211"
-                      className="font-mono text-sm"
-                    />
-                    <p className="text-xs text-text-muted mt-1">
-                      Tự động tạo từ tên. Có thể chỉnh sửa. Ví dụ: tai-khoan-discord-0211
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">Mô tả</Label>
-                    <Textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      placeholder="Mô tả danh mục..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Icon danh mục</Label>
-                    <div className="mt-2 space-y-4">
-                      {/* Icon Preview */}
-                      {formData.icon && (
-                        <div className="flex items-center gap-4">
-                          <div className="w-20 h-20 border border-border rounded-lg overflow-hidden bg-card flex items-center justify-center">
-                            <Image
-                              src={formData.icon}
-                              alt="Category icon"
-                              width={80}
-                              height={80}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setFormData(prev => ({ ...prev, icon: '' }))}
-                          >
-                            Xóa icon
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {/* Upload Button */}
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleIconUpload}
-                          className="hidden"
-                          id="iconUpload"
-                          disabled={uploadingIcon}
-                        />
-                        <label htmlFor="iconUpload">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={uploadingIcon}
-                            asChild
-                          >
-                            <span>
-                              <Upload className="h-4 w-4 mr-2" />
-                              {uploadingIcon ? 'Đang upload...' : 'Upload icon'}
-                            </span>
-                          </Button>
-                        </label>
-                        <span className="text-sm text-text-muted">
-                          PNG, JPG, WebP (Khuyến nghị: 128x128px)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-3 pt-4 border-t">
-                    <Button type="button" variant="outline" onClick={handleCancel}>
-                      Hủy
-                    </Button>
-                    <Button type="submit">
-                      {editingId ? 'Cập nhật' : 'Tạo'}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* List */}
+        {/* Form */}
+        {showForm && (
           <Card>
             <CardHeader>
-              <CardTitle>Danh sách danh mục</CardTitle>
+              <CardTitle>{editingId ? 'Cập nhật' : 'Thêm'} danh mục</CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <div className="text-center py-8 text-text-muted">Đang tải...</div>
-              ) : categories.length === 0 ? (
-                <div className="text-center py-8 text-text-muted">Không có danh mục nào</div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Icon</TableHead>
-                      <TableHead>Tên</TableHead>
-                      <TableHead>Slug</TableHead>
-                      <TableHead>Mô tả</TableHead>
-                      <TableHead className="text-right">Hành động</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {categories.map(cat => (
-                      <TableRow key={cat.id}>
-                        <TableCell>
-                          <div className="w-10 h-10 border border-border rounded-lg overflow-hidden bg-card flex items-center justify-center">
-                            {cat.icon ? (
-                              <Image
-                                src={cat.icon}
-                                alt={cat.name}
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-contain"
-                                unoptimized
-                                onError={(e) => {
-                                  // Fallback to emoji if image fails to load
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            ) : null}
-                            <span className={cat.icon ? 'hidden text-xl' : 'text-xl'}>📦</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">{cat.name}</TableCell>
-                        <TableCell className="text-text-muted text-sm">{cat.slug}</TableCell>
-                        <TableCell>{cat.description}</TableCell>
-                        <TableCell className="text-right space-x-2">
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(cat)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleDelete(cat.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Tên danh mục *</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="VD: Tài Khoản Discord"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="slug">Slug (URL)</Label>
+                  <Input
+                    id="slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleInputChange}
+                    placeholder="tai-khoan-discord-0211"
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Tự động tạo từ tên. Có thể chỉnh sửa. Ví dụ: tai-khoan-discord-0211
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Mô tả</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Mô tả danh mục..."
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <Label>Icon danh mục</Label>
+                  <div className="mt-2 space-y-4">
+                    {/* Icon Preview */}
+                    {formData.icon && (
+                      <div className="flex items-center gap-4">
+                        <div className="w-20 h-20 border border-border rounded-lg overflow-hidden bg-card flex items-center justify-center">
+                          <Image
+                            src={formData.icon}
+                            alt="Category icon"
+                            width={80}
+                            height={80}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData(prev => ({ ...prev, icon: '' }))}
+                        >
+                          Xóa icon
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Upload Button */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleIconUpload}
+                        className="hidden"
+                        id="iconUpload"
+                        disabled={uploadingIcon}
+                      />
+                      <label htmlFor="iconUpload">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={uploadingIcon}
+                          asChild
+                        >
+                          <span>
+                            <Upload className="h-4 w-4 mr-2" />
+                            {uploadingIcon ? 'Đang upload...' : 'Upload icon'}
+                          </span>
+                        </Button>
+                      </label>
+                      <span className="text-sm text-text-muted">
+                        PNG, JPG, WebP (Khuyến nghị: 128x128px)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3 pt-4 border-t">
+                  <Button type="button" variant="outline" onClick={handleCancel}>
+                    Hủy
+                  </Button>
+                  <Button type="submit">
+                    {editingId ? 'Cập nhật' : 'Tạo'}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
           </Card>
-        </div>
+        )}
+
+        {/* List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Danh sách danh mục</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-8 text-text-muted">Đang tải...</div>
+            ) : categories.length === 0 ? (
+              <div className="text-center py-8 text-text-muted">Không có danh mục nào</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Icon</TableHead>
+                    <TableHead>Tên</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Mô tả</TableHead>
+                    <TableHead className="text-right">Hành động</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categories.map(cat => (
+                    <TableRow key={cat.id}>
+                      <TableCell>
+                        <div className="w-10 h-10 border border-border rounded-lg overflow-hidden bg-card flex items-center justify-center">
+                          {cat.icon ? (
+                            <Image
+                              src={cat.icon}
+                              alt={cat.name}
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-contain"
+                              unoptimized
+                              onError={(e) => {
+                                // Fallback to emoji if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                          ) : null}
+                          <span className={cat.icon ? 'hidden text-xl' : 'text-xl'}>📦</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{cat.name}</TableCell>
+                      <TableCell className="text-text-muted text-sm">{cat.slug}</TableCell>
+                      <TableCell>{cat.description}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(cat)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleDelete(cat.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </AppShell>
+    </div>
   );
 }

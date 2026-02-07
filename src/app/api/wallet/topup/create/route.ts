@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { checkRateLimit, getRateLimitConfig } from '@/lib/rate-limit';
+import { apiRateLimiter } from '@/lib/rate-limit';
 import { logDepositCreate } from '@/lib/system-log';
 
 export async function POST(request: NextRequest) {
@@ -12,22 +12,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Rate limiting: Prevent spam topup requests
-    const rateLimit = checkRateLimit(session.user.id, getRateLimitConfig('TOPUP_REQUEST'));
+    // Rate limiting: Prevent spam topup requests (5 requests per minute)
+    const isAllowed = await apiRateLimiter.check(`topup:${session.user.id}`, 5);
 
-    if (!rateLimit.allowed) {
-      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+    if (!isAllowed) {
       return NextResponse.json(
         {
           error: 'Quá nhiều yêu cầu nạp tiền. Vui lòng thử lại sau.',
-          retryAfter,
         },
         {
           status: 429,
           headers: {
-            'Retry-After': retryAfter.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+            'Retry-After': '60',
           },
         }
       );
@@ -50,8 +46,8 @@ export async function POST(request: NextRequest) {
 
     const topupRules = settings?.topupRules
       ? (typeof settings.topupRules === 'string'
-          ? JSON.parse(settings.topupRules)
-          : settings.topupRules)
+        ? JSON.parse(settings.topupRules)
+        : settings.topupRules)
       : { minVnd: 10000, maxVnd: 100000000 };
 
     // Validate amount against dynamic rules

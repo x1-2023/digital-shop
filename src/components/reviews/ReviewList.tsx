@@ -65,69 +65,79 @@ export function ReviewList({ productSlug, refreshTrigger }: ReviewListProps) {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {reviews.map((review) => (
-        <div key={review.id} className="border border-border rounded-lg p-4 bg-card">
-          <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-brand/10 text-brand">
-                {review.avatar}
-              </AvatarFallback>
-            </Avatar>
+  const formatDateFull = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0') + ' ' +
+      String(d.getHours()).padStart(2, '0') + ':' +
+      String(d.getMinutes()).padStart(2, '0') + ':' +
+      String(d.getSeconds()).padStart(2, '0');
+  };
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="font-medium text-text-primary">{review.displayName}</p>
-                  <p className="text-xs text-text-muted">
-                    {formatDate(review.createdAt)}
-                  </p>
+  return (
+    <div className="space-y-0">
+      {reviews.map((review) => (
+        <div key={review.id} className="border-b border-border py-6 last:border-0 animate-in fade-in duration-300">
+          <div className="flex items-start justify-between mb-2">
+            {/* User Info */}
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-brand/10 text-brand font-bold">
+                  {review.displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold text-sm text-text-primary">{review.displayName}</p>
+                {/* Stars - Moved under name as per design */}
+                <div className="flex items-center gap-0.5 mt-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`h-3.5 w-3.5 ${star <= review.rating
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-300'
+                        }`}
+                    />
+                  ))}
                 </div>
               </div>
-
-              {/* Stars */}
-              <div className="flex items-center gap-1 mb-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-4 w-4 ${
-                      star <= review.rating
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Comment */}
-              {review.comment && (
-                <p className="text-sm text-text-secondary whitespace-pre-line">
-                  {review.comment}
-                </p>
-              )}
             </div>
+
+            {/* Date */}
+            <p className="text-xs text-text-muted">
+              {formatDateFull(review.createdAt)}
+            </p>
           </div>
+
+          {/* Comment */}
+          {review.comment && (
+            <div className="mt-3 pl-[52px]">
+              <p className="text-sm text-text-primary/90 whitespace-pre-line leading-relaxed">
+                {review.comment}
+              </p>
+            </div>
+          )}
         </div>
       ))}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
+        <div className="flex justify-center gap-2 mt-8 pt-4 border-t border-border">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page === 1}
           >
             Trang trước
           </Button>
-          <span className="px-4 py-2 text-sm">
+          <span className="px-4 py-2 text-sm flex items-center">
             Trang {page} / {totalPages}
           </span>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
           >

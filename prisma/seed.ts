@@ -52,7 +52,7 @@ async function main() {
       websiteKeywords: 'digital products, premium, shop, accounts, licenses, tools',
       websiteLogo: null,
       websiteFavicon: null,
-      
+
       // Payment Settings
       paymentMethods: JSON.stringify({
         manual: true,
@@ -79,7 +79,7 @@ async function main() {
         token: '',
         amountTolerance: 2000,
       }),
-      
+
       // UI Settings
       uiTexts: JSON.stringify({
         welcomeMessage: 'Chào mừng đến với Digital Shop!',
@@ -99,6 +99,73 @@ async function main() {
   console.log('👤 Admin user: admin@hotmmo.com / admin123');
   console.log(`🔑 Admin ID: ${admin.id} (8 characters)`);
   console.log('⚙️  Default settings created');
+
+  // Create Categories
+  const categories = [
+    { name: 'Tài khoản Premium', slug: 'tai-khoan-premium', description: 'Netflix, Spotify, Youtube Premium...' },
+    { name: 'Phần mềm bản quyền', slug: 'phan-mem-ban-quyen', description: 'Windows, Office, Adobe, JetBrains...' },
+    { name: 'Game Steam/Epic', slug: 'game-steam-epic', description: 'Key game bản quyền giá rẻ' },
+  ];
+
+  for (const cat of categories) {
+    await prisma.category.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: {
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        active: true,
+      },
+    });
+  }
+  console.log(`📦 Created ${categories.length} categories`);
+
+  // Create Sample Products if needed (Optional)
+  const premiumCat = await prisma.category.findUnique({ where: { slug: 'tai-khoan-premium' } });
+  if (premiumCat) {
+    const products = [
+      { name: 'Youtube Premium 1 Năm', price: 299000, description: 'Nâng cấp chính chủ, bảo hành 1 năm' },
+      { name: 'Netflix 4K 1 Tháng', price: 69000, description: 'Tài khoản dùng riêng, PROFILE riêng' },
+    ];
+
+    for (const p of products) {
+      const slug = p.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+      await prisma.product.upsert({
+        where: { slug },
+        update: {},
+        create: {
+          name: p.name,
+          slug,
+          categoryId: premiumCat.id,
+          priceVnd: p.price,
+          description: p.description,
+          stock: 10,
+          active: true,
+          totalLines: 10,
+          usedLines: 0,
+        },
+      });
+    }
+    console.log(`🛒 Created ${products.length} sample products`);
+  }
+
+  // Create Sample Coupon
+  await prisma.coupon.upsert({
+    where: { code: 'WELCOME' },
+    update: {},
+    create: {
+      code: 'WELCOME',
+      description: 'Giảm giá chào mừng thành viên mới',
+      discountType: 'PERCENTAGE',
+      discountValue: 10,
+      maxDiscountVnd: 50000,
+      minOrderVnd: 100000,
+      maxUses: 100,
+      active: true,
+    },
+  });
+  console.log('🎟️  Created sample coupon: WELCOME');
 }
 
 main()

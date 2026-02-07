@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { 
+import {
   ArrowLeft,
   Save,
   Upload,
@@ -19,6 +19,7 @@ import {
   Trash2
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
 interface Product {
@@ -176,7 +177,7 @@ export default function EditProductPage() {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
           const targetWidth = 800;
           const targetHeight = 450;
@@ -326,329 +327,325 @@ export default function EditProductPage() {
 
   if (isLoading) {
     return (
-      <AppShell isAdmin>
-        <div className="flex-1 p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-card rounded w-1/4"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="h-64 bg-card rounded"></div>
-              <div className="h-64 bg-card rounded"></div>
-            </div>
+      <div className="flex-1 p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-card rounded w-1/4"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-64 bg-card rounded"></div>
+            <div className="h-64 bg-card rounded"></div>
           </div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   if (!product) {
     return (
-      <AppShell isAdmin>
-        <div className="flex-1 p-6">
-          <Card>
-            <CardContent className="text-center py-12">
-              <Package className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Sản phẩm không tồn tại</h3>
-              <p className="text-text-muted mb-6">Sản phẩm bạn tìm kiếm không tồn tại hoặc đã bị xóa</p>
-              <Link href="/admin/products">
-                <Button>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Quay lại danh sách
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </AppShell>
+      <div className="flex-1 p-6">
+        <Card>
+          <CardContent className="text-center py-12">
+            <Package className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
+            <h3 className="text-lg font-semibold mb-2">Sản phẩm không tồn tại</h3>
+            <p className="text-text-muted mb-6">Sản phẩm bạn tìm kiếm không tồn tại hoặc đã bị xóa</p>
+            <Link href="/admin/products">
+              <Button>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Quay lại danh sách
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Chỉnh sửa sản phẩm</h1>
-              <p className="text-text-muted">
-                Cập nhật thông tin sản phẩm
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Đang xóa...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Xóa sản phẩm
-                  </>
-                )}
-              </Button>
-              <Link href="/admin/products">
-                <Button variant="outline">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Quay lại
-                </Button>
-              </Link>
-            </div>
+    <div className="flex-1 p-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Chỉnh sửa sản phẩm</h1>
+            <p className="text-text-muted">
+              Cập nhật thông tin sản phẩm
+            </p>
           </div>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Đang xóa...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Xóa sản phẩm
+                </>
+              )}
+            </Button>
+            <Link href="/admin/products">
+              <Button variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Quay lại
+              </Button>
+            </Link>
+          </div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Basic Info */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Thông tin cơ bản</CardTitle>
-                  <CardDescription>
-                    Thông tin chính của sản phẩm
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Tên sản phẩm *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="Nhập tên sản phẩm"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="slug">Slug *</Label>
-                    <Input
-                      id="slug"
-                      value={formData.slug}
-                      onChange={(e) => handleInputChange('slug', e.target.value)}
-                      placeholder="ten-san-pham"
-                      required
-                    />
-                    <p className="text-xs text-text-muted mt-1">
-                      URL: /products/{formData.slug}
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="categoryId">Danh mục *</Label>
-                    <Select
-                      value={formData.categoryId}
-                      onValueChange={(value) => handleInputChange('categoryId', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn danh mục" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">Mô tả</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Mô tả chi tiết về sản phẩm"
-                      rows={4}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Pricing & Stock */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Giá và kho</CardTitle>
-                  <CardDescription>
-                    Cấu hình giá bán và số lượng
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="price">Giá bán (VND) *</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      value={formData.priceVnd}
-                      onChange={(e) => handleInputChange('priceVnd', parseInt(e.target.value))}
-                      placeholder="100000"
-                      min="0"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="stock">Số lượng *</Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      value={formData.stock}
-                      onChange={(e) => handleInputChange('stock', parseInt(e.target.value))}
-                      placeholder="100"
-                      min="0"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="fileName">Tên file</Label>
-                    <Input
-                      id="fileName"
-                      value={formData.fileName}
-                      onChange={(e) => handleInputChange('fileName', e.target.value)}
-                      placeholder="example.txt"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="totalLines">Tổng số dòng</Label>
-                    <Input
-                      id="totalLines"
-                      type="number"
-                      value={formData.totalLines}
-                      onChange={(e) => handleInputChange('totalLines', parseInt(e.target.value) || 0)}
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="usedLines">Số dòng đã dùng</Label>
-                    <Input
-                      id="usedLines"
-                      type="number"
-                      value={formData.usedLines}
-                      onChange={(e) => handleInputChange('usedLines', parseInt(e.target.value) || 0)}
-                      placeholder="0"
-                      min="0"
-                      disabled
-                    />
-                    <p className="text-xs text-text-muted mt-1">
-                      Tự động cập nhật khi có đơn hàng
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="active">Trạng thái</Label>
-                      <p className="text-sm text-text-muted">
-                        Sản phẩm có hiển thị trên website không
-                      </p>
-                    </div>
-                    <Switch
-                      id="active"
-                      checked={formData.active}
-                      onCheckedChange={(checked) => handleInputChange('active', checked)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Images */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Basic Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Hình ảnh sản phẩm</CardTitle>
+                <CardTitle>Thông tin cơ bản</CardTitle>
                 <CardDescription>
-                  Upload hình ảnh cho sản phẩm
+                  Thông tin chính của sản phẩm
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="border-2 border-dashed border-border rounded-lg p-6">
-                    <div className="flex flex-col items-center space-y-4">
-                      <Upload className="h-8 w-8 text-text-muted" />
-                      <div className="text-center space-y-2">
-                        <p className="font-medium">Upload ảnh sản phẩm</p>
-                        <p className="text-sm text-text-muted">JPG, PNG, WebP (Có thể chọn nhiều ảnh)</p>
-                        <div className="text-xs text-text-muted bg-card-dark px-3 py-2 rounded-lg inline-block">
-                          <p className="font-semibold text-brand mb-1">✨ Tự động tối ưu:</p>
-                          <p>• Tỷ lệ: 16:9 (phù hợp với giao diện)</p>
-                          <p>• Kích thước: 800x450px (tối ưu web)</p>
-                          <p>• Chất lượng: 85% (cân bằng dung lượng)</p>
-                          <p className="mt-1 text-success">→ Ảnh sẽ tự động crop và resize khi upload</p>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/jpg,image/png,image/webp"
-                        onChange={handleImageSelect}
-                        className="hidden"
-                        id="imageUpload"
-                        multiple
-                        disabled={uploadingImages}
-                      />
-                      <label htmlFor="imageUpload">
-                        <Button type="button" variant="outline" disabled={uploadingImages} asChild>
-                          <span>{uploadingImages ? 'Đang upload...' : 'Chọn ảnh'}</span>
-                        </Button>
-                      </label>
-                    </div>
-                  </div>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Tên sản phẩm *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Nhập tên sản phẩm"
+                    required
+                  />
+                </div>
 
-                  {formData.images.length > 0 && (
-                    <div className="grid grid-cols-4 gap-4">
-                      {formData.images.map((img, idx) => (
-                        <div key={idx} className="relative group">
-                          <img 
-                            src={img} 
-                            alt={`Product ${idx + 1}`}
-                            className="w-full h-24 object-cover rounded border border-border"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(idx)}
-                            className="absolute top-1 right-1 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            ×
-                          </button>
-                        </div>
+                <div>
+                  <Label htmlFor="slug">Slug *</Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => handleInputChange('slug', e.target.value)}
+                    placeholder="ten-san-pham"
+                    required
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    URL: /products/{formData.slug}
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="categoryId">Danh mục *</Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(value) => handleInputChange('categoryId', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn danh mục" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
                       ))}
-                    </div>
-                  )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Mô tả</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Mô tả chi tiết về sản phẩm"
+                    rows={4}
+                  />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Actions */}
-            <div className="flex justify-end space-x-4">
-              <Link href="/admin/products">
-                <Button type="button" variant="outline">
-                  Hủy
-                </Button>
-              </Link>
-              <Button type="submit" disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Đang lưu...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Lưu thay đổi
-                  </>
+            {/* Pricing & Stock */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Giá và kho</CardTitle>
+                <CardDescription>
+                  Cấu hình giá bán và số lượng
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="price">Giá bán (VND) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={formData.priceVnd}
+                    onChange={(e) => handleInputChange('priceVnd', parseInt(e.target.value))}
+                    placeholder="100000"
+                    min="0"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="stock">Số lượng *</Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    value={formData.stock}
+                    onChange={(e) => handleInputChange('stock', parseInt(e.target.value))}
+                    placeholder="100"
+                    min="0"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="fileName">Tên file</Label>
+                  <Input
+                    id="fileName"
+                    value={formData.fileName}
+                    onChange={(e) => handleInputChange('fileName', e.target.value)}
+                    placeholder="example.txt"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="totalLines">Tổng số dòng</Label>
+                  <Input
+                    id="totalLines"
+                    type="number"
+                    value={formData.totalLines}
+                    onChange={(e) => handleInputChange('totalLines', parseInt(e.target.value) || 0)}
+                    placeholder="0"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="usedLines">Số dòng đã dùng</Label>
+                  <Input
+                    id="usedLines"
+                    type="number"
+                    value={formData.usedLines}
+                    onChange={(e) => handleInputChange('usedLines', parseInt(e.target.value) || 0)}
+                    placeholder="0"
+                    min="0"
+                    disabled
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Tự động cập nhật khi có đơn hàng
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="active">Trạng thái</Label>
+                    <p className="text-sm text-text-muted">
+                      Sản phẩm có hiển thị trên website không
+                    </p>
+                  </div>
+                  <Switch
+                    id="active"
+                    checked={formData.active}
+                    onCheckedChange={(checked) => handleInputChange('active', checked)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Images */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Hình ảnh sản phẩm</CardTitle>
+              <CardDescription>
+                Upload hình ảnh cho sản phẩm
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="border-2 border-dashed border-border rounded-lg p-6">
+                  <div className="flex flex-col items-center space-y-4">
+                    <Upload className="h-8 w-8 text-text-muted" />
+                    <div className="text-center space-y-2">
+                      <p className="font-medium">Upload ảnh sản phẩm</p>
+                      <p className="text-sm text-text-muted">JPG, PNG, WebP (Có thể chọn nhiều ảnh)</p>
+                      <div className="text-xs text-text-muted bg-card-dark px-3 py-2 rounded-lg inline-block">
+                        <p className="font-semibold text-brand mb-1">✨ Tự động tối ưu:</p>
+                        <p>• Tỷ lệ: 16:9 (phù hợp với giao diện)</p>
+                        <p>• Kích thước: 800x450px (tối ưu web)</p>
+                        <p>• Chất lượng: 85% (cân bằng dung lượng)</p>
+                        <p className="mt-1 text-success">→ Ảnh sẽ tự động crop và resize khi upload</p>
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="imageUpload"
+                      multiple
+                      disabled={uploadingImages}
+                    />
+                    <label htmlFor="imageUpload">
+                      <Button type="button" variant="outline" disabled={uploadingImages} asChild>
+                        <span>{uploadingImages ? 'Đang upload...' : 'Chọn ảnh'}</span>
+                      </Button>
+                    </label>
+                  </div>
+                </div>
+
+                {formData.images.length > 0 && (
+                  <div className="grid grid-cols-4 gap-4">
+                    {formData.images.map((img, idx) => (
+                      <div key={idx} className="relative group w-full h-24">
+                        <Image
+                          src={img}
+                          alt={`Product ${idx + 1}`}
+                          fill
+                          className="object-cover rounded border border-border"
+                          unoptimized
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-1 right-1 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-4">
+            <Link href="/admin/products">
+              <Button type="button" variant="outline">
+                Hủy
               </Button>
-            </div>
-          </form>
-        </div>
+            </Link>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Lưu thay đổi
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
       </div>
-    </AppShell>
+    </div>
   );
 }
 

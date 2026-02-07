@@ -1,0 +1,28 @@
+{
+  "id": "tpbank_001",
+  "name": "TPBank",
+  "enabled": true,
+  "apiUrl": "https://your-tpbank-api.com/transactions",
+  "method": "GET",
+  "headers": {
+    "Accept": "application/json"
+  },
+  "fieldMapping": {
+    "transactionsPath": "data.transactions",
+    "fields": {
+      "transactionId": "transaction_id",
+      "amount": "amount",
+      "description": "description",
+      "transactionDate": "transaction_date",
+      "type": "transaction_type"
+    }
+  },
+  "filters": {
+    "onlyCredit": true,
+    "creditIndicator": {
+      "field": "transaction_type",
+      "value": "CREDIT",
+      "condition": "equals"
+    }
+  }
+}

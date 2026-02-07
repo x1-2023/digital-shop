@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPasswordResetEmail } from '@/lib/email';
 import crypto from 'crypto';
-import { checkRateLimit, getClientIdentifier, getRateLimitConfig } from '@/lib/rate-limit';
+import { apiRateLimiter } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,23 +16,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limiting: Prevent spam password reset requests
-    const identifier = getClientIdentifier(request);
-    const rateLimit = checkRateLimit(identifier, getRateLimitConfig('FORGOT_PASSWORD'));
+    // Rate limiting: Prevent spam password reset requests (3 per minute per IP)
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const isAllowed = await apiRateLimiter.check(`forgot-password:${ip}`, 3);
 
-    if (!rateLimit.allowed) {
-      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+    if (!isAllowed) {
       return NextResponse.json(
         {
           error: 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.',
-          retryAfter,
         },
         {
           status: 429,
           headers: {
-            'Retry-After': retryAfter.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
+            'Retry-After': '60',
           },
         }
       );

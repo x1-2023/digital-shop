@@ -111,15 +111,153 @@ export async function processAutoTopup(
       });
 
       if (!depositRequest) {
-        // Try to find ALL pending requests to debug
-        const allPending = await prisma.manualDepositRequest.findMany({
-          where: { status: 'PENDING' },
-          select: { id: true, transferContent: true, userId: true },
-          take: 10,
-        });
+        // Fallback: Try to find User directly by ID from topupCode
+        // topupCode format is "NAP userId" -> extract userId
+        const userIdMatch = topupCode.match(/NAP\s+([a-z0-9]{8})/i);
+        const userId = userIdMatch ? userIdMatch[1].toLowerCase() : null;
 
-        console.log(`[AutoTopup] ❌ No match found for "${topupCode}"`);
-        console.log(`[AutoTopup] Pending requests:`, allPending);
+        if (userId) {
+          console.log(`[AutoTopup] No request found, falling back to direct user search: ${userId}`);
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, email: true }
+          });
+
+          if (user) {
+            // START DIRECT DEPOSIT LOGIC
+            // Calculate deposit bonus
+            const { calculateDepositBonus } = await import('./deposit-bonus');
+            const bonusCalc = await calculateDepositBonus(creditAmount);
+
+            const totalCredit = bonusCalc.totalAmount;
+            const bonusAmount = bonusCalc.bonusAmount;
+            const bonusPercent = bonusCalc.bonusPercent;
+
+            // Process topup in transaction
+            await prisma.$transaction(async (tx) => {
+              // 1. Create a "System" deposit request for record keeping (Approved immediately)
+              const systemReq = await tx.manualDepositRequest.create({
+                data: {
+                  userId: user.id,
+                  amountVnd: creditAmount,
+                  note: `Auto-created from Direct Topup. TxID: ${transaction.id}`,
+                  qrCode: '', // No QR code for direct
+                  transferContent: topupCode,
+                  status: 'APPROVED',
+                  adminNote: `Direct Auto-deposit via ${bankName}. TxID: ${transaction.id}${bonusAmount > 0 ? ` | Bonus: ${bonusPercent}% (+${bonusAmount.toLocaleString('vi-VN')} VND)` : ''}`,
+                }
+              });
+
+              // 2. Credit wallet (with bonus)
+              await tx.wallet.upsert({
+                where: { userId: user.id },
+                create: {
+                  userId: user.id,
+                  balanceVnd: totalCredit,
+                },
+                update: {
+                  balanceVnd: { increment: totalCredit },
+                },
+              });
+
+              // 3. Create wallet transaction
+              await tx.walletTransaction.create({
+                data: {
+                  userId: user.id,
+                  type: 'DEPOSIT',
+                  amountVnd: totalCredit,
+                  balanceAfterVnd: 0, // Will be updated
+                  description: `Direct Auto topup - ${topupCode}${bonusAmount > 0 ? ` (Bonus: +${bonusPercent}%)` : ''}`,
+                  metadata: JSON.stringify({
+                    depositRequestId: systemReq.id,
+                    bankTransactionId: transaction.id,
+                    bankName,
+                    bankDescription: transaction.description,
+                    originalAmount: creditAmount,
+                    bonusAmount: bonusAmount,
+                    bonusPercent: bonusPercent,
+                    totalAmount: totalCredit,
+                    mode: 'DIRECT'
+                  }),
+                },
+              });
+
+              // 4. Log successful auto topup
+              await tx.autoTopupLog.create({
+                data: {
+                  bankTransactionId: transaction.id,
+                  bankName,
+                  depositRequestId: systemReq.id,
+                  userId: user.id,
+                  topupCode,
+                  amountVnd: creditAmount,
+                  description: transaction.description,
+                  status: 'SUCCESS',
+                  transactionDate: transaction.date,
+                },
+              });
+
+              // 5. Log system activity
+              await tx.systemLog.create({
+                data: {
+                  userId: user.id,
+                  userEmail: user.email,
+                  action: 'DEPOSIT_AUTO',
+                  targetType: 'DEPOSIT',
+                  targetId: systemReq.id.toString(),
+                  amount: totalCredit,
+                  description: `Direct Auto-topup successful: ${totalCredit.toLocaleString('vi-VN')} VND`,
+                  metadata: JSON.stringify({
+                    bankName,
+                    bankTransactionId: transaction.id,
+                    originalAmount: creditAmount,
+                    bonusAmount,
+                    totalAmount: totalCredit,
+                    mode: 'DIRECT'
+                  }),
+                },
+              });
+            });
+
+            result.details.push({
+              transactionId: transaction.id,
+              topupCode,
+              amount: creditAmount,
+              status: 'success',
+              message: `Directly credited ${totalCredit.toLocaleString('vi-VN')} VND to user ${user.email}`,
+            });
+            result.processed++;
+
+            console.log(
+              `[AutoTopup] ✅ Direct Deposit Processed ${topupCode}: ${totalCredit.toLocaleString('vi-VN')} VND → ${user.email}`
+            );
+
+            // Notify & Reward (Async)
+            try {
+              const { processReferralRewards } = await import('./referral');
+              await processReferralRewards(user.id, creditAmount);
+            } catch (err) { }
+
+            try {
+              const { sendDepositNotification, loadWebhookConfig } = await import('./discord-webhook');
+              const webhookConfig = await loadWebhookConfig();
+              if (webhookConfig.enabled && webhookConfig.notifyOnDeposits) {
+                sendDepositNotification(webhookConfig, {
+                  userId: user.id,
+                  userEmail: user.email,
+                  amount: creditAmount,
+                  status: 'APPROVED',
+                  method: 'AUTO_DIRECT',
+                }).catch(err => console.error('[AutoTopup] Webhook error:', err));
+              }
+            } catch (err) { }
+
+            continue; // Move to next transaction
+          }
+        }
+
+        // If still no user found, log as invalid
+        console.log(`[AutoTopup] ❌ No match found for "${topupCode}" (Direct search failed)`);
 
         // Log as invalid
         await prisma.autoTopupLog.create({
@@ -130,7 +268,7 @@ export async function processAutoTopup(
             amountVnd: creditAmount,
             description: transaction.description,
             status: 'INVALID',
-            errorMessage: `No matching deposit request found. Searched for: "${topupCode}"`,
+            errorMessage: `No matching deposit request or user found. Searched for: "${topupCode}"`,
             transactionDate: transaction.date,
           },
         });
@@ -140,7 +278,7 @@ export async function processAutoTopup(
           topupCode,
           amount: creditAmount,
           status: 'invalid',
-          message: 'No matching deposit request',
+          message: 'No matching deposit request or user',
         });
         result.failed++;
         continue;

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AppShell } from '@/components/layout/app-shell'
+// import { AppShell } from '@/components/layout/app-shell'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -143,177 +143,175 @@ export default function RateLimitsPage() {
   }
 
   return (
-    <AppShell isAdmin={true}>
-      <div className="p-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Rate Limiting</h1>
-            <p className="text-text-muted mt-2">
-              Quản lý giới hạn request để bảo vệ hệ thống khỏi spam và brute force
-            </p>
-          </div>
-          <Button onClick={handleSave} disabled={isSaving}>
-            <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </Button>
+    <div className="flex-1 p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Rate Limiting</h1>
+          <p className="text-text-muted mt-2">
+            Quản lý giới hạn request để bảo vệ hệ thống khỏi spam và brute force
+          </p>
         </div>
+        <Button onClick={handleSave} disabled={isSaving}>
+          <Save className="h-4 w-4 mr-2" />
+          {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+        </Button>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              <CardTitle>Cảnh báo</CardTitle>
-            </div>
-            <CardDescription>
-              Thay đổi cấu hình rate limiting có thể ảnh hưởng đến trải nghiệm người dùng.
-              Giá trị quá thấp có thể chặn người dùng hợp lệ. Giá trị quá cao có thể không
-              bảo vệ đủ khỏi tấn công.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <CardTitle>Cảnh báo</CardTitle>
+          </div>
+          <CardDescription>
+            Thay đổi cấu hình rate limiting có thể ảnh hưởng đến trải nghiệm người dùng.
+            Giá trị quá thấp có thể chặn người dùng hợp lệ. Giá trị quá cao có thể không
+            bảo vệ đủ khỏi tấn công.
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
-        <div className="grid gap-6">
-          {configs.map((config) => (
-            <Card key={config.key}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Shield className="h-5 w-5" />
-                      <span>{config.name}</span>
-                      <Badge variant="outline">{config.key}</Badge>
-                    </CardTitle>
-                    <CardDescription className="mt-2">
-                      {config.description}
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleReset(config.key)}
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Reset
-                  </Button>
+      <div className="grid gap-6">
+        {configs.map((config) => (
+          <Card key={config.key}>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Shield className="h-5 w-5" />
+                    <span>{config.name}</span>
+                    <Badge variant="outline">{config.key}</Badge>
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    {config.description}
+                  </CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor={`${config.key}-limit`}>
-                      Số lần tối đa
-                    </Label>
-                    <Input
-                      id={`${config.key}-limit`}
-                      type="number"
-                      min="1"
-                      max="1000"
-                      value={config.limit}
-                      onChange={(e) =>
-                        handleUpdate(config.key, 'limit', parseInt(e.target.value) || 1)
-                      }
-                    />
-                    <p className="text-xs text-text-muted">
-                      Số request tối đa trong khoảng thời gian
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`${config.key}-window`}>
-                      Thời gian (phút)
-                    </Label>
-                    <Input
-                      id={`${config.key}-window`}
-                      type="number"
-                      min="1"
-                      max="1440"
-                      value={config.window}
-                      onChange={(e) =>
-                        handleUpdate(config.key, 'window', parseInt(e.target.value) || 1)
-                      }
-                    />
-                    <p className="text-xs text-text-muted">
-                      Khoảng thời gian tính rate limit
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor={`${config.key}-block`}>
-                      Thời gian chặn (phút)
-                    </Label>
-                    <Input
-                      id={`${config.key}-block`}
-                      type="number"
-                      min="0"
-                      max="1440"
-                      value={config.blockDuration || 0}
-                      onChange={(e) =>
-                        handleUpdate(
-                          config.key,
-                          'blockDuration',
-                          parseInt(e.target.value) || undefined
-                        )
-                      }
-                      placeholder="Không chặn"
-                    />
-                    <p className="text-xs text-text-muted">
-                      Thời gian chặn sau khi vượt giới hạn (0 = không chặn)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 p-4 bg-muted rounded-lg">
-                  <p className="text-sm">
-                    <strong>Cấu hình hiện tại:</strong> Cho phép tối đa{' '}
-                    <span className="text-brand font-semibold">{config.limit} requests</span>{' '}
-                    trong{' '}
-                    <span className="text-brand font-semibold">
-                      {config.window} phút
-                    </span>
-                    {config.blockDuration && config.blockDuration > 0 && (
-                      <>
-                        . Chặn{' '}
-                        <span className="text-destructive font-semibold">
-                          {config.blockDuration} phút
-                        </span>{' '}
-                        sau khi vượt giới hạn
-                      </>
-                    )}
-                    .
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleReset(config.key)}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`${config.key}-limit`}>
+                    Số lần tối đa
+                  </Label>
+                  <Input
+                    id={`${config.key}-limit`}
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={config.limit}
+                    onChange={(e) =>
+                      handleUpdate(config.key, 'limit', parseInt(e.target.value) || 1)
+                    }
+                  />
+                  <p className="text-xs text-text-muted">
+                    Số request tối đa trong khoảng thời gian
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Lưu ý</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-text-muted">
-            <p>
-              • <strong>Limit</strong>: Số lần request tối đa được phép
-            </p>
-            <p>
-              • <strong>Window</strong>: Khoảng thời gian tính rate limit (sliding window)
-            </p>
-            <p>
-              • <strong>Block Duration</strong>: Thời gian chặn sau khi vượt giới hạn.
-              Để 0 nếu chỉ muốn từ chối request chứ không chặn hoàn toàn
-            </p>
-            <p>
-              • Thay đổi sẽ có hiệu lực ngay lập tức
-            </p>
-            <p>
-              • Rate limit áp dụng theo IP address cho request chưa đăng nhập
-            </p>
-            <p>
-              • Rate limit áp dụng theo User ID cho request đã đăng nhập
-            </p>
-          </CardContent>
-        </Card>
+                <div className="space-y-2">
+                  <Label htmlFor={`${config.key}-window`}>
+                    Thời gian (phút)
+                  </Label>
+                  <Input
+                    id={`${config.key}-window`}
+                    type="number"
+                    min="1"
+                    max="1440"
+                    value={config.window}
+                    onChange={(e) =>
+                      handleUpdate(config.key, 'window', parseInt(e.target.value) || 1)
+                    }
+                  />
+                  <p className="text-xs text-text-muted">
+                    Khoảng thời gian tính rate limit
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`${config.key}-block`}>
+                    Thời gian chặn (phút)
+                  </Label>
+                  <Input
+                    id={`${config.key}-block`}
+                    type="number"
+                    min="0"
+                    max="1440"
+                    value={config.blockDuration || 0}
+                    onChange={(e) =>
+                      handleUpdate(
+                        config.key,
+                        'blockDuration',
+                        parseInt(e.target.value) || undefined
+                      )
+                    }
+                    placeholder="Không chặn"
+                  />
+                  <p className="text-xs text-text-muted">
+                    Thời gian chặn sau khi vượt giới hạn (0 = không chặn)
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <p className="text-sm">
+                  <strong>Cấu hình hiện tại:</strong> Cho phép tối đa{' '}
+                  <span className="text-brand font-semibold">{config.limit} requests</span>{' '}
+                  trong{' '}
+                  <span className="text-brand font-semibold">
+                    {config.window} phút
+                  </span>
+                  {config.blockDuration && config.blockDuration > 0 && (
+                    <>
+                      . Chặn{' '}
+                      <span className="text-destructive font-semibold">
+                        {config.blockDuration} phút
+                      </span>{' '}
+                      sau khi vượt giới hạn
+                    </>
+                  )}
+                  .
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-    </AppShell>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Lưu ý</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-text-muted">
+          <p>
+            • <strong>Limit</strong>: Số lần request tối đa được phép
+          </p>
+          <p>
+            • <strong>Window</strong>: Khoảng thời gian tính rate limit (sliding window)
+          </p>
+          <p>
+            • <strong>Block Duration</strong>: Thời gian chặn sau khi vượt giới hạn.
+            Để 0 nếu chỉ muốn từ chối request chứ không chặn hoàn toàn
+          </p>
+          <p>
+            • Thay đổi sẽ có hiệu lực ngay lập tức
+          </p>
+          <p>
+            • Rate limit áp dụng theo IP address cho request chưa đăng nhập
+          </p>
+          <p>
+            • Rate limit áp dụng theo User ID cho request đã đăng nhập
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

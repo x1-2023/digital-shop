@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,11 +11,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  CreditCard, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  CreditCard,
+  CheckCircle,
+  XCircle,
+  Clock,
   Eye,
   QrCode
 } from 'lucide-react';
@@ -57,10 +57,10 @@ export default function AdminTopupsPage() {
 
   const fetchDeposits = async () => {
     try {
-      const url = statusFilter === 'all' 
-        ? '/api/admin/deposits' 
+      const url = statusFilter === 'all'
+        ? '/api/admin/deposits'
         : `/api/admin/deposits?status=${statusFilter}`;
-      
+
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
@@ -143,258 +143,254 @@ export default function AdminTopupsPage() {
 
   if (isLoading) {
     return (
-      <AppShell isAdmin>
-        <div className="flex-1 p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-card rounded w-1/4"></div>
-            <div className="h-64 bg-card rounded"></div>
-          </div>
+      <div className="flex-1 p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-card rounded w-1/4"></div>
+          <div className="h-64 bg-card rounded"></div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-text-primary">Yêu cầu nạp tiền</h1>
-            <p className="text-text-muted">Quản lý các yêu cầu nạp tiền từ người dùng</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Lọc theo trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="PENDING">Chờ duyệt</SelectItem>
-                <SelectItem value="APPROVED">Đã duyệt</SelectItem>
-                <SelectItem value="REJECTED">Bị từ chối</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="flex-1 p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Yêu cầu nạp tiền</h1>
+          <p className="text-text-muted">Quản lý các yêu cầu nạp tiền từ người dùng</p>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Danh sách yêu cầu nạp</CardTitle>
-            <CardDescription>
-              Tổng cộng {deposits.length} yêu cầu nạp
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {deposits.length === 0 ? (
-              <div className="text-center py-8 text-text-muted">
-                <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Không có yêu cầu nạp nào</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Khách hàng</TableHead>
-                    <TableHead>Số tiền</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead>Ngày tạo</TableHead>
-                    <TableHead>Hành động</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {deposits.map((deposit) => (
-                    <TableRow key={deposit.id}>
-                      <TableCell className="font-mono text-xs">
-                        #{deposit.id}
-                      </TableCell>
-                      <TableCell>{deposit.user?.email || 'N/A'}</TableCell>
-                      <TableCell className="font-medium">
-                        {formatCurrency(deposit.amountVnd)}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(deposit.status)}</TableCell>
-                      <TableCell>{formatDate(deposit.createdAt)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedDeposit(deposit);
-                              setIsDetailOpen(true);
-                            }}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Xem
-                          </Button>
-                          {deposit.status === 'PENDING' && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openActionDialog(deposit, 'approve')}
-                                className="text-success hover:text-success"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Duyệt
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openActionDialog(deposit, 'reject')}
-                                className="text-danger hover:text-danger"
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Từ chối
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Detail Dialog */}
-        <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Chi tiết yêu cầu nạp</DialogTitle>
-              <DialogDescription>
-                Thông tin chi tiết yêu cầu nạp tiền
-              </DialogDescription>
-            </DialogHeader>
-            {selectedDeposit && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>ID yêu cầu</Label>
-                    <p className="font-mono text-sm">{selectedDeposit.id}</p>
-                  </div>
-                  <div>
-                    <Label>Khách hàng</Label>
-                    <p className="text-sm">{selectedDeposit.user?.email || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <Label>Số tiền</Label>
-                    <p className="text-lg font-semibold text-brand">
-                      {formatCurrency(selectedDeposit.amountVnd)}
-                    </p>
-                  </div>
-                  <div>
-                    <Label>Trạng thái</Label>
-                    <div>{getStatusBadge(selectedDeposit.status)}</div>
-                  </div>
-                </div>
-
-                {selectedDeposit.note && (
-                  <div>
-                    <Label>Ghi chú từ khách hàng</Label>
-                    <p className="text-sm bg-card p-3 rounded-lg">{selectedDeposit.note}</p>
-                  </div>
-                )}
-
-                {selectedDeposit.transferContent && (
-                  <div>
-                    <Label>Nội dung chuyển khoản</Label>
-                    <p className="text-sm bg-card p-3 rounded-lg font-mono">
-                      {selectedDeposit.transferContent}
-                    </p>
-                  </div>
-                )}
-
-                {selectedDeposit.adminNote && (
-                  <div>
-                    <Label>Ghi chú từ admin</Label>
-                    <p className="text-sm bg-card p-3 rounded-lg">{selectedDeposit.adminNote}</p>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4 text-sm text-text-muted">
-                  <div>
-                    <Label>Ngày tạo</Label>
-                    <p>{formatDate(selectedDeposit.createdAt)}</p>
-                  </div>
-                  {selectedDeposit.decidedAt && (
-                    <div>
-                      <Label>Ngày quyết định</Label>
-                      <p>{formatDate(selectedDeposit.decidedAt)}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Action Dialog */}
-        <Dialog open={isActionOpen} onOpenChange={setIsActionOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {actionType === 'approve' ? 'Duyệt yêu cầu nạp' : 'Từ chối yêu cầu nạp'}
-              </DialogTitle>
-              <DialogDescription>
-                {actionType === 'approve' 
-                  ? 'Xác nhận duyệt yêu cầu nạp tiền này?'
-                  : 'Xác nhận từ chối yêu cầu nạp tiền này?'
-                }
-              </DialogDescription>
-            </DialogHeader>
-            {selectedDeposit && (
-              <div className="space-y-4">
-                <div className="bg-card p-4 rounded-lg">
-                  <p className="text-sm text-text-muted">Khách hàng: {selectedDeposit.user.email}</p>
-                  <p className="text-sm text-text-muted">Số tiền: {formatCurrency(selectedDeposit.amountVnd)}</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="adminNote">
-                    Ghi chú {actionType === 'approve' ? '(tùy chọn)' : '(bắt buộc)'}
-                  </Label>
-                  <Textarea
-                    id="adminNote"
-                    placeholder={actionType === 'approve' 
-                      ? 'Ghi chú cho khách hàng...' 
-                      : 'Lý do từ chối...'
-                    }
-                    value={adminNote}
-                    onChange={(e) => setAdminNote(e.target.value)}
-                    rows={3}
-                    required={actionType === 'reject'}
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsActionOpen(false)}
-                  >
-                    Hủy
-                  </Button>
-                  <Button
-                    variant={actionType === 'approve' ? 'default' : 'destructive'}
-                    onClick={() => selectedDeposit && handleAction(selectedDeposit.id, actionType!)}
-                    disabled={isSubmitting || (actionType === 'reject' && !adminNote.trim())}
-                  >
-                    {isSubmitting 
-                      ? 'Đang xử lý...' 
-                      : actionType === 'approve' 
-                        ? 'Duyệt' 
-                        : 'Từ chối'
-                    }
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center space-x-4">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Lọc theo trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="PENDING">Chờ duyệt</SelectItem>
+              <SelectItem value="APPROVED">Đã duyệt</SelectItem>
+              <SelectItem value="REJECTED">Bị từ chối</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-    </AppShell>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách yêu cầu nạp</CardTitle>
+          <CardDescription>
+            Tổng cộng {deposits.length} yêu cầu nạp
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {deposits.length === 0 ? (
+            <div className="text-center py-8 text-text-muted">
+              <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Không có yêu cầu nạp nào</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Khách hàng</TableHead>
+                  <TableHead>Số tiền</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Ngày tạo</TableHead>
+                  <TableHead>Hành động</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {deposits.map((deposit) => (
+                  <TableRow key={deposit.id}>
+                    <TableCell className="font-mono text-xs">
+                      #{deposit.id}
+                    </TableCell>
+                    <TableCell>{deposit.user?.email || 'N/A'}</TableCell>
+                    <TableCell className="font-medium">
+                      {formatCurrency(deposit.amountVnd)}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(deposit.status)}</TableCell>
+                    <TableCell>{formatDate(deposit.createdAt)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedDeposit(deposit);
+                            setIsDetailOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Xem
+                        </Button>
+                        {deposit.status === 'PENDING' && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openActionDialog(deposit, 'approve')}
+                              className="text-success hover:text-success"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Duyệt
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openActionDialog(deposit, 'reject')}
+                              className="text-danger hover:text-danger"
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Từ chối
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Detail Dialog */}
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Chi tiết yêu cầu nạp</DialogTitle>
+            <DialogDescription>
+              Thông tin chi tiết yêu cầu nạp tiền
+            </DialogDescription>
+          </DialogHeader>
+          {selectedDeposit && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>ID yêu cầu</Label>
+                  <p className="font-mono text-sm">{selectedDeposit.id}</p>
+                </div>
+                <div>
+                  <Label>Khách hàng</Label>
+                  <p className="text-sm">{selectedDeposit.user?.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label>Số tiền</Label>
+                  <p className="text-lg font-semibold text-brand">
+                    {formatCurrency(selectedDeposit.amountVnd)}
+                  </p>
+                </div>
+                <div>
+                  <Label>Trạng thái</Label>
+                  <div>{getStatusBadge(selectedDeposit.status)}</div>
+                </div>
+              </div>
+
+              {selectedDeposit.note && (
+                <div>
+                  <Label>Ghi chú từ khách hàng</Label>
+                  <p className="text-sm bg-card p-3 rounded-lg">{selectedDeposit.note}</p>
+                </div>
+              )}
+
+              {selectedDeposit.transferContent && (
+                <div>
+                  <Label>Nội dung chuyển khoản</Label>
+                  <p className="text-sm bg-card p-3 rounded-lg font-mono">
+                    {selectedDeposit.transferContent}
+                  </p>
+                </div>
+              )}
+
+              {selectedDeposit.adminNote && (
+                <div>
+                  <Label>Ghi chú từ admin</Label>
+                  <p className="text-sm bg-card p-3 rounded-lg">{selectedDeposit.adminNote}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 text-sm text-text-muted">
+                <div>
+                  <Label>Ngày tạo</Label>
+                  <p>{formatDate(selectedDeposit.createdAt)}</p>
+                </div>
+                {selectedDeposit.decidedAt && (
+                  <div>
+                    <Label>Ngày quyết định</Label>
+                    <p>{formatDate(selectedDeposit.decidedAt)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Action Dialog */}
+      <Dialog open={isActionOpen} onOpenChange={setIsActionOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {actionType === 'approve' ? 'Duyệt yêu cầu nạp' : 'Từ chối yêu cầu nạp'}
+            </DialogTitle>
+            <DialogDescription>
+              {actionType === 'approve'
+                ? 'Xác nhận duyệt yêu cầu nạp tiền này?'
+                : 'Xác nhận từ chối yêu cầu nạp tiền này?'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          {selectedDeposit && (
+            <div className="space-y-4">
+              <div className="bg-card p-4 rounded-lg">
+                <p className="text-sm text-text-muted">Khách hàng: {selectedDeposit.user.email}</p>
+                <p className="text-sm text-text-muted">Số tiền: {formatCurrency(selectedDeposit.amountVnd)}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="adminNote">
+                  Ghi chú {actionType === 'approve' ? '(tùy chọn)' : '(bắt buộc)'}
+                </Label>
+                <Textarea
+                  id="adminNote"
+                  placeholder={actionType === 'approve'
+                    ? 'Ghi chú cho khách hàng...'
+                    : 'Lý do từ chối...'
+                  }
+                  value={adminNote}
+                  onChange={(e) => setAdminNote(e.target.value)}
+                  rows={3}
+                  required={actionType === 'reject'}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsActionOpen(false)}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  variant={actionType === 'approve' ? 'default' : 'destructive'}
+                  onClick={() => selectedDeposit && handleAction(selectedDeposit.id, actionType!)}
+                  disabled={isSubmitting || (actionType === 'reject' && !adminNote.trim())}
+                >
+                  {isSubmitting
+                    ? 'Đang xử lý...'
+                    : actionType === 'approve'
+                      ? 'Duyệt'
+                      : 'Từ chối'
+                  }
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 

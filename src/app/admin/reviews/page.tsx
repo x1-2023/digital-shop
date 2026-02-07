@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Star, Eye, EyeOff, Trash2, FileText } from 'lucide-react';
+import { Star, Eye, EyeOff, Trash2, FileText, Zap } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -183,9 +183,8 @@ export default function AdminReviewsPage() {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`h-4 w-4 ${
-              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-            }`}
+            className={`h-4 w-4 ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+              }`}
           />
         ))}
       </div>
@@ -203,8 +202,33 @@ export default function AdminReviewsPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
+  const handleAutoReview = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch('/api/cron/auto-review');
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          title: 'Thành công',
+          description: `Đã xử lý ${data.details.processed} đơn hàng, tạo ${data.details.reviewsCreated} đánh giá.`,
+        });
+        fetchReviews(); // Refresh list
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Lỗi',
+        description: 'Không thể chạy auto-review',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AppShell>
+    <div className="flex-1 p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -212,17 +236,24 @@ export default function AdminReviewsPage() {
             <p className="text-text-muted">Xem và quản lý tất cả đánh giá sản phẩm</p>
           </div>
 
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Lọc theo trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="PUBLISHED">Công khai</SelectItem>
-              <SelectItem value="HIDDEN">Đã ẩn</SelectItem>
-              <SelectItem value="DELETED">Đã xóa</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-4">
+            <Button onClick={handleAutoReview} disabled={isLoading} variant="outline">
+              <Zap className="mr-2 h-4 w-4" />
+              Chạy Auto-Review
+            </Button>
+
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Lọc theo trạng thái" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="PUBLISHED">Công khai</SelectItem>
+                <SelectItem value="HIDDEN">Đã ẩn</SelectItem>
+                <SelectItem value="DELETED">Đã xóa</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <Card>
@@ -392,6 +423,7 @@ export default function AdminReviewsPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </AppShell>
+    </div>
   );
 }
+

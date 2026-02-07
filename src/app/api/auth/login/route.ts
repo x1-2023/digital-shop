@@ -2,41 +2,37 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCredentials } from '@/lib/auth';
 import { createSessionToken } from '@/lib/jwt-session';
 import { cookies } from 'next/headers';
-import { checkRateLimit, getClientIdentifier, getRateLimitConfig } from '@/lib/rate-limit';
+import { apiRateLimiter } from '@/lib/rate-limit';
+import { LoginSchema } from '@/lib/validators/auth';
 import { logUserLogin, logAdminLogin } from '@/lib/system-log';
 
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting: Prevent brute force login attempts
-    const identifier = getClientIdentifier(request);
-    const rateLimit = checkRateLimit(identifier, getRateLimitConfig('LOGIN'));
+    // Use IP as key
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    // Limit: 5 attempts per minute per IP
+    const isAllowed = await apiRateLimiter.check(`login:${ip}`, 5);
 
-    if (!rateLimit.allowed) {
-      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+    if (!isAllowed) {
       return NextResponse.json(
-        {
-          error: 'Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau.',
-          retryAfter,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': retryAfter.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
-          },
-        }
+        { error: 'Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 1 phút.' },
+        { status: 429 }
       );
     }
 
-    const { email, password } = await request.json();
+    const body = await request.json();
 
-    if (!email || !password) {
+    // Zod Validation
+    const validation = LoginSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Email và password là bắt buộc' },
+        { error: validation.error.issues[0].message },
         { status: 400 }
       );
     }
+
+    const { email, password } = validation.data;
 
     const user = await verifyCredentials(email, password);
 
@@ -49,8 +45,8 @@ export async function POST(request: NextRequest) {
 
     // Log login attempt
     const clientIp = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown';
+      request.headers.get('x-real-ip') ||
+      'unknown';
 
     if (user.role === 'ADMIN') {
       await logAdminLogin(user.id, user.email, clientIp);
@@ -69,7 +65,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     cookieStore.set('session', token, {
       httpOnly: true,
-      secure: true, // Always secure (even in dev, use HTTPS)
+      secure: process.env.NODE_ENV === 'production', // Secure in production, allow http in dev
       sameSite: 'strict', // Stronger CSRF protection
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',

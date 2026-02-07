@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,7 +209,7 @@ export default function AdminAdvertisementsPage() {
   };
 
   return (
-    <AppShell isAdmin>
+    <div className="flex-1 p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -324,7 +324,7 @@ export default function AdminAdvertisementsPage() {
                   <div>
                     <Label htmlFor="content">
                       {formData.type === 'GOOGLE_ADSENSE' ? 'Google AdSense Code' :
-                       formData.type === 'VIDEO' ? 'Video Embed Code' : 'HTML/JavaScript Code'}
+                        formData.type === 'VIDEO' ? 'Video Embed Code' : 'HTML/JavaScript Code'}
                     </Label>
                     <Textarea
                       id="content"
@@ -334,8 +334,8 @@ export default function AdminAdvertisementsPage() {
                         formData.type === 'GOOGLE_ADSENSE'
                           ? '<script async src="https://pagead2.googlesyndication.com/..."></script>'
                           : formData.type === 'VIDEO'
-                          ? '<iframe src="https://www.youtube.com/embed/..." ...></iframe>'
-                          : '<div>Custom HTML content</div>'
+                            ? '<iframe src="https://www.youtube.com/embed/..." ...></iframe>'
+                            : '<div>Custom HTML content</div>'
                       }
                       rows={8}
                       className="font-mono text-sm"
@@ -477,6 +477,6 @@ export default function AdminAdvertisementsPage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </div>
   );
 }

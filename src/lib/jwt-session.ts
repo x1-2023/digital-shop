@@ -5,13 +5,21 @@
 
 import jwt from 'jsonwebtoken';
 
-const SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
-
-if (!SECRET || SECRET.length < 32) {
-  throw new Error(
-    'SESSION_SECRET must be set and at least 32 characters long. ' +
-    'Generate with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
-  );
+function getSecret() {
+  const secret = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
+  
+  if (!secret || secret.length < 32) {
+    if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
+      // Only throw in production server-side to prevent unsafe startup
+      throw new Error(
+        'SESSION_SECRET must be set and at least 32 characters long. ' +
+        'Generate with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
+      );
+    }
+    // Return a dummy secret for development/build to prevent crashes
+    return 'default-dev-secret-do-not-use-in-production-at-least-32-chars';
+  }
+  return secret;
 }
 
 export interface SessionData {
@@ -45,7 +53,7 @@ export function createSessionToken(
         email: data.email,
         role: data.role,
       },
-      SECRET!,
+      getSecret(),
       {
         expiresIn: expiresIn as any,
         issuer: 'digital-shop',
@@ -67,7 +75,7 @@ export function createSessionToken(
  */
 export function verifySessionToken(token: string): SessionPayload | null {
   try {
-    const decoded = jwt.verify(token, SECRET!, {
+    const decoded = jwt.verify(token, getSecret(), {
       issuer: 'digital-shop',
       algorithms: ['HS256'],
     }) as SessionPayload;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -353,693 +353,687 @@ export default function AdminSettingsPage() {
 
   if (isLoading) {
     return (
-      <AppShell isAdmin>
-        <div className="flex-1 p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-card rounded w-1/4"></div>
-            <div className="h-64 bg-card rounded"></div>
-          </div>
+      <div className="flex-1 p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-card rounded w-1/4"></div>
+          <div className="h-64 bg-card rounded"></div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Cài đặt hệ thống</h1>
-              <p className="text-text-muted">
-                Quản lý cài đặt thanh toán và nạp tiền
-              </p>
-            </div>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Đang lưu...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Lưu cài đặt
-                </>
-              )}
-            </Button>
+    <div className="flex-1 p-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Cài đặt hệ thống</h1>
+            <p className="text-text-muted">
+              Quản lý cài đặt thanh toán và nạp tiền
+            </p>
           </div>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Đang lưu...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Lưu cài đặt
+              </>
+            )}
+          </Button>
+        </div>
 
-          <Tabs defaultValue="topup-mode" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="topup-mode">Chế độ nạp tiền</TabsTrigger>
-              <TabsTrigger value="bank-info">Thông tin NH</TabsTrigger>
-              <TabsTrigger value="auto-banks">Cấu hình Auto</TabsTrigger>
-              <TabsTrigger value="webhook">Discord Webhook</TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="topup-mode" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="topup-mode">Chế độ nạp tiền</TabsTrigger>
+            <TabsTrigger value="bank-info">Thông tin NH</TabsTrigger>
+            <TabsTrigger value="auto-banks">Cấu hình Auto</TabsTrigger>
+            <TabsTrigger value="webhook">Discord Webhook</TabsTrigger>
+          </TabsList>
 
-            {/* Topup Mode */}
-            <TabsContent value="topup-mode" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <CreditCard className="h-5 w-5" />
-                    <span>Chế độ nạp tiền</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Chọn chế độ nạp tiền (chỉ được bật 1 trong 2)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label htmlFor="manual-topup" className="text-base font-semibold">
-                        Nạp tiền thủ công
-                      </Label>
-                      <p className="text-sm text-text-muted mt-1">
-                        Người dùng tạo QR code, chuyển khoản, admin duyệt thủ công
-                      </p>
-                    </div>
-                    <Switch
-                      id="manual-topup"
-                      checked={settings.paymentMethods.manual}
-                      onCheckedChange={() => toggleTopupMode('manual')}
-                    />
+          {/* Topup Mode */}
+          <TabsContent value="topup-mode" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <CreditCard className="h-5 w-5" />
+                  <span>Chế độ nạp tiền</span>
+                </CardTitle>
+                <CardDescription>
+                  Chọn chế độ nạp tiền (chỉ được bật 1 trong 2)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <Label htmlFor="manual-topup" className="text-base font-semibold">
+                      Nạp tiền thủ công
+                    </Label>
+                    <p className="text-sm text-text-muted mt-1">
+                      Người dùng tạo QR code, chuyển khoản, admin duyệt thủ công
+                    </p>
                   </div>
+                  <Switch
+                    id="manual-topup"
+                    checked={settings.paymentMethods.manual}
+                    onCheckedChange={() => toggleTopupMode('manual')}
+                  />
+                </div>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label htmlFor="auto-topup" className="text-base font-semibold">
-                        Nạp tiền tự động
-                      </Label>
-                      <p className="text-sm text-text-muted mt-1">
-                        Tự động check giao dịch từ Bank API, tự động duyệt và cộng tiền
-                      </p>
-                    </div>
-                    <Switch
-                      id="auto-topup"
-                      checked={settings.paymentMethods.autoTopup}
-                      onCheckedChange={() => toggleTopupMode('autoTopup')}
-                    />
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <Label htmlFor="auto-topup" className="text-base font-semibold">
+                      Nạp tiền tự động
+                    </Label>
+                    <p className="text-sm text-text-muted mt-1">
+                      Tự động check giao dịch từ Bank API, tự động duyệt và cộng tiền
+                    </p>
                   </div>
+                  <Switch
+                    id="auto-topup"
+                    checked={settings.paymentMethods.autoTopup}
+                    onCheckedChange={() => toggleTopupMode('autoTopup')}
+                  />
+                </div>
 
-                  {settings.paymentMethods.autoTopup && (
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mt-4">
-                      <div className="flex items-start space-x-2">
-                        <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-semibold text-blue-500">Lưu ý khi bật Auto-Topup</p>
-                          <ul className="text-sm text-text-muted mt-2 space-y-1 list-disc list-inside">
-                            <li>Cần cấu hình ít nhất 1 ngân hàng trong tab &quot;Cấu hình Auto&quot;</li>
-                            <li>Cần setup Bank API server riêng (chạy trên port 6868 hoặc tùy chỉnh)</li>
-                            <li>Cần setup Cron job gọi API mỗi 20 giây</li>
-                            <li>Mã nạp tiền format: <code className="bg-background px-1 py-0.5 rounded">NAP + userId</code></li>
-                          </ul>
-                        </div>
+                {settings.paymentMethods.autoTopup && (
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mt-4">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-blue-500">Lưu ý khi bật Auto-Topup</p>
+                        <ul className="text-sm text-text-muted mt-2 space-y-1 list-disc list-inside">
+                          <li>Cần cấu hình ít nhất 1 ngân hàng trong tab &quot;Cấu hình Auto&quot;</li>
+                          <li>Cần setup Bank API server riêng (chạy trên port 6868 hoặc tùy chỉnh)</li>
+                          <li>Cần setup Cron job gọi API mỗi 20 giây</li>
+                          <li>Mã nạp tiền format: <code className="bg-background px-1 py-0.5 rounded">NAP + userId</code></li>
+                        </ul>
                       </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Topup Rules */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Shield className="h-5 w-5" />
-                    <span>Quy tắc nạp tiền</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Giới hạn số tiền nạp tối thiểu và tối đa
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="min-amount">Số tiền tối thiểu (VND)</Label>
-                      <Input
-                        id="min-amount"
-                        type="number"
-                        value={settings.topupRules.minVnd || 0}
-                        onChange={(e) => updateSettings('topupRules.minVnd', parseInt(e.target.value))}
-                        placeholder="10000"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="max-amount">Số tiền tối đa (VND)</Label>
-                      <Input
-                        id="max-amount"
-                        type="number"
-                        value={settings.topupRules.maxVnd || 0}
-                        onChange={(e) => updateSettings('topupRules.maxVnd', parseInt(e.target.value))}
-                        placeholder="10000000"
-                      />
-                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                )}
+              </CardContent>
+            </Card>
 
-            {/* Bank Info */}
-            <TabsContent value="bank-info" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Banknote className="h-5 w-5" />
-                    <span>Thông tin ngân hàng nhận tiền</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Thông tin này sẽ hiển thị cho người dùng khi nạp tiền (dùng cho cả thủ công và tự động)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="bank-name">Tên ngân hàng</Label>
-                      <Input
-                        id="bank-name"
-                        value={settings.bankInfo.bankName || ''}
-                        onChange={(e) => updateSettings('bankInfo.bankName', e.target.value)}
-                        placeholder="Ví dụ: TPBank"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="account-number">Số tài khoản</Label>
-                      <Input
-                        id="account-number"
-                        value={settings.bankInfo.accountNumber || ''}
-                        onChange={(e) => updateSettings('bankInfo.accountNumber', e.target.value)}
-                        placeholder="Ví dụ: 03097189801"
-                      />
-                    </div>
-                  </div>
-
+            {/* Topup Rules */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Shield className="h-5 w-5" />
+                  <span>Quy tắc nạp tiền</span>
+                </CardTitle>
+                <CardDescription>
+                  Giới hạn số tiền nạp tối thiểu và tối đa
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="account-holder">Tên chủ tài khoản</Label>
+                    <Label htmlFor="min-amount">Số tiền tối thiểu (VND)</Label>
                     <Input
-                      id="account-holder"
-                      value={settings.bankInfo.accountHolder || ''}
-                      onChange={(e) => updateSettings('bankInfo.accountHolder', e.target.value)}
-                      placeholder="Ví dụ: NGUYEN VAN A"
+                      id="min-amount"
+                      type="number"
+                      value={settings.topupRules.minVnd || 0}
+                      onChange={(e) => updateSettings('topupRules.minVnd', parseInt(e.target.value))}
+                      placeholder="10000"
                     />
                   </div>
-
                   <div>
-                    <Label htmlFor="instructions">Hướng dẫn nạp tiền</Label>
-                    <Textarea
-                      id="instructions"
-                      value={settings.bankInfo.instructions || ''}
-                      onChange={(e) => updateSettings('bankInfo.instructions', e.target.value)}
-                      placeholder="Hướng dẫn chi tiết cho người dùng..."
-                      rows={4}
+                    <Label htmlFor="max-amount">Số tiền tối đa (VND)</Label>
+                    <Input
+                      id="max-amount"
+                      type="number"
+                      value={settings.topupRules.maxVnd || 0}
+                      onChange={(e) => updateSettings('topupRules.maxVnd', parseInt(e.target.value))}
+                      placeholder="10000000"
                     />
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            {/* Auto Banks Config */}
-            <TabsContent value="auto-banks" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Landmark className="h-5 w-5" />
-                        <span>Cấu hình Bank API</span>
-                      </CardTitle>
-                      <CardDescription>
-                        Quản lý các ngân hàng cho auto-topup (có thể dùng nhiều ngân hàng)
-                      </CardDescription>
-                    </div>
-                    <Button onClick={addBank} size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Thêm ngân hàng
-                    </Button>
+          {/* Bank Info */}
+          <TabsContent value="bank-info" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Banknote className="h-5 w-5" />
+                  <span>Thông tin ngân hàng nhận tiền</span>
+                </CardTitle>
+                <CardDescription>
+                  Thông tin này sẽ hiển thị cho người dùng khi nạp tiền (dùng cho cả thủ công và tự động)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="bank-name">Tên ngân hàng</Label>
+                    <Input
+                      id="bank-name"
+                      value={settings.bankInfo.bankName || ''}
+                      onChange={(e) => updateSettings('bankInfo.bankName', e.target.value)}
+                      placeholder="Ví dụ: TPBank"
+                    />
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {settings.autoTopupBanks.length === 0 ? (
-                    <div className="text-center py-12 text-text-muted">
-                      <Landmark className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Chưa có ngân hàng nào được cấu hình</p>
-                      <p className="text-sm mt-2">Click &quot;Thêm ngân hàng&quot; để bắt đầu</p>
-                    </div>
-                  ) : (
-                    settings.autoTopupBanks.map((bank) => (
-                      <Card key={bank.id} className="border-2">
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <Switch
-                                checked={bank.enabled}
-                                onCheckedChange={(checked) =>
-                                  updateBank(bank.id, { enabled: checked })
-                                }
-                              />
-                              <div>
-                                <CardTitle className="text-base">
-                                  {bank.name || 'Ngân hàng chưa đặt tên'}
-                                </CardTitle>
-                                <p className="text-xs text-text-muted">{bank.apiUrl}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  setEditingBankId(editingBankId === bank.id ? null : bank.id)
-                                }
-                              >
-                                {editingBankId === bank.id ? 'Thu gọn' : 'Chỉnh sửa'}
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteBank(bank.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
+                  <div>
+                    <Label htmlFor="account-number">Số tài khoản</Label>
+                    <Input
+                      id="account-number"
+                      value={settings.bankInfo.accountNumber || ''}
+                      onChange={(e) => updateSettings('bankInfo.accountNumber', e.target.value)}
+                      placeholder="Ví dụ: 03097189801"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="account-holder">Tên chủ tài khoản</Label>
+                  <Input
+                    id="account-holder"
+                    value={settings.bankInfo.accountHolder || ''}
+                    onChange={(e) => updateSettings('bankInfo.accountHolder', e.target.value)}
+                    placeholder="Ví dụ: NGUYEN VAN A"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="instructions">Hướng dẫn nạp tiền</Label>
+                  <Textarea
+                    id="instructions"
+                    value={settings.bankInfo.instructions || ''}
+                    onChange={(e) => updateSettings('bankInfo.instructions', e.target.value)}
+                    placeholder="Hướng dẫn chi tiết cho người dùng..."
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Auto Banks Config */}
+          <TabsContent value="auto-banks" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Landmark className="h-5 w-5" />
+                      <span>Cấu hình Bank API</span>
+                    </CardTitle>
+                    <CardDescription>
+                      Quản lý các ngân hàng cho auto-topup (có thể dùng nhiều ngân hàng)
+                    </CardDescription>
+                  </div>
+                  <Button onClick={addBank} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Thêm ngân hàng
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {settings.autoTopupBanks.length === 0 ? (
+                  <div className="text-center py-12 text-text-muted">
+                    <Landmark className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Chưa có ngân hàng nào được cấu hình</p>
+                    <p className="text-sm mt-2">Click &quot;Thêm ngân hàng&quot; để bắt đầu</p>
+                  </div>
+                ) : (
+                  settings.autoTopupBanks.map((bank) => (
+                    <Card key={bank.id} className="border-2">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Switch
+                              checked={bank.enabled}
+                              onCheckedChange={(checked) =>
+                                updateBank(bank.id, { enabled: checked })
+                              }
+                            />
+                            <div>
+                              <CardTitle className="text-base">
+                                {bank.name || 'Ngân hàng chưa đặt tên'}
+                              </CardTitle>
+                              <p className="text-xs text-text-muted">{bank.apiUrl}</p>
                             </div>
                           </div>
-                        </CardHeader>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                setEditingBankId(editingBankId === bank.id ? null : bank.id)
+                              }
+                            >
+                              {editingBankId === bank.id ? 'Thu gọn' : 'Chỉnh sửa'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteBank(bank.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
 
-                        {editingBankId === bank.id && (
-                          <CardContent className="space-y-4 border-t pt-4">
-                            {/* Basic Info */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {editingBankId === bank.id && (
+                        <CardContent className="space-y-4 border-t pt-4">
+                          {/* Basic Info */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Tên ngân hàng</Label>
+                              <Input
+                                value={bank.name}
+                                onChange={(e) =>
+                                  updateBank(bank.id, { name: e.target.value })
+                                }
+                                placeholder="MB Bank, VCB, TPBank..."
+                              />
+                            </div>
+                            <div>
+                              <Label>Method</Label>
+                              <Select
+                                value={bank.method}
+                                onValueChange={(value: 'GET' | 'POST') =>
+                                  updateBank(bank.id, { method: value })
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GET">GET</SelectItem>
+                                  <SelectItem value="POST">POST</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label>API URL (Bank API Server)</Label>
+                            <Input
+                              value={bank.apiUrl}
+                              onChange={(e) =>
+                                updateBank(bank.id, { apiUrl: e.target.value })
+                              }
+                              placeholder="http://192.168.1.1:6868"
+                            />
+                            <p className="text-xs text-text-muted mt-1">
+                              URL của server check giao dịch ngân hàng (chạy riêng)
+                            </p>
+                          </div>
+
+                          {/* Field Mapping */}
+                          <div className="border-t pt-4">
+                            <Label className="text-base font-semibold">Field Mapping</Label>
+                            <p className="text-sm text-text-muted mb-3">
+                              Cấu hình đường dẫn đến các field trong JSON response
+                            </p>
+
+                            <div className="space-y-3">
                               <div>
-                                <Label>Tên ngân hàng</Label>
+                                <Label className="text-xs">Transactions Path</Label>
                                 <Input
-                                  value={bank.name}
+                                  value={bank.fieldMapping.transactionsPath}
                                   onChange={(e) =>
-                                    updateBank(bank.id, { name: e.target.value })
+                                    updateBank(bank.id, {
+                                      fieldMapping: {
+                                        ...bank.fieldMapping,
+                                        transactionsPath: e.target.value,
+                                      },
+                                    })
                                   }
-                                  placeholder="MB Bank, VCB, TPBank..."
+                                  placeholder="transactionHistoryList"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <Label className="text-xs">Transaction ID Field</Label>
+                                  <Input
+                                    value={bank.fieldMapping.fields.transactionId}
+                                    onChange={(e) =>
+                                      updateBank(bank.id, {
+                                        fieldMapping: {
+                                          ...bank.fieldMapping,
+                                          fields: {
+                                            ...bank.fieldMapping.fields,
+                                            transactionId: e.target.value,
+                                          },
+                                        },
+                                      })
+                                    }
+                                    placeholder="refNo"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Amount Field</Label>
+                                  <Input
+                                    value={bank.fieldMapping.fields.amount}
+                                    onChange={(e) =>
+                                      updateBank(bank.id, {
+                                        fieldMapping: {
+                                          ...bank.fieldMapping,
+                                          fields: {
+                                            ...bank.fieldMapping.fields,
+                                            amount: e.target.value,
+                                          },
+                                        },
+                                      })
+                                    }
+                                    placeholder="creditAmount"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Description Field</Label>
+                                  <Input
+                                    value={bank.fieldMapping.fields.description}
+                                    onChange={(e) =>
+                                      updateBank(bank.id, {
+                                        fieldMapping: {
+                                          ...bank.fieldMapping,
+                                          fields: {
+                                            ...bank.fieldMapping.fields,
+                                            description: e.target.value,
+                                          },
+                                        },
+                                      })
+                                    }
+                                    placeholder="description"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Date Field</Label>
+                                  <Input
+                                    value={bank.fieldMapping.fields.transactionDate}
+                                    onChange={(e) =>
+                                      updateBank(bank.id, {
+                                        fieldMapping: {
+                                          ...bank.fieldMapping,
+                                          fields: {
+                                            ...bank.fieldMapping.fields,
+                                            transactionDate: e.target.value,
+                                          },
+                                        },
+                                      })
+                                    }
+                                    placeholder="transactionDate"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Credit Filter */}
+                          <div className="border-t pt-4">
+                            <Label className="text-base font-semibold">Credit Filter</Label>
+                            <p className="text-sm text-text-muted mb-3">
+                              Lọc chỉ lấy giao dịch tiền VÀO (credit)
+                            </p>
+
+                            <div className="grid grid-cols-3 gap-3">
+                              <div>
+                                <Label className="text-xs">Field</Label>
+                                <Input
+                                  value={bank.filters.creditIndicator?.field || ''}
+                                  onChange={(e) =>
+                                    updateBank(bank.id, {
+                                      filters: {
+                                        ...bank.filters,
+                                        creditIndicator: {
+                                          ...bank.filters.creditIndicator!,
+                                          field: e.target.value,
+                                        },
+                                      },
+                                    })
+                                  }
+                                  placeholder="debitAmount"
                                 />
                               </div>
                               <div>
-                                <Label>Method</Label>
+                                <Label className="text-xs">Value</Label>
+                                <Input
+                                  value={bank.filters.creditIndicator?.value || ''}
+                                  onChange={(e) =>
+                                    updateBank(bank.id, {
+                                      filters: {
+                                        ...bank.filters,
+                                        creditIndicator: {
+                                          ...bank.filters.creditIndicator!,
+                                          value: e.target.value,
+                                        },
+                                      },
+                                    })
+                                  }
+                                  placeholder="0"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Condition</Label>
                                 <Select
-                                  value={bank.method}
-                                  onValueChange={(value: 'GET' | 'POST') =>
-                                    updateBank(bank.id, { method: value })
+                                  value={bank.filters.creditIndicator?.condition || 'equals'}
+                                  onValueChange={(value: 'equals' | 'greater' | 'contains') =>
+                                    updateBank(bank.id, {
+                                      filters: {
+                                        ...bank.filters,
+                                        creditIndicator: {
+                                          ...bank.filters.creditIndicator!,
+                                          condition: value,
+                                        },
+                                      },
+                                    })
                                   }
                                 >
                                   <SelectTrigger>
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="GET">GET</SelectItem>
-                                    <SelectItem value="POST">POST</SelectItem>
+                                    <SelectItem value="equals">Equals</SelectItem>
+                                    <SelectItem value="greater">Greater</SelectItem>
+                                    <SelectItem value="contains">Contains</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                             </div>
+                          </div>
 
-                            <div>
-                              <Label>API URL (Bank API Server)</Label>
-                              <Input
-                                value={bank.apiUrl}
-                                onChange={(e) =>
-                                  updateBank(bank.id, { apiUrl: e.target.value })
-                                }
-                                placeholder="http://192.168.1.1:6868"
-                              />
-                              <p className="text-xs text-text-muted mt-1">
-                                URL của server check giao dịch ngân hàng (chạy riêng)
-                              </p>
-                            </div>
-
-                            {/* Field Mapping */}
-                            <div className="border-t pt-4">
-                              <Label className="text-base font-semibold">Field Mapping</Label>
-                              <p className="text-sm text-text-muted mb-3">
-                                Cấu hình đường dẫn đến các field trong JSON response
-                              </p>
-
-                              <div className="space-y-3">
-                                <div>
-                                  <Label className="text-xs">Transactions Path</Label>
-                                  <Input
-                                    value={bank.fieldMapping.transactionsPath}
-                                    onChange={(e) =>
-                                      updateBank(bank.id, {
-                                        fieldMapping: {
-                                          ...bank.fieldMapping,
-                                          transactionsPath: e.target.value,
-                                        },
-                                      })
-                                    }
-                                    placeholder="transactionHistoryList"
-                                  />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div>
-                                    <Label className="text-xs">Transaction ID Field</Label>
-                                    <Input
-                                      value={bank.fieldMapping.fields.transactionId}
-                                      onChange={(e) =>
-                                        updateBank(bank.id, {
-                                          fieldMapping: {
-                                            ...bank.fieldMapping,
-                                            fields: {
-                                              ...bank.fieldMapping.fields,
-                                              transactionId: e.target.value,
-                                            },
-                                          },
-                                        })
-                                      }
-                                      placeholder="refNo"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">Amount Field</Label>
-                                    <Input
-                                      value={bank.fieldMapping.fields.amount}
-                                      onChange={(e) =>
-                                        updateBank(bank.id, {
-                                          fieldMapping: {
-                                            ...bank.fieldMapping,
-                                            fields: {
-                                              ...bank.fieldMapping.fields,
-                                              amount: e.target.value,
-                                            },
-                                          },
-                                        })
-                                      }
-                                      placeholder="creditAmount"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">Description Field</Label>
-                                    <Input
-                                      value={bank.fieldMapping.fields.description}
-                                      onChange={(e) =>
-                                        updateBank(bank.id, {
-                                          fieldMapping: {
-                                            ...bank.fieldMapping,
-                                            fields: {
-                                              ...bank.fieldMapping.fields,
-                                              description: e.target.value,
-                                            },
-                                          },
-                                        })
-                                      }
-                                      placeholder="description"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">Date Field</Label>
-                                    <Input
-                                      value={bank.fieldMapping.fields.transactionDate}
-                                      onChange={(e) =>
-                                        updateBank(bank.id, {
-                                          fieldMapping: {
-                                            ...bank.fieldMapping,
-                                            fields: {
-                                              ...bank.fieldMapping.fields,
-                                              transactionDate: e.target.value,
-                                            },
-                                          },
-                                        })
-                                      }
-                                      placeholder="transactionDate"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Credit Filter */}
-                            <div className="border-t pt-4">
-                              <Label className="text-base font-semibold">Credit Filter</Label>
-                              <p className="text-sm text-text-muted mb-3">
-                                Lọc chỉ lấy giao dịch tiền VÀO (credit)
-                              </p>
-
-                              <div className="grid grid-cols-3 gap-3">
-                                <div>
-                                  <Label className="text-xs">Field</Label>
-                                  <Input
-                                    value={bank.filters.creditIndicator?.field || ''}
-                                    onChange={(e) =>
-                                      updateBank(bank.id, {
-                                        filters: {
-                                          ...bank.filters,
-                                          creditIndicator: {
-                                            ...bank.filters.creditIndicator!,
-                                            field: e.target.value,
-                                          },
-                                        },
-                                      })
-                                    }
-                                    placeholder="debitAmount"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-xs">Value</Label>
-                                  <Input
-                                    value={bank.filters.creditIndicator?.value || ''}
-                                    onChange={(e) =>
-                                      updateBank(bank.id, {
-                                        filters: {
-                                          ...bank.filters,
-                                          creditIndicator: {
-                                            ...bank.filters.creditIndicator!,
-                                            value: e.target.value,
-                                          },
-                                        },
-                                      })
-                                    }
-                                    placeholder="0"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-xs">Condition</Label>
-                                  <Select
-                                    value={bank.filters.creditIndicator?.condition || 'equals'}
-                                    onValueChange={(value: 'equals' | 'greater' | 'contains') =>
-                                      updateBank(bank.id, {
-                                        filters: {
-                                          ...bank.filters,
-                                          creditIndicator: {
-                                            ...bank.filters.creditIndicator!,
-                                            condition: value,
-                                          },
-                                        },
-                                      })
-                                    }
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="equals">Equals</SelectItem>
-                                      <SelectItem value="greater">Greater</SelectItem>
-                                      <SelectItem value="contains">Contains</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Test Button */}
-                            <div className="border-t pt-4">
-                              <Button
-                                onClick={() => testBankConnection(bank)}
-                                disabled={isTesting}
-                                variant="outline"
-                                className="w-full"
-                              >
-                                {isTesting ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Đang test...
-                                  </>
-                                ) : (
-                                  <>
-                                    <TestTube className="h-4 w-4 mr-2" />
-                                    Test kết nối
-                                  </>
-                                )}
-                              </Button>
-
-                              {testResult && (
-                                <div
-                                  className={`mt-3 p-3 rounded-lg border ${
-                                    testResult.success
-                                      ? 'bg-green-500/10 border-green-500/20'
-                                      : 'bg-red-500/10 border-red-500/20'
-                                  }`}
-                                >
-                                  <div className="flex items-start space-x-2">
-                                    {testResult.success ? (
-                                      <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                    ) : (
-                                      <AlertCircle className="h-5 w-5 text-red-500" />
-                                    )}
-                                    <div className="flex-1">
-                                      <p className="font-semibold text-sm">
-                                        {testResult.success ? 'Kết nối thành công!' : 'Kết nối thất bại'}
-                                      </p>
-                                      <p className="text-sm text-text-muted mt-1">
-                                        {testResult.message || testResult.error}
-                                      </p>
-                                      {testResult.sample && testResult.sample.length > 0 && (
-                                        <div className="mt-2 text-xs">
-                                          <p className="font-semibold">Giao dịch mẫu:</p>
-                                          <pre className="mt-1 bg-background p-2 rounded overflow-auto">
-                                            {JSON.stringify(testResult.sample[0], null, 2)}
-                                          </pre>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
+                          {/* Test Button */}
+                          <div className="border-t pt-4">
+                            <Button
+                              onClick={() => testBankConnection(bank)}
+                              disabled={isTesting}
+                              variant="outline"
+                              className="w-full"
+                            >
+                              {isTesting ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Đang test...
+                                </>
+                              ) : (
+                                <>
+                                  <TestTube className="h-4 w-4 mr-2" />
+                                  Test kết nối
+                                </>
                               )}
-                            </div>
-                          </CardContent>
-                        )}
-                      </Card>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                            </Button>
 
-            {/* Discord Webhook */}
-            <TabsContent value="webhook" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Send className="h-5 w-5" />
-                    <span>Discord Webhook</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Nhận thông báo realtime về Discord khi có order hoặc nạp tiền
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Enable switch */}
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label htmlFor="webhook-enabled" className="text-base font-semibold">
-                        Bật Discord Webhook
-                      </Label>
-                      <p className="text-sm text-text-muted mt-1">
-                        Gửi thông báo tự động đến Discord channel
-                      </p>
-                    </div>
-                    <Switch
-                      id="webhook-enabled"
-                      checked={settings.discordWebhook.enabled}
-                      onCheckedChange={(checked) => setSettings(prev => ({
-                        ...prev,
-                        discordWebhook: { ...prev.discordWebhook, enabled: checked }
-                      }))}
-                    />
-                  </div>
+                            {testResult && (
+                              <div
+                                className={`mt-3 p-3 rounded-lg border ${testResult.success
+                                    ? 'bg-green-500/10 border-green-500/20'
+                                    : 'bg-red-500/10 border-red-500/20'
+                                  }`}
+                              >
+                                <div className="flex items-start space-x-2">
+                                  {testResult.success ? (
+                                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                  ) : (
+                                    <AlertCircle className="h-5 w-5 text-red-500" />
+                                  )}
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-sm">
+                                      {testResult.success ? 'Kết nối thành công!' : 'Kết nối thất bại'}
+                                    </p>
+                                    <p className="text-sm text-text-muted mt-1">
+                                      {testResult.message || testResult.error}
+                                    </p>
+                                    {testResult.sample && testResult.sample.length > 0 && (
+                                      <div className="mt-2 text-xs">
+                                        <p className="font-semibold">Giao dịch mẫu:</p>
+                                        <pre className="mt-1 bg-background p-2 rounded overflow-auto">
+                                          {JSON.stringify(testResult.sample[0], null, 2)}
+                                        </pre>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                  {/* Webhook URL */}
+          {/* Discord Webhook */}
+          <TabsContent value="webhook" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Send className="h-5 w-5" />
+                  <span>Discord Webhook</span>
+                </CardTitle>
+                <CardDescription>
+                  Nhận thông báo realtime về Discord khi có order hoặc nạp tiền
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Enable switch */}
+                <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <Label htmlFor="webhook-url">Webhook URL</Label>
-                    <Input
-                      id="webhook-url"
-                      value={settings.discordWebhook.webhookUrl}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        discordWebhook: { ...prev.discordWebhook, webhookUrl: e.target.value }
-                      }))}
-                      placeholder="https://discord.com/api/webhooks/..."
-                      disabled={!settings.discordWebhook.enabled}
-                    />
-                    <p className="text-xs text-text-muted mt-1">
-                      Tạo webhook trong Discord: Server Settings → Integrations → Webhooks
+                    <Label htmlFor="webhook-enabled" className="text-base font-semibold">
+                      Bật Discord Webhook
+                    </Label>
+                    <p className="text-sm text-text-muted mt-1">
+                      Gửi thông báo tự động đến Discord channel
                     </p>
                   </div>
+                  <Switch
+                    id="webhook-enabled"
+                    checked={settings.discordWebhook.enabled}
+                    onCheckedChange={(checked) => setSettings(prev => ({
+                      ...prev,
+                      discordWebhook: { ...prev.discordWebhook, enabled: checked }
+                    }))}
+                  />
+                </div>
 
-                  {/* Notify on orders */}
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="notify-orders"
-                      checked={settings.discordWebhook.notifyOnOrders}
-                      onCheckedChange={(checked) => setSettings(prev => ({
-                        ...prev,
-                        discordWebhook: { ...prev.discordWebhook, notifyOnOrders: checked }
-                      }))}
-                      disabled={!settings.discordWebhook.enabled}
-                    />
-                    <Label htmlFor="notify-orders">Thông báo khi có order mới</Label>
-                  </div>
+                {/* Webhook URL */}
+                <div>
+                  <Label htmlFor="webhook-url">Webhook URL</Label>
+                  <Input
+                    id="webhook-url"
+                    value={settings.discordWebhook.webhookUrl}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      discordWebhook: { ...prev.discordWebhook, webhookUrl: e.target.value }
+                    }))}
+                    placeholder="https://discord.com/api/webhooks/..."
+                    disabled={!settings.discordWebhook.enabled}
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Tạo webhook trong Discord: Server Settings → Integrations → Webhooks
+                  </p>
+                </div>
 
-                  {/* Notify on deposits */}
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="notify-deposits"
-                      checked={settings.discordWebhook.notifyOnDeposits}
-                      onCheckedChange={(checked) => setSettings(prev => ({
-                        ...prev,
-                        discordWebhook: { ...prev.discordWebhook, notifyOnDeposits: checked }
-                      }))}
-                      disabled={!settings.discordWebhook.enabled}
-                    />
-                    <Label htmlFor="notify-deposits">Thông báo khi có nạp tiền</Label>
-                  </div>
+                {/* Notify on orders */}
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="notify-orders"
+                    checked={settings.discordWebhook.notifyOnOrders}
+                    onCheckedChange={(checked) => setSettings(prev => ({
+                      ...prev,
+                      discordWebhook: { ...prev.discordWebhook, notifyOnOrders: checked }
+                    }))}
+                    disabled={!settings.discordWebhook.enabled}
+                  />
+                  <Label htmlFor="notify-orders">Thông báo khi có order mới</Label>
+                </div>
 
-                  {/* Test button */}
-                  <Button
-                    onClick={testWebhook}
-                    disabled={isTestingWebhook || !settings.discordWebhook.webhookUrl}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    {isTestingWebhook ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Đang test...
-                      </>
-                    ) : (
-                      <>
-                        <TestTube className="h-4 w-4 mr-2" />
-                        Test Webhook
-                      </>
-                    )}
-                  </Button>
+                {/* Notify on deposits */}
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="notify-deposits"
+                    checked={settings.discordWebhook.notifyOnDeposits}
+                    onCheckedChange={(checked) => setSettings(prev => ({
+                      ...prev,
+                      discordWebhook: { ...prev.discordWebhook, notifyOnDeposits: checked }
+                    }))}
+                    disabled={!settings.discordWebhook.enabled}
+                  />
+                  <Label htmlFor="notify-deposits">Thông báo khi có nạp tiền</Label>
+                </div>
 
-                  {/* Test result */}
-                  {webhookTestResult && (
-                    <div className={`p-3 rounded-lg border ${
-                      webhookTestResult.success
-                        ? 'bg-green-500/10 border-green-500/20'
-                        : 'bg-red-500/10 border-red-500/20'
+                {/* Test button */}
+                <Button
+                  onClick={testWebhook}
+                  disabled={isTestingWebhook || !settings.discordWebhook.webhookUrl}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {isTestingWebhook ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Đang test...
+                    </>
+                  ) : (
+                    <>
+                      <TestTube className="h-4 w-4 mr-2" />
+                      Test Webhook
+                    </>
+                  )}
+                </Button>
+
+                {/* Test result */}
+                {webhookTestResult && (
+                  <div className={`p-3 rounded-lg border ${webhookTestResult.success
+                      ? 'bg-green-500/10 border-green-500/20'
+                      : 'bg-red-500/10 border-red-500/20'
                     }`}>
-                      <div className="flex items-start space-x-2">
-                        {webhookTestResult.success ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <AlertCircle className="h-5 w-5 text-red-500" />
-                        )}
-                        <div className="flex-1">
-                          <p className="font-semibold text-sm">
-                            {webhookTestResult.success ? 'Thành công!' : 'Thất bại'}
-                          </p>
-                          <p className="text-sm text-text-muted mt-1">
-                            {webhookTestResult.message}
-                          </p>
-                        </div>
+                    <div className="flex items-start space-x-2">
+                      {webhookTestResult.success ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-red-500" />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm">
+                          {webhookTestResult.success ? 'Thành công!' : 'Thất bại'}
+                        </p>
+                        <p className="text-sm text-text-muted mt-1">
+                          {webhookTestResult.message}
+                        </p>
                       </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-    </AppShell>
+    </div>
   );
 }

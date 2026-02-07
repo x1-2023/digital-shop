@@ -20,6 +20,9 @@ import {
   X,
   AlertCircle,
   Star,
+  Image,
+  Trophy,
+  Search,
 } from 'lucide-react';
 
 const navigation = [
@@ -33,6 +36,9 @@ const navigation = [
   { name: 'Yêu cầu nạp', href: '/admin/topups', icon: CreditCard },
   { name: 'Ví người dùng', href: '/admin/wallets', icon: Wallet },
   { name: 'Người dùng', href: '/admin/users', icon: Users },
+  { name: 'Banner Slider', href: '/admin/banners', icon: Image },
+  { name: 'Top Sellers', href: '/admin/featured-users', icon: Trophy },
+  { name: 'Từ khóa tìm kiếm', href: '/admin/search-keywords', icon: Search },
   { name: 'Quảng cáo', href: '/admin/advertisements', icon: MonitorPlay },
   { name: 'Thưởng nạp tiền', href: '/admin/deposit-bonus', icon: Gift },
   { name: 'Giới thiệu', href: '/admin/referrals', icon: Users },
@@ -55,88 +61,36 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
-        style={{
-          width: '256px',
-          height: '100%',
-          backgroundColor: '#111318',
-          borderRight: '1px solid #22252E',
-          display: 'flex',
-          flexDirection: 'column',
-          flexShrink: 0,
-          overflowY: 'auto',
-        }}
+        className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0 w-64 h-full bg-card border-r border-border flex flex-col flex-shrink-0 overflow-y-auto`}
       >
         {/* Header */}
-        <div style={{
-          height: '64px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingLeft: '24px',
-          paddingRight: '24px',
-          borderBottom: '1px solid #22252E',
-          flexShrink: 0
-        }}>
-          <Link href="/" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            textDecoration: 'none',
-            cursor: 'pointer'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              backgroundColor: '#8B5CF6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '12px' }}>WM</span>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-border flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80">
+            <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
+              <span className="text-white font-bold text-xs">WM</span>
             </div>
-            <span style={{ fontWeight: 'bold', fontSize: '18px', color: '#E6E8EC' }}>WebMMO Admin</span>
+            <span className="font-bold text-lg text-text-primary">WebMMO Admin</span>
           </Link>
 
           {/* Close button (mobile only) */}
           <button
             onClick={onClose}
-            className="lg:hidden"
-            style={{
-              padding: '8px',
-              borderRadius: '8px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#9AA0AA',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className="lg:hidden p-2 rounded-lg bg-transparent border-none text-text-muted cursor-pointer flex items-center justify-center hover:bg-card-dark transition-colors"
           >
-            <X style={{ width: '20px', height: '20px' }} />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          padding: '16px',
-          overflowY: 'auto'
-        }}>
+        <nav className="flex-1 flex flex-col gap-1 p-4 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = pathname === item.href ||
               (item.href !== '/admin' && pathname.startsWith(item.href));
@@ -152,32 +106,12 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
                     onClose();
                   }
                 }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '12px 12px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  borderRadius: '12px',
-                  transition: 'all 0.2s',
-                  textDecoration: 'none',
-                  backgroundColor: isActive ? '#8B5CF6' : 'transparent',
-                  color: isActive ? 'white' : '#9AA0AA'
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = '#1A1D26';
-                    e.currentTarget.style.color = '#E6E8EC';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#9AA0AA';
-                  }
-                }}
+                className={`flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all ${isActive
+                  ? 'bg-brand text-white shadow-md shadow-brand/20'
+                  : 'text-text-muted hover:bg-card-dark hover:text-text-primary'
+                  }`}
               >
-                <Icon style={{ width: '20px', height: '20px', marginRight: '12px', flexShrink: 0 }} />
+                <Icon className={`w-5 h-5 mr-3 flex-shrink-0 ${isActive ? 'text-white' : 'text-text-muted group-hover:text-text-primary'}`} />
                 {item.name}
               </Link>
             );

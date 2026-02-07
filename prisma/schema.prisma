@@ -86,6 +86,8 @@ model Product {
 
   images    String? // JSON string for images array
   active    Boolean  @default(true)
+  fakeSold   Int     @default(0) // Fake sold count for display
+  fakeRating Float   @default(0) // Fake rating (0 = auto-random)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -692,4 +694,57 @@ enum ReviewStatus {
   PUBLISHED // Hiện công khai
   HIDDEN    // Admin ẩn
   DELETED   // Đã xóa
+}
+
+// ===============================================
+// Homepage Configuration Models
+// ===============================================
+
+// Hero Banner Slider
+model Banner {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  description String?
+  buttonText  String   @default("Khám phá ngay")
+  buttonLink  String   @default("/products")
+  imageUrl    String?  // Background image
+  gradientFrom String  @default("#2563EB") // Hex color
+  gradientTo  String   @default("#06B6D4") // Hex color
+  features    String?  // JSON array of feature strings
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("banners")
+}
+
+// Featured User for Top Sellers widget
+model FeaturedUser {
+  id        String   @id @default(cuid())
+  name      String
+  sales     Int      @default(0)
+  rating    Float    @default(5.0)
+  avatarUrl String?
+  rank      Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("featured_users")
+}
+
+// Search Keywords for dropdown suggestions
+model SearchKeyword {
+  id          String   @id @default(cuid())
+  keyword     String   // The search term
+  subtitle    String?  // Optional description like "Bán chạy nhất"
+  icon        String   @default("🔥") // Emoji or icon
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("search_keywords")
 }

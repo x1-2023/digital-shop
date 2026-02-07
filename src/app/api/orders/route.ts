@@ -48,7 +48,13 @@ export async function GET(request: NextRequest) {
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          status: true,
+          totalAmountVnd: true,
+          currency: true,
+          createdAt: true,
+          updatedAt: true,
           user: {
             select: {
               id: true,
@@ -56,7 +62,10 @@ export async function GET(request: NextRequest) {
             },
           },
           orderItems: {
-            include: {
+            select: {
+              id: true,
+              quantity: true,
+              priceVnd: true,
               product: {
                 select: {
                   id: true,
@@ -66,7 +75,14 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          payments: true,
+          payments: {
+            select: {
+              id: true,
+              amountVnd: true,
+              provider: true, // Replaces 'method' matches schema
+              createdAt: true,
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -109,14 +125,25 @@ export async function GET(request: NextRequest) {
   }
 }
 
+import { apiRateLimiter } from '@/lib/rate-limit';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Rate Limit: 5 orders per minute per user is plenty
+    const isAllowed = await apiRateLimiter.check(session.user.id, 5);
+    if (!isAllowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
       );
     }
 

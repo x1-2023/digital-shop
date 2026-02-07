@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { generateSlug } from '@/lib/utils';
+import Image from 'next/image';
 
 interface Category {
   id: string;
@@ -138,7 +139,7 @@ export default function CreateProductPage() {
         title: 'Thành công',
         description: `File đã upload: ${totalLines} dòng`
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -154,7 +155,7 @@ export default function CreateProductPage() {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
           // Target dimensions (16:9 aspect ratio)
           const targetWidth = 800;
@@ -258,7 +259,6 @@ export default function CreateProductPage() {
         title: 'Thành công',
         description: `Đã upload và tối ưu ${uploadedImages.length} ảnh (800x450px)`
       });
-    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -334,196 +334,198 @@ export default function CreateProductPage() {
   };
 
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6">
-        <div className="space-y-6">
-          <div className="flex items-center space-x-3">
-            <Link href="/admin/products">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Quay lại
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Tạo sản phẩm mới</h1>
-              <p className="text-text-muted">Thêm sản phẩm với file dữ liệu</p>
-            </div>
+    <div className="flex-1 p-6">
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <Link href="/admin/products">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Quay lại
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Tạo sản phẩm mới</h1>
+            <p className="text-text-muted">Thêm sản phẩm với file dữ liệu</p>
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Thông tin sản phẩm</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="name">Tên sản phẩm *</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Tài Khoản Discord"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="slug">Slug (URL)</Label>
-                  <Input
-                    id="slug"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleInputChange}
-                    placeholder="tai-khoan-discord-0211"
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-text-muted mt-1">
-                    Tự động tạo từ tên sản phẩm. Có thể chỉnh sửa. Ví dụ: tai-khoan-discord-0211
-                  </p>
-                </div>
-
-                <div>
-                  <Label>Danh mục *</Label>
-                  <Select value={formData.categoryId} onValueChange={handleCategoryChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn danh mục" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Mô tả</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Mô tả sản phẩm..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <Label htmlFor="priceVnd">Giá (VND)</Label>
-                    <Input
-                      id="priceVnd"
-                      name="priceVnd"
-                      type="number"
-                      value={formData.priceVnd}
-                      onChange={handleInputChange}
-                      placeholder="50000"
-                      min="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="border-2 border-dashed border-border rounded-lg p-6">
-                  <div className="flex flex-col items-center space-y-4">
-                    <Upload className="h-8 w-8 text-text-muted" />
-                    <div className="text-center">
-                      <p className="font-medium">Upload file dữ liệu *</p>
-                      <p className="text-sm text-text-muted">File .txt - Mỗi dòng = 1 account</p>
-                      <p className="text-xs text-text-muted mt-1">Số lượng sẽ tự động được tính từ số dòng</p>
-                    </div>
-                    <input
-                      type="file"
-                      accept=".txt"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                      id="fileUpload"
-                      disabled={uploading}
-                    />
-                    <label htmlFor="fileUpload">
-                      <Button type="button" variant="outline" disabled={uploading} asChild>
-                        <span>{uploading ? 'Đang upload...' : 'Chọn file'}</span>
-                      </Button>
-                    </label>
-                    {productFile && (
-                      <div className="text-sm space-y-1 text-center">
-                        <p className="text-success font-medium">
-                          ✓ {formData.fileName}
-                        </p>
-                        <p className="text-text-muted">
-                          {formData.totalLines} dòng = {formData.stock} sản phẩm
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="border-2 border-dashed border-border rounded-lg p-6">
-                  <div className="flex flex-col items-center space-y-4">
-                    <Upload className="h-8 w-8 text-text-muted" />
-                    <div className="text-center space-y-2">
-                      <p className="font-medium">Upload ảnh sản phẩm</p>
-                      <p className="text-sm text-text-muted">JPG, PNG, WebP (Có thể chọn nhiều ảnh)</p>
-                      <div className="text-xs text-text-muted bg-card-dark px-3 py-2 rounded-lg inline-block">
-                        <p className="font-semibold text-brand mb-1">✨ Tự động tối ưu:</p>
-                        <p>• Tỷ lệ: 16:9 (phù hợp với giao diện)</p>
-                        <p>• Kích thước: 800x450px (tối ưu web)</p>
-                        <p>• Chất lượng: 85% (cân bằng dung lượng)</p>
-                        <p className="mt-1 text-success">→ Ảnh sẽ tự động crop và resize khi upload</p>
-                      </div>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/webp"
-                      onChange={handleImageSelect}
-                      className="hidden"
-                      id="imageUpload"
-                      multiple
-                      disabled={uploadingImages}
-                    />
-                    <label htmlFor="imageUpload">
-                      <Button type="button" variant="outline" disabled={uploadingImages} asChild>
-                        <span>{uploadingImages ? 'Đang upload...' : 'Chọn ảnh'}</span>
-                      </Button>
-                    </label>
-                    {formData.images.length > 0 && (
-                      <div className="grid grid-cols-4 gap-4 w-full mt-4">
-                        {formData.images.map((img, idx) => (
-                          <div key={idx} className="relative group">
-                            <img 
-                              src={img} 
-                              alt={`Product ${idx + 1}`}
-                              className="w-full h-24 object-cover rounded border border-border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(idx)}
-                              className="absolute top-1 right-1 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex space-x-4 pt-6 border-t">
-                  <Link href="/admin/products">
-                    <Button type="button" variant="outline">Hủy</Button>
-                  </Link>
-                  <Button type="submit" disabled={isLoading} className="flex-1">
-                    {isLoading ? 'Đang tạo...' : 'Tạo sản phẩm'}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Thông tin sản phẩm</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <Label htmlFor="name">Tên sản phẩm *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Tài Khoản Discord"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="slug">Slug (URL)</Label>
+                <Input
+                  id="slug"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleInputChange}
+                  placeholder="tai-khoan-discord-0211"
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-text-muted mt-1">
+                  Tự động tạo từ tên sản phẩm. Có thể chỉnh sửa. Ví dụ: tai-khoan-discord-0211
+                </p>
+              </div>
+
+              <div>
+                <Label>Danh mục *</Label>
+                <Select value={formData.categoryId} onValueChange={handleCategoryChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn danh mục" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="description">Mô tả</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Mô tả sản phẩm..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <Label htmlFor="priceVnd">Giá (VND)</Label>
+                  <Input
+                    id="priceVnd"
+                    name="priceVnd"
+                    type="number"
+                    value={formData.priceVnd}
+                    onChange={handleInputChange}
+                    placeholder="50000"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <div className="border-2 border-dashed border-border rounded-lg p-6">
+                <div className="flex flex-col items-center space-y-4">
+                  <Upload className="h-8 w-8 text-text-muted" />
+                  <div className="text-center">
+                    <p className="font-medium">Upload file dữ liệu *</p>
+                    <p className="text-sm text-text-muted">File .txt - Mỗi dòng = 1 account</p>
+                    <p className="text-xs text-text-muted mt-1">Số lượng sẽ tự động được tính từ số dòng</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".txt"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="fileUpload"
+                    disabled={uploading}
+                  />
+                  <label htmlFor="fileUpload">
+                    <Button type="button" variant="outline" disabled={uploading} asChild>
+                      <span>{uploading ? 'Đang upload...' : 'Chọn file'}</span>
+                    </Button>
+                  </label>
+                  {productFile && (
+                    <div className="text-sm space-y-1 text-center">
+                      <p className="text-success font-medium">
+                        ✓ {formData.fileName}
+                      </p>
+                      <p className="text-text-muted">
+                        {formData.totalLines} dòng = {formData.stock} sản phẩm
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-2 border-dashed border-border rounded-lg p-6">
+                <div className="flex flex-col items-center space-y-4">
+                  <Upload className="h-8 w-8 text-text-muted" />
+                  <div className="text-center space-y-2">
+                    <p className="font-medium">Upload ảnh sản phẩm</p>
+                    <p className="text-sm text-text-muted">JPG, PNG, WebP (Có thể chọn nhiều ảnh)</p>
+                    <div className="text-xs text-text-muted bg-card-dark px-3 py-2 rounded-lg inline-block">
+                      <p className="font-semibold text-brand mb-1">✨ Tự động tối ưu:</p>
+                      <p>• Tỷ lệ: 16:9 (phù hợp với giao diện)</p>
+                      <p>• Kích thước: 800x450px (tối ưu web)</p>
+                      <p>• Chất lượng: 85% (cân bằng dung lượng)</p>
+                      <p className="mt-1 text-success">→ Ảnh sẽ tự động crop và resize khi upload</p>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    id="imageUpload"
+                    multiple
+                    disabled={uploadingImages}
+                  />
+                  <label htmlFor="imageUpload">
+                    <Button type="button" variant="outline" disabled={uploadingImages} asChild>
+                      <span>{uploadingImages ? 'Đang upload...' : 'Chọn ảnh'}</span>
+                    </Button>
+                  </label>
+                  {formData.images.length > 0 && (
+                    <div className="grid grid-cols-4 gap-4 w-full mt-4">
+                      {formData.images.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <div className="relative w-full h-24">
+                            <Image
+                              src={img}
+                              alt={`Product ${idx + 1}`}
+                              fill
+                              className="object-cover rounded border border-border"
+                              unoptimized
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute top-1 right-1 bg-destructive text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex space-x-4 pt-6 border-t">
+                <Link href="/admin/products">
+                  <Button type="button" variant="outline">Hủy</Button>
+                </Link>
+                <Button type="submit" disabled={isLoading} className="flex-1">
+                  {isLoading ? 'Đang tạo...' : 'Tạo sản phẩm'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-    </AppShell>
+    </div>
   );
 }

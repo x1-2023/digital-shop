@@ -39,7 +39,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
     if (user && user.id) {
       // Only fetch once when user is available
       let isMounted = true;
-      
+
       fetch('/api/wallet/balance')
         .then(res => {
           if (!isMounted) return null;
@@ -65,7 +65,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
       // No user = don't fetch, set to null
       setWalletBalance(null);
     }
-  }, [user?.id]); // Only re-run when user.id changes
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = async () => {
     try {

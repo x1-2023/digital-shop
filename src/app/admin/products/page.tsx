@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
   Eye,
   Package,
   FileText
@@ -118,102 +118,99 @@ export default function AdminProductsPage() {
 
   if (isLoading) {
     return (
-      <AppShell isAdmin>
-        <div className="flex-1 p-6">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-card rounded w-1/4"></div>
-            <div className="h-12 bg-card rounded"></div>
-            <div className="h-64 bg-card rounded"></div>
-          </div>
+      <div className="flex-1 p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-card rounded w-1/4"></div>
+          <div className="h-12 bg-card rounded"></div>
+          <div className="h-64 bg-card rounded"></div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">Quản lý sản phẩm</h1>
-              <p className="text-text-muted">
-                Tạo và quản lý các sản phẩm trong cửa hàng
-              </p>
-            </div>
-            <Link href="/admin/products/new">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Tạo sản phẩm mới
-              </Button>
-            </Link>
+    <div className="flex-1 p-6">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Quản lý sản phẩm</h1>
+            <p className="text-text-muted">
+              Tạo và quản lý các sản phẩm trong cửa hàng
+            </p>
           </div>
+          <Link href="/admin/products/new">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Tạo sản phẩm mới
+            </Button>
+          </Link>
+        </div>
 
-          {/* Filters */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted h-4 w-4" />
-                    <Input
-                      placeholder="Tìm kiếm sản phẩm..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Trạng thái" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tất cả</SelectItem>
-                      <SelectItem value="true">Hoạt động</SelectItem>
-                      <SelectItem value="false">Tạm dừng</SelectItem>
-                    </SelectContent>
-                  </Select>
+        {/* Filters */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted h-4 w-4" />
+                  <Input
+                    placeholder="Tìm kiếm sản phẩm..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
               </div>
+              <div className="flex gap-4">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Trạng thái" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    <SelectItem value="true">Hoạt động</SelectItem>
+                    <SelectItem value="false">Tạm dừng</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Products Table */}
+        {products.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Package className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">Chưa có sản phẩm</h3>
+              <p className="text-text-muted mb-6">Tạo sản phẩm đầu tiên để bắt đầu bán hàng</p>
+              <Link href="/admin/products/new">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tạo sản phẩm mới
+                </Button>
+              </Link>
             </CardContent>
           </Card>
-
-          {/* Products Table */}
-          {products.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Package className="h-12 w-12 mx-auto mb-4 text-text-muted opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">Chưa có sản phẩm</h3>
-                <p className="text-text-muted mb-6">Tạo sản phẩm đầu tiên để bắt đầu bán hàng</p>
-                <Link href="/admin/products/new">
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Tạo sản phẩm mới
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Sản phẩm</TableHead>
-                    <TableHead>Danh mục</TableHead>
-                    <TableHead>Giá</TableHead>
-                    <TableHead>Kho</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead>Ngày tạo</TableHead>
-                    <TableHead>Hành động</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => {
-                    const images = product.images ? JSON.parse(product.images) : [];
-                    return (
+        ) : (
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Sản phẩm</TableHead>
+                  <TableHead>Danh mục</TableHead>
+                  <TableHead>Giá</TableHead>
+                  <TableHead>Kho</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Ngày tạo</TableHead>
+                  <TableHead>Hành động</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {products.map((product) => {
+                  const images = product.images ? JSON.parse(product.images) : [];
+                  return (
                     <TableRow key={product.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
@@ -281,15 +278,15 @@ export default function AdminProductsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => router.push(`/products/${product.slug}`)}
                           >
                             <Eye className="h-3 w-3" />
                           </Button>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => router.push(`/admin/products/${product.id}/edit`)}
                           >
@@ -307,31 +304,30 @@ export default function AdminProductsPage() {
                       </TableCell>
                     </TableRow>
                   );
-                  })}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
 
-          {/* Pagination */}
-          {products.length > 0 && (
-            <div className="flex justify-center">
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" disabled onClick={() => {}}>
-                  Trước
-                </Button>
-                <Button variant="default" onClick={() => {}}>1</Button>
-                <Button variant="outline" onClick={() => {}}>2</Button>
-                <Button variant="outline" onClick={() => {}}>3</Button>
-                <Button variant="outline" onClick={() => {}}>
-                  Sau
-                </Button>
-              </div>
+        {/* Pagination */}
+        {products.length > 0 && (
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" disabled onClick={() => { }}>
+                Trước
+              </Button>
+              <Button variant="default" onClick={() => { }}>1</Button>
+              <Button variant="outline" onClick={() => { }}>2</Button>
+              <Button variant="outline" onClick={() => { }}>3</Button>
+              <Button variant="outline" onClick={() => { }}>
+                Sau
+              </Button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </AppShell>
+    </div>
   );
 }
 

@@ -1,0 +1,216 @@
+================================================================================
+                    AUTO-TOPUP SYSTEM - EXPORT PACKAGE
+================================================================================
+
+Package Name    : Auto-Topup System (Generic Bank API Integration)
+Version         : 1.0.0
+Total Files     : 18 files
+Total Lines     : ~2,910 lines of code + documentation
+Export Date     : 2025-01-06
+License         : MIT
+
+================================================================================
+PACKAGE CONTENTS
+================================================================================
+
+Documentation (7 files)
+  ✓ README.md               - Main documentation & overview
+  ✓ QUICK_START.md          - 5-minute setup guide
+  ✓ INSTALL.md              - Detailed installation instructions
+  ✓ INDEX.md                - File navigation guide
+  ✓ docs/FLOW.md            - Complete system flow diagram
+  ✓ docs/DATABASE.md        - Database schema documentation
+  ✓ docs/API.md             - API reference
+
+Source Code (5 files)
+  ✓ lib/auto-topup.ts       - Core processing logic (390 lines)
+  ✓ lib/generic-bank-api.ts - Generic bank API client (250 lines)
+  ✓ lib/deposit-bonus.ts    - Deposit bonus calculation (150 lines)
+  ✓ lib/types.ts            - TypeScript type definitions (180 lines)
+  ✓ api/cron-auto-topup-route.ts - Next.js API endpoint (50 lines)
+
+Database (2 files)
+  ✓ database/schema.prisma  - Prisma ORM schema
+  ✓ database/migrations.sql - SQL migration script
+
+Configuration (2 files)
+  ✓ config/bank-config-example.json - Generic config template
+  ✓ config/tpbank-config.json        - TPBank example
+
+Scripts (2 files)
+  ✓ scripts/auto-topup-simple.sh - Cron bash script
+  ✓ scripts/setup-cron.sh        - Auto setup helper
+
+================================================================================
+FEATURES
+================================================================================
+
+✅ Generic Bank API Integration    - Support any bank via configuration
+✅ Automatic Topup Matching         - Match transactions via topup code
+✅ Duplicate Prevention             - Unique bankTransactionId index
+✅ Deposit Bonus Calculation        - Configurable bonus tiers
+✅ Referral Rewards Integration     - First deposit triggers rewards
+✅ Comprehensive Logging            - All actions logged to database
+✅ Error Handling & Recovery        - Non-critical errors don't break flow
+✅ Discord Webhook Notifications    - Real-time alerts
+✅ Cron Job Automation              - Runs every 2 minutes
+✅ TypeScript Support               - Full type safety
+
+================================================================================
+QUICK START (5 Steps)
+================================================================================
+
+1. Install Dependencies
+   npm install @prisma/client
+
+2. Setup Database
+   sqlite3 prisma/production.db < database/migrations.sql
+
+3. Copy Source Files
+   cp lib/*.ts src/lib/
+   cp api/cron-auto-topup-route.ts src/app/api/cron/auto-topup/route.ts
+
+4. Configure Bank API
+   Edit config/tpbank-config.json
+   Insert into database
+
+5. Setup Cron
+   ./scripts/setup-cron.sh
+
+Done! System runs every 2 minutes.
+
+================================================================================
+SYSTEM FLOW
+================================================================================
+
+Cron (every 2 min)
+  ↓
+POST /api/cron/auto-topup
+  ↓
+Load Bank Configs from DB
+  ↓
+Fetch Transactions from Bank API
+  ↓
+Extract Topup Code (NAP + userId)
+  ↓
+Match with Pending Deposit Request
+  ↓
+Calculate Bonus
+  ↓
+Credit Wallet (Atomic Transaction)
+  ├─ Update deposit request → APPROVED
+  ├─ Credit wallet (+ bonus)
+  ├─ Create wallet transaction
+  ├─ Create auto-topup log
+  └─ Create system log
+  ↓
+Process Referral Rewards
+  ↓
+Send Discord Notification
+  ↓
+Log Result
+
+================================================================================
+DATABASE TABLES
+================================================================================
+
+auto_topup_logs              - Processing logs
+manual_deposit_requests      - User topup requests
+website_settings             - Bank configs & settings
+wallets                      - User wallet balances
+wallet_transactions          - Transaction history
+system_logs                  - System activity logs
+users                        - User accounts (existing)
+
+================================================================================
+CONFIGURATION
+================================================================================
+
+Topup Code Format:
+  Pattern: NAP + [8-char userId]
+  Example: NAP cm123456
+
+Bank API Config:
+  - Stored in website_settings table
+  - JSON array of BankAPIConfig objects
+  - Support GET/POST methods
+  - Flexible field mapping
+  - Filter by transaction type
+
+Cron Schedule:
+  Default: */2 * * * * (every 2 minutes)
+  Customizable in crontab
+
+Bonus Tiers:
+  Configurable in deposit_bonus_tiers
+  Default: 0%, 5%, 10%, 15%, 20%
+
+================================================================================
+DOCUMENTATION HIGHLIGHTS
+================================================================================
+
+README.md         - Full system overview, features & architecture
+QUICK_START.md    - 5-minute setup, verification tests
+INSTALL.md        - Detailed installation, troubleshooting
+docs/FLOW.md      - Complete flow diagram, step-by-step processing
+docs/DATABASE.md  - Schema documentation, sample queries
+docs/API.md       - API reference, function documentation
+
+================================================================================
+CUSTOMIZATION
+================================================================================
+
+Add New Bank:
+  1. Copy config/bank-config-example.json
+  2. Edit apiUrl, fieldMapping, credentials
+  3. Insert into website_settings.bank_api_configs
+
+Modify Bonus:
+  1. Edit lib/deposit-bonus.ts
+  2. Customize getDefaultTiers()
+  3. Or update database: deposit_bonus_tiers
+
+Change Topup Code:
+  1. Edit lib/auto-topup.ts
+  2. Modify extractTopupCode() function
+  3. Update regex pattern
+
+================================================================================
+SECURITY NOTES
+================================================================================
+
+⚠️ Store API tokens in environment variables
+⚠️ Use HTTPS for bank API calls
+⚠️ Validate all transaction data
+⚠️ Implement rate limiting
+⚠️ Monitor logs for suspicious activity
+⚠️ Backup database regularly
+⚠️ Restrict cron endpoint access (localhost only)
+
+================================================================================
+SUPPORT & TROUBLESHOOTING
+================================================================================
+
+Check Logs:
+  tail -f logs/auto-topup.log
+
+Test API:
+  curl -X POST http://localhost:3000/api/cron/auto-topup
+
+Check Database:
+  sqlite3 prisma/production.db "SELECT * FROM auto_topup_logs"
+
+Common Issues:
+  - No transactions found → Check bank API config
+  - Cron not running → Verify crontab
+  - Permission denied → chmod +x scripts/*.sh
+  - Database locked → Check other processes
+
+================================================================================
+LICENSE & CREDITS
+================================================================================
+
+License: MIT License - Use freely in your projects
+Created: 2025-01-06 by Claude Code
+
+================================================================================

@@ -1,0 +1,33 @@
+{
+  "id": "bank_001",
+  "name": "TPBank",
+  "enabled": true,
+  "apiUrl": "https://your-bank-api.com/api/transactions",
+  "method": "GET",
+  "headers": {
+    "X-Custom-Header": "optional-value"
+  },
+  "fieldMapping": {
+    "transactionsPath": "data.transactions",
+    "fields": {
+      "transactionId": "id",
+      "amount": "amount",
+      "description": "description",
+      "transactionDate": "date",
+      "currency": "currency",
+      "type": "type"
+    }
+  },
+  "filters": {
+    "onlyCredit": true,
+    "creditIndicator": {
+      "field": "type",
+      "value": "IN",
+      "condition": "equals"
+    }
+  },
+  "credentials": {
+    "token": "your-api-token-here",
+    "apiKey": "optional-api-key"
+  }
+}

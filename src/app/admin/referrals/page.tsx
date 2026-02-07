@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -137,16 +137,14 @@ export default function AdminReferralsPage() {
 
   if (isLoading) {
     return (
-      <AppShell isAdmin>
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-lg">Đang tải...</div>
-        </div>
-      </AppShell>
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg">Đang tải...</div>
+      </div>
     );
   }
 
   return (
-    <AppShell isAdmin>
+    <div className="flex-1 p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -421,6 +419,6 @@ export default function AdminReferralsPage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </div>
   );
 }

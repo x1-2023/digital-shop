@@ -5,64 +5,38 @@ import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { customAlphabet } from 'nanoid';
 import { createSessionToken } from '@/lib/jwt-session';
-import { checkRateLimit, getClientIdentifier, getRateLimitConfig } from '@/lib/rate-limit';
+import { apiRateLimiter } from '@/lib/rate-limit';
+import { RegisterSchema } from '@/lib/validators/auth';
 import { logUserRegister } from '@/lib/system-log';
 
 // Generate 8-character alphanumeric ID (lowercase)
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 8);
 
-const signupSchema = z.object({
-  email: z.string().email('Email không hợp lệ'),
-  password: z.string()
-    .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
-    .regex(/[A-Z]/, 'Mật khẩu phải có ít nhất 1 chữ hoa')
-    .regex(/[a-z]/, 'Mật khẩu phải có ít nhất 1 chữ thường')
-    .regex(/[0-9]/, 'Mật khẩu phải có ít nhất 1 số'),
-  confirmPassword: z.string(),
-  referralCode: z.string().optional(),
-  agreeToTerms: z.boolean().refine((val) => val === true, {
-    message: 'Bạn phải đồng ý với điều khoản sử dụng',
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Mật khẩu xác nhận không khớp',
-  path: ['confirmPassword'],
-});
-
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting: Prevent spam signups
-    const identifier = getClientIdentifier(request);
-    const rateLimit = checkRateLimit(identifier, getRateLimitConfig('SIGNUP'));
+    // Use IP as key
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const isAllowed = await apiRateLimiter.check(`signup:${ip}`, 3); // Stricter limit for signup
 
-    if (!rateLimit.allowed) {
-      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+    if (!isAllowed) {
       return NextResponse.json(
-        {
-          error: 'Quá nhiều lần đăng ký. Vui lòng thử lại sau.',
-          retryAfter,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': retryAfter.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rateLimit.resetTime.toString(),
-          },
-        }
+        { error: 'Quá nhiều lần đăng ký. Vui lòng thử lại sau 1 phút.' },
+        { status: 429 }
       );
     }
 
     const body = await request.json();
 
-    // Validate input
-    const validationResult = signupSchema.safeParse(body);
+    // Validate input with centralized schema
+    const validationResult = RegisterSchema.safeParse(body);
     if (!validationResult.success) {
       const errors = validationResult.error.issues.map((err) => ({
         field: err.path.join('.'),
         message: err.message,
       }));
       return NextResponse.json(
-        { error: 'Validation failed', errors },
+        { error: 'Dữ liệu không hợp lệ', errors },
         { status: 400 }
       );
     }
@@ -123,8 +97,8 @@ export async function POST(request: NextRequest) {
 
     // Log user registration
     const clientIp = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown';
+      request.headers.get('x-real-ip') ||
+      'unknown';
     await logUserRegister(user.id, user.email, clientIp);
 
     // Create JWT session token

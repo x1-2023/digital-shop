@@ -5,7 +5,7 @@ import { z } from 'zod';
 const getProductsSchema = z.object({
   search: z.string().optional(),
   categoryId: z.string().optional(),
-  sort: z.enum(['newest', 'oldest', 'price-low', 'price-high', 'name']).optional(),
+  sort: z.enum(['newest', 'oldest', 'price-low', 'price-high', 'name', 'bestseller', 'discount']).optional(),
   page: z.string().optional().default('1'),
   limit: z.string().optional().default('20'),
   active: z.string().optional(),
@@ -71,7 +71,17 @@ export async function GET(request: NextRequest) {
         orderBy,
         skip,
         take: limit,
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          priceVnd: true,
+          stock: true,
+          images: true,
+          active: true,
+          description: true, // Needed for listing snippets
+          createdAt: true,
+          updatedAt: true,
           category: {
             select: {
               name: true,

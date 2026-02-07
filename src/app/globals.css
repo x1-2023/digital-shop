@@ -4,16 +4,95 @@
 @tailwind utilities;
 /* stylelint-enable at-rule-no-unknown */
 
+@layer base {
+  :root {
+    /* Light Mode - Marketplace Style (Blue/White) */
+    --background: 210 40% 98%;    /* #F8FAFC */
+    --foreground: 222 47% 11%;    /* #0F172A */
+
+    --card: 0 0% 100%;            /* #FFFFFF */
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 221 83% 53%;       /* #2563EB (Blue 600) */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.5rem;
+
+    /* Custom Colors Mapped to Shadcn Vars */
+    --color-brand: var(--primary);
+    --color-text-primary: var(--foreground);
+    --color-text-muted: var(--muted-foreground);
+    --color-background: var(--background);
+    --color-card: var(--card);
+    --color-border: var(--border);
+  }
+
+  .dark {
+    /* Dark Mode - Cyberpunk Style (Purple/Black) */
+    --background: 240 10% 4%;     /* #0B0B10 */
+    --foreground: 210 40% 98%;    /* #E6E8EC */
+
+    --card: 240 10% 6%;          /* #13141C */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 240 10% 6%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 263 70% 50%;       /* #8B5CF6 (Violet 500) */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 240 5% 26%;        /* #232634 */
+    --input: 240 5.9% 90%;
+    --ring: 263 70% 50%;
+  }
+}
+
 :root {
-  /* Dark theme palette - Sellix style */
-  --color-background: #0B0B10;
-  --color-card: #111318;
-  --color-card-dark: #0A0A0F;
-  --color-border: #22252E;
-  --color-text-primary: #E6E8EC;
-  --color-text-muted: #9AA0AA;
-  --color-brand: #8B5CF6;
-  --color-success: #22C55E;
+  /* Legacy Variable Mapping (For Backward Compatibility) */
+  --color-background: hsl(var(--background));
+  --color-card: hsl(var(--card));
+  --color-card-dark: #08080C;
+  --color-border: hsl(var(--border));
+  
+  --color-text-primary: hsl(var(--foreground)); 
+  --color-text-muted: hsl(var(--muted-foreground));
+  
+  --color-brand: hsl(var(--primary));
+  --color-brand-dark: #7C3AED; 
+  --color-brand-light: #A78BFA;
+  
+  --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
 }

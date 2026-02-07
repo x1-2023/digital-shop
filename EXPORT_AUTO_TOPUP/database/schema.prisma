@@ -1,0 +1,178 @@
+// ==============================================================================
+// AUTO-TOPUP SYSTEM - PRISMA SCHEMA
+// ==============================================================================
+// Add these models to your existing Prisma schema
+// ==============================================================================
+
+datasource db {
+  provider = "sqlite"  // Change to "postgresql" or "mysql" if needed
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==============================================================================
+// CORE MODELS (Add to existing schema)
+// ==============================================================================
+
+model User {
+  id                      String                   @id @default(cuid())
+  email                   String                   @unique
+  password                String
+  role                    String                   @default("BUYER")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+
+  // Relations
+  wallet                  Wallet?
+  walletTransactions      WalletTransaction[]
+  manualDepositRequests   ManualDepositRequest[]
+  autoTopupLogs           AutoTopupLog[]
+
+  @@map("users")
+}
+
+// ==============================================================================
+// AUTO-TOPUP TABLES
+// ==============================================================================
+
+// Auto-topup processing logs
+model AutoTopupLog {
+  id                String   @id @default(cuid())
+  bankTransactionId String   @unique  // Prevent duplicate processing
+  bankName          String
+
+  // Relations
+  depositRequestId  Int?
+  depositRequest    ManualDepositRequest? @relation(fields: [depositRequestId], references: [id])
+
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Transaction data
+  topupCode         String   // e.g., "NAP cm123456"
+  amountVnd         Float
+  description       String   // Original bank transaction description
+
+  // Status
+  status            String   // SUCCESS, FAILED, INVALID, DUPLICATE
+  errorMessage      String?
+
+  // Timestamps
+  transactionDate   DateTime // Bank transaction timestamp
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@map("auto_topup_logs")
+}
+
+// Manual deposit requests (topup requests from users)
+model ManualDepositRequest {
+  id              Int       @id @default(autoincrement())
+  internalId      String?   @unique  // Topup code (e.g., "TOP123456")
+
+  // User
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Request data
+  amountVnd       Float
+  note            String?
+  qrCode          String?
+  transferContent String?   // Contains topup code for matching (e.g., "NAP cm123456")
+
+  // Status
+  status          String    @default("PENDING")  // PENDING, APPROVED, REJECTED
+  adminNote       String?
+  decidedAt       DateTime?
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  autoTopupLogs   AutoTopupLog[]
+
+  @@map("manual_deposit_requests")
+}
+
+// Website settings (store bank API configs)
+model WebsiteSettings {
+  key       String   @id
+  value     String   // JSON string for configs
+  updatedAt DateTime @updatedAt
+
+  @@map("website_settings")
+}
+
+// User wallets
+model Wallet {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balanceVnd Float    @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@map("wallets")
+}
+
+// Wallet transaction history
+model WalletTransaction {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type            String   // DEPOSIT, WITHDRAW, PAYMENT, REFUND
+  amountVnd       Float
+  balanceAfterVnd Float
+  description     String?
+  metadata        String?  // JSON string with additional data
+
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@map("wallet_transactions")
+}
+
+// System activity logs
+model SystemLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  userEmail   String?
+  action      String
+  targetType  String?
+  targetId    String?
+  amount      Float?
+  description String
+  metadata    String?  // JSON string
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("system_logs")
+}
+
+// ==============================================================================
+// NOTES
+// ==============================================================================
+// 1. This schema is for SQLite. For PostgreSQL/MySQL, adjust types:
+//    - Float → Decimal for currency
+//    - String @id @default(cuid()) → String @id @default(uuid())
+//
+// 2. Bank API configs are stored in website_settings.value as JSON:
+//    key: "bank_api_configs"
+//    value: "[{...config1...}, {...config2...}]"
+//
+// 3. Topup code format: "NAP [8-char userId]"
+//    Example: "NAP cm123456"
+//
+// 4. To add to existing schema:
+//    - Copy relevant models
+//    - Add relations to your existing User model
+//    - Run: npx prisma migrate dev --name add_auto_topup
+// ==============================================================================

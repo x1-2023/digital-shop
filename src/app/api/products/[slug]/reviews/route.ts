@@ -180,7 +180,7 @@ export async function GET(
       // Safe display name
       displayName: review.isAnonymous
         ? "Người dùng ẩn danh"
-        : maskEmail(review.user.email),
+        : review.user.email.split('@')[0],
       avatar: review.isAnonymous
         ? "?"
         : review.user.email[0].toUpperCase(),

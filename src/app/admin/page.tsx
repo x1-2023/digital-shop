@@ -1,22 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AppShell } from '@/components/layout/app-shell';
+// import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DashboardCharts } from '@/components/admin/dashboard-charts';
 import {
   DollarSign,
   ShoppingCart,
   CreditCard,
   Users,
-  TrendingUp,
   Clock,
   CheckCircle,
   XCircle,
-  Wallet,
   ArrowUpCircle,
   ArrowDownCircle
 } from 'lucide-react';
@@ -29,11 +28,13 @@ interface DashboardStats {
     today: number;
     month: number;
     year: number;
+    chart: any[]; // New field for chart data
   };
   orders: {
     today: number;
     month: number;
     year: number;
+    chart: any[]; // New field for chart data
   };
   deposits: {
     total: number;
@@ -79,27 +80,8 @@ export default function AdminDashboard() {
   const [onlineUsers, setOnlineUsers] = useState<{ total: number; guests: number; authenticated: number } | null>(null);
 
   // Check if user is admin
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      try {
-        const res = await fetch('/api/auth/session');
-        if (res.ok) {
-          const data = await res.json();
-          if (!data.user || data.user.role !== 'ADMIN') {
-            window.location.href = '/';
-            return;
-          }
-        } else {
-          window.location.href = '/auth/signin';
-          return;
-        }
-      } catch (error) {
-        console.error('Failed to check admin access:', error);
-        window.location.href = '/';
-      }
-    };
-    checkAdminAccess();
-  }, []);
+  // Check if user is admin
+  // Handled by AdminLayout
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -154,11 +136,11 @@ export default function AdminDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PAID':
-        return <Badge variant="success"><CheckCircle className="w-3 h-3 mr-1" />Đã thanh toán</Badge>;
+        return <Badge variant="success" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"><CheckCircle className="w-3 h-3 mr-1" />Đã thanh toán</Badge>;
       case 'PENDING':
-        return <Badge variant="warning"><Clock className="w-3 h-3 mr-1" />Chờ xử lý</Badge>;
+        return <Badge variant="warning" className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"><Clock className="w-3 h-3 mr-1" />Chờ xử lý</Badge>;
       case 'REJECTED':
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Bị từ chối</Badge>;
+        return <Badge variant="destructive" className="bg-red-500/10 text-red-500 hover:bg-red-500/20"><XCircle className="w-3 h-3 mr-1" />Bị từ chối</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -166,19 +148,17 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <AppShell isAdmin>
-        <div className="flex-1 p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-card rounded w-1/4"></div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-card rounded"></div>
-              ))}
-            </div>
-            <div className="h-64 bg-card rounded"></div>
+      <div className="flex-1 p-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-10 bg-card rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-card rounded-xl"></div>
+            ))}
           </div>
+          <div className="h-[400px] bg-card rounded-xl"></div>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
@@ -211,214 +191,212 @@ export default function AdminDashboard() {
     total: 'Tất cả thời gian'
   }[timePeriod];
 
+  // Dummy chart data if API doesn't provide it yet
+  const revenueChartData = stats?.revenue?.chart || [
+    { date: 'T2', amount: stats?.revenue.today ? stats.revenue.today * 0.8 : 0 },
+    { date: 'T3', amount: stats?.revenue.today ? stats.revenue.today * 1.2 : 0 },
+    { date: 'T4', amount: stats?.revenue.today || 0 },
+    // more dummy data points...
+  ];
+
+  const orderChartData = stats?.orders?.chart || [
+    { date: 'T2', count: stats?.orders.today ? 2 : 0 },
+    { date: 'T3', count: stats?.orders.today ? 5 : 0 },
+    { date: 'T4', count: stats?.orders.today || 0 },
+  ];
+
   return (
-    <AppShell isAdmin>
-      <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 p-8 space-y-8 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary">Dashboard</h1>
-          <p className="text-text-muted">Tổng quan hệ thống</p>
+          <h1 className="text-3xl font-bold text-text-primary mb-1">Tổng quan</h1>
+          <p className="text-text-muted">Chào mừng trở lại, Administrator</p>
         </div>
 
-        {/* Time Period Selector */}
-        <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as any)} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-4">
-            <TabsTrigger value="today">Hôm nay</TabsTrigger>
-            <TabsTrigger value="month">Tháng</TabsTrigger>
-            <TabsTrigger value="year">Năm</TabsTrigger>
-            <TabsTrigger value="total">Tổng</TabsTrigger>
+        <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as any)} className="w-full md:w-auto">
+          <TabsList className="bg-card border border-border">
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="month">Month</TabsTrigger>
+            <TabsTrigger value="year">Year</TabsTrigger>
+            <TabsTrigger value="total">All</TabsTrigger>
           </TabsList>
-
-          <TabsContent value={timePeriod} className="mt-6 space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Doanh Thu</CardTitle>
-                  <DollarSign className="h-4 w-4 text-success" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-success">
-                    {formatCurrency(currentStats.revenue)}
-                  </div>
-                  <p className="text-xs text-text-muted">{periodLabel}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Đơn Hàng</CardTitle>
-                  <ShoppingCart className="h-4 w-4 text-brand" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-brand">
-                    {currentStats.orders}
-                  </div>
-                  <p className="text-xs text-text-muted">{periodLabel}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">User Đã Nạp</CardTitle>
-                  <ArrowUpCircle className="h-4 w-4 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-500">
-                    {formatCurrency(currentStats.deposits)}
-                  </div>
-                  <p className="text-xs text-text-muted">{periodLabel}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">User Đã Chi</CardTitle>
-                  <ArrowDownCircle className="h-4 w-4 text-orange-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-orange-500">
-                    {formatCurrency(currentStats.spent)}
-                  </div>
-                  <p className="text-xs text-text-muted">{periodLabel}</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Additional Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Yêu Cầu Nạp Chờ Duyệt</CardTitle>
-                  <CreditCard className="h-4 w-4 text-warning" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-warning">
-                    {stats?.pendingDeposits || 0}
-                  </div>
-                  <p className="text-xs text-text-muted">Cần xử lý</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Đang Online</CardTitle>
-                  <Users className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-500">
-                    {onlineUsers?.total || 0}
-                  </div>
-                  <p className="text-xs text-text-muted">
-                    {onlineUsers?.authenticated || 0} users + {onlineUsers?.guests || 0} guests
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tổng Người Dùng</CardTitle>
-                  <Users className="h-4 w-4 text-text-muted" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-text-primary">
-                    {stats?.totalUsers || 0}
-                  </div>
-                  <p className="text-xs text-text-muted">Đã đăng ký</p>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
         </Tabs>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Orders */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+      {/* Stats Cards - Modern Look */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-border hover:shadow-lg hover:shadow-success/5 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-text-muted">Doanh Thu</CardTitle>
+            <div className="p-2 bg-success/10 rounded-lg">
+              <DollarSign className="h-4 w-4 text-success" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-text-primary">
+              {formatCurrency(currentStats.revenue)}
+            </div>
+            <p className="text-xs text-text-muted mt-1 font-medium">{periodLabel}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border hover:shadow-lg hover:shadow-brand/5 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-text-muted">Đơn Hàng</CardTitle>
+            <div className="p-2 bg-brand/10 rounded-lg">
+              <ShoppingCart className="h-4 w-4 text-brand" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-text-primary">
+              {currentStats.orders}
+            </div>
+            <p className="text-xs text-text-muted mt-1 font-medium">{periodLabel}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border hover:shadow-lg hover:shadow-blue-500/5 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-text-muted">User Đã Nạp</CardTitle>
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <ArrowUpCircle className="h-4 w-4 text-blue-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-text-primary">
+              {formatCurrency(currentStats.deposits)}
+            </div>
+            <p className="text-xs text-text-muted mt-1 font-medium">{periodLabel}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border hover:shadow-lg hover:shadow-orange-500/5 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-text-muted">Đang Online</CardTitle>
+            <div className="p-2 bg-orange-500/10 rounded-lg">
+              <Users className="h-4 w-4 text-orange-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-text-primary flex items-center gap-2">
+              {onlineUsers?.total || 0}
+              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            </div>
+            <p className="text-xs text-text-muted mt-1 font-medium">
+              {onlineUsers?.authenticated || 0} users • {onlineUsers?.guests || 0} guests
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <DashboardCharts revenueData={revenueChartData} orderData={orderChartData} />
+
+      {/* Recent Data Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
+        <Card className="border-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
                 <CardTitle>Đơn hàng gần đây</CardTitle>
-                <Link href="/admin/orders">
-                  <Button variant="outline" size="sm">Xem tất cả</Button>
-                </Link>
+                <p className="text-sm text-text-muted mt-1">5 đơn hàng mới nhất</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              {recentOrders.length === 0 ? (
-                <div className="text-center py-8 text-text-muted">
-                  <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Chưa có đơn hàng nào</p>
-                </div>
-              ) : (
+              <Link href="/admin/orders">
+                <Button variant="outline" size="sm" className="hover:bg-card-dark">Xem tất cả</Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {recentOrders.length === 0 ? (
+              <div className="text-center py-12 text-text-muted bg-card-dark/50 rounded-lg border border-dashed border-border/50">
+                <ShoppingCart className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p>Chưa có đơn hàng nào</p>
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-lg border border-border">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
+                  <TableHeader className="bg-card-dark">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-[100px]">ID</TableHead>
                       <TableHead>Khách hàng</TableHead>
-                      <TableHead>Số tiền</TableHead>
-                      <TableHead>Trạng thái</TableHead>
+                      <TableHead className="text-right">Số tiền</TableHead>
+                      <TableHead className="text-center w-[120px]">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {recentOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-mono text-xs">
-                          {order.id.slice(0, 10)}...
+                      <TableRow key={order.id} className="hover:bg-card-dark/50">
+                        <TableCell className="font-mono text-xs text-text-muted">
+                          {order.id.slice(0, 8)}
                         </TableCell>
-                        <TableCell>{order.userEmail}</TableCell>
-                        <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
-                        <TableCell>{getStatusBadge(order.status)}</TableCell>
+                        <TableCell className="font-medium text-text-primary">{order.userEmail}</TableCell>
+                        <TableCell className="text-right font-bold text-text-primary">
+                          {formatCurrency(order.totalAmount)}
+                        </TableCell>
+                        <TableCell className="text-center">{getStatusBadge(order.status)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Pending Deposits */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Yêu cầu nạp chờ duyệt</CardTitle>
-                <Link href="/admin/topups">
-                  <Button variant="outline" size="sm">Xem tất cả</Button>
-                </Link>
               </div>
-            </CardHeader>
-            <CardContent>
-              {pendingDeposits.length === 0 ? (
-                <div className="text-center py-8 text-text-muted">
-                  <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Không có yêu cầu nạp nào</p>
-                </div>
-              ) : (
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pending Deposits */}
+        <Card className="border-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Yêu cầu nạp tiền</CardTitle>
+                <p className="text-sm text-text-muted mt-1">Các giao dịch đang chờ duyệt</p>
+              </div>
+              <Link href="/admin/topups">
+                <Button variant="outline" size="sm" className="hover:bg-card-dark">Xem tất cả</Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {pendingDeposits.length === 0 ? (
+              <div className="text-center py-12 text-text-muted bg-card-dark/50 rounded-lg border border-dashed border-border/50">
+                <CheckCircle className="h-10 w-10 mx-auto mb-3 opacity-30 text-success" />
+                <p>Hết việc rồi! Đã xử lý hết yêu cầu.</p>
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-lg border border-border">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Khách hàng</TableHead>
-                      <TableHead>Số tiền</TableHead>
-                      <TableHead>Ngày</TableHead>
+                  <TableHeader className="bg-card-dark">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-[80px]">ID</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead className="text-right">Nạp</TableHead>
+                      <TableHead className="text-right">Ngày</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {pendingDeposits.map((deposit) => (
-                      <TableRow key={deposit.id}>
-                        <TableCell className="font-mono text-xs">
+                      <TableRow key={deposit.id} className="hover:bg-card-dark/50">
+                        <TableCell className="font-mono text-xs text-text-muted">
                           #{deposit.id}
                         </TableCell>
-                        <TableCell>{deposit.userEmail}</TableCell>
-                        <TableCell>{formatCurrency(deposit.amount)}</TableCell>
-                        <TableCell>{formatDate(deposit.createdAt)}</TableCell>
+                        <TableCell className="font-medium">{deposit.userEmail}</TableCell>
+                        <TableCell className="text-right font-bold text-success">
+                          +{formatCurrency(deposit.amount)}
+                        </TableCell>
+                        <TableCell className="text-right text-xs text-text-muted">
+                          {formatDate(deposit.createdAt)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </AppShell>
+    </div>
   );
 }
 

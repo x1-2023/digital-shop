@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { checkRateLimit, getRateLimitConfig } from '@/lib/rate-limit';
+import { apiRateLimiter } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,18 +11,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Rate limiting: Prevent spam check requests (more lenient than creating requests)
-    const rateLimit = checkRateLimit(
-      `check-status-${session.user.id}`,
-      { limit: 10, window: 60 * 1000 } // 10 requests per minute
-    );
+    // Rate limiting: Prevent spam check requests (10 requests per minute)
+    const isAllowed = await apiRateLimiter.check(`check-status:${session.user.id}`, 10);
 
-    if (!rateLimit.allowed) {
-      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000);
+    if (!isAllowed) {
       return NextResponse.json(
         {
           error: 'Vui lòng chờ một chút trước khi kiểm tra lại.',
-          retryAfter,
         },
         { status: 429 }
       );
