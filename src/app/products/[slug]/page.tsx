@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  ShoppingCart, 
+import {
+  ShoppingCart,
   Package,
   FileText,
   Star,
@@ -93,7 +93,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
-    
+
     try {
       // Add item with correct quantity
       addToCart({
@@ -104,7 +104,7 @@ export default function ProductDetailPage() {
         images: product.images,
         stock: product.stock,
       });
-      
+
       // If quantity > 1, update to desired quantity
       if (quantity > 1) {
         // Get current quantity in cart and add the rest
@@ -115,7 +115,7 @@ export default function ProductDetailPage() {
           }
         }, 100);
       }
-      
+
       toast({
         title: 'Đã thêm vào giỏ hàng',
         description: `${product.name} x${quantity} đã được thêm vào giỏ hàng`,
@@ -132,10 +132,10 @@ export default function ProductDetailPage() {
 
   const handleBuyNow = () => {
     if (!product) return;
-    
+
     // Add to cart first
     handleAddToCart();
-    
+
     // Navigate to checkout
     setTimeout(() => {
       router.push('/checkout');
@@ -226,16 +226,15 @@ export default function ProductDetailPage() {
                   </div>
                 )}
               </div>
-              
+
               {images.length > 1 && (
                 <div className="flex space-x-2 overflow-x-auto">
                   {images.map((image: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                        selectedImage === index ? 'border-brand' : 'border-border'
-                      }`}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImage === index ? 'border-brand' : 'border-border'
+                        }`}
                     >
                       <Image
                         src={image}
@@ -255,8 +254,8 @@ export default function ProductDetailPage() {
             <div className="space-y-6">
               <div>
                 <div className="flex items-center space-x-2 mb-2">
-                  <Badge 
-                    variant="secondary" 
+                  <Badge
+                    variant="secondary"
                     className="bg-blue-500 text-white"
                   >
                     <FileText className="h-5 w-5" />
@@ -266,9 +265,9 @@ export default function ProductDetailPage() {
                     {product.stock > 0 ? `${product.stock} còn lại` : 'Hết hàng'}
                   </Badge>
                 </div>
-                
+
                 <CardTitle className="text-3xl mb-2">{product.name}</CardTitle>
-                
+
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="text-3xl font-bold text-brand">
                     {formatCurrency(product.priceVnd)}
@@ -308,22 +307,22 @@ export default function ProductDetailPage() {
                     </div>
 
                     <div className="flex gap-3">
-                      <Button 
-                        className="flex-1" 
-                        size="lg"
-                        onClick={handleAddToCart}
-                        disabled={product.stock === 0}
-                      >
-                        <ShoppingCart className="h-5 w-5 mr-2" />
-                        Thêm vào giỏ hàng
-                      </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                         size="lg"
                         onClick={handleBuyNow}
                         disabled={product.stock === 0}
                       >
+                        <ShoppingCart className="h-5 w-5 mr-2" />
                         Mua ngay
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={handleAddToCart}
+                        disabled={product.stock === 0}
+                      >
+                        Thêm vào giỏ hàng
                       </Button>
                     </div>
 
@@ -354,7 +353,7 @@ export default function ProductDetailPage() {
               <TabsTrigger value="specifications">Thông số</TabsTrigger>
               <TabsTrigger value="reviews">Đánh giá</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="description" className="mt-6">
               <Card>
                 <CardContent className="p-6">
@@ -368,7 +367,7 @@ export default function ProductDetailPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="specifications" className="mt-6">
               <Card>
                 <CardContent className="p-6">
@@ -394,7 +393,7 @@ export default function ProductDetailPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="reviews" className="mt-6">
               <div className="space-y-6">
                 {/* Review Stats */}
