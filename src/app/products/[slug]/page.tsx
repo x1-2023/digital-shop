@@ -209,7 +209,7 @@ export default function ProductDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left: Product Image */}
             <div className="w-full max-w-[493px] mx-auto">
-              <div className="border border-border rounded-2xl overflow-hidden bg-card">
+              <div className="rounded-2xl overflow-hidden shadow-lg shadow-black/20">
                 {/* Product Image */}
                 <div className="relative aspect-square bg-secondary/30 overflow-hidden">
                   {/* Status Badges on Image */}
@@ -284,7 +284,7 @@ export default function ProductDetailPage() {
                 )}
 
                 {/* Check Live Section */}
-                <div className="border-t border-border p-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4">
                   <div className="flex items-center gap-2 mb-1">
                     <Info className="w-4 h-4 text-blue-400" />
                     <span className="font-semibold text-sm">Check Live</span>
