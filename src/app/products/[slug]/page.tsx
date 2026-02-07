@@ -212,18 +212,27 @@ export default function ProductDetailPage() {
               <div className="bg-card rounded-2xl shadow-sm border border-border/50 overflow-hidden h-fit">
                 {/* Header Status Bar (Reference Style) */}
                 <div className="flex w-full text-[10px] font-bold text-white uppercase tracking-wider text-center h-8">
-                  <div className="flex-1 bg-green-500 flex items-center justify-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    Available
-                  </div>
-                  <div className="flex-1 bg-blue-500 flex items-center justify-center gap-1">
-                    <Zap className="w-3 h-3" />
-                    Instant
-                  </div>
-                  <div className="flex-1 bg-sky-600 flex items-center justify-center gap-1">
-                    <Truck className="w-3 h-3" />
-                    Deliver
-                  </div>
+                  {isOutOfStock ? (
+                    <div className="w-full bg-red-600 flex items-center justify-center gap-1">
+                      <Package className="w-3 h-3" />
+                      SOLD OUT
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex-1 bg-green-500 flex items-center justify-center gap-1">
+                        <CheckCircle className="w-3 h-3" />
+                        Available
+                      </div>
+                      <div className="flex-1 bg-blue-500 flex items-center justify-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        Instant
+                      </div>
+                      <div className="flex-1 bg-sky-600 flex items-center justify-center gap-1">
+                        <Truck className="w-3 h-3" />
+                        Deliver
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="p-4">
