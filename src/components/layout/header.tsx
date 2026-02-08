@@ -242,7 +242,7 @@ export function Header() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.open(process.env.NEXT_PUBLIC_MAILHUB_URL || 'https://mailhub.webmmo.net', '_blank')}>
                 <Mail className="mr-2 h-4 w-4" />
-                <span>Temp Mail</span>
+                <span>MailHub</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
