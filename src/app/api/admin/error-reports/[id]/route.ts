@@ -21,7 +21,7 @@ export async function PATCH(
       where: { email: session.user.email },
     });
 
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'OWNER')) {
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
