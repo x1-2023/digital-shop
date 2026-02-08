@@ -13,6 +13,7 @@ import {
   CreditCard,
   Wrench,
   Shield,
+  Mail,
   TrendingUp,
   Sparkles,
   ChevronRight
@@ -238,6 +239,10 @@ export function Header() {
               <DropdownMenuItem onClick={() => router.push('/authenticator')}>
                 <Shield className="mr-2 h-4 w-4" />
                 <span>2FA Authenticator</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.open(process.env.NEXT_PUBLIC_MAILHUB_URL || 'https://mailhub.webmmo.net', '_blank')}>
+                <Mail className="mr-2 h-4 w-4" />
+                <span>Temp Mail</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
