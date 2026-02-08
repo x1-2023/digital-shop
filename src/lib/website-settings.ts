@@ -40,14 +40,14 @@ export async function getWebsiteSettings(): Promise<WebsiteSettings> {
     }
 
     const websiteSettings: WebsiteSettings = {
-      websiteName: settings.websiteName || 'Digital Shop',
+      websiteName: settings.websiteName || process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop',
       websiteTitle: settings.websiteTitle || 'Digital Shop - Premium Digital Products',
       websiteDescription: settings.websiteDescription || 'Premium digital products and services',
       websiteKeywords: settings.websiteKeywords || 'digital products, premium, shop',
       websiteLogo: settings.websiteLogo,
       websiteFavicon: settings.websiteFavicon,
       copyrightYear: settings.copyrightYear || new Date().getFullYear().toString(),
-      supportEmail: settings.supportEmail || 'support@webmmo.com',
+      supportEmail: settings.supportEmail || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@example.com',
       contactInfo: settings.contactInfo || '',
       themeSettings: JSON.parse(settings.themeSettings || '{"primaryColor":"#3b82f6","darkMode":true,"sidebarColor":"#1f2937","headerColor":"#111827"}'),
     };
@@ -65,14 +65,14 @@ export async function getWebsiteSettings(): Promise<WebsiteSettings> {
 
 function getDefaultSettings(): WebsiteSettings {
   return {
-    websiteName: 'Digital Shop',
+    websiteName: process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop',
     websiteTitle: 'Digital Shop - Premium Digital Products',
     websiteDescription: 'Premium digital products and services',
     websiteKeywords: 'digital products, premium, shop',
     websiteLogo: null,
     websiteFavicon: null,
     copyrightYear: new Date().getFullYear().toString(),
-    supportEmail: 'support@webmmo.com',
+    supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@example.com',
     contactInfo: '',
     themeSettings: {
       primaryColor: '#3b82f6',

@@ -47,7 +47,7 @@ export default function SignInPage() {
         <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
             <Link href="/" className="text-3xl font-bold text-brand">
-              WebMMO
+              {process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'}
             </Link>
             <p className="text-text-muted mt-2">Đăng nhập vào tài khoản</p>
           </div>

@@ -35,7 +35,7 @@ export function HeroMarketplace({ dealProduct }: HeroMarketplaceProps) {
                             <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
                                 <Shield className="w-5 h-5" />
                             </div>
-                            <span className="font-semibold tracking-wider text-sm">WEBMMO</span>
+                            <span className="font-semibold tracking-wider text-sm">{(process.env.NEXT_PUBLIC_SITE_NAME || 'DIGITAL SHOP').toUpperCase()}</span>
                         </div>
 
                         <h2 className="text-2xl md:text-4xl font-extrabold mb-1 tracking-tight">

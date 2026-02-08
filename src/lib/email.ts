@@ -71,8 +71,9 @@ export async function sendPasswordResetEmail(
   const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const resetUrl = `${baseUrl}/auth/reset-password/${resetToken}`;
 
-  const subject = 'Đặt lại mật khẩu - WebMMO';
-  
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop';
+  const subject = `Đặt lại mật khẩu - ${siteName}`;
+
   const text = `
 Xin chào,
 
@@ -86,7 +87,7 @@ Link này sẽ hết hạn sau 1 giờ.
 Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
 
 Trân trọng,
-WebMMO Team
+${siteName} Team
   `;
 
   const html = `
@@ -163,10 +164,10 @@ WebMMO Team
             <td style="background-color: #0f172a; padding: 30px 40px; text-align: center; border-top: 1px solid #334155;">
               <p style="color: #64748b; font-size: 14px; margin: 0 0 10px;">
                 Trân trọng,<br>
-                <strong style="color: #94a3b8;">WebMMO Team</strong>
+                <strong style="color: #94a3b8;">${siteName} Team</strong>
               </p>
               <p style="color: #475569; font-size: 12px; margin: 10px 0 0;">
-                © 2025 WebMMO. All rights reserved.
+                © 2025 ${siteName}. All rights reserved.
               </p>
             </td>
           </tr>
@@ -197,12 +198,13 @@ export async function sendVerificationEmail(
   const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const verifyUrl = `${baseUrl}/auth/verify-email/${verificationToken}`;
 
-  const subject = 'Xác thực email - WebMMO';
-  
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop';
+  const subject = `Xác thực email - ${siteName}`;
+
   const text = `
 Xin chào,
 
-Cảm ơn bạn đã đăng ký tài khoản tại WebMMO!
+Cảm ơn bạn đã đăng ký tài khoản tại ${siteName}!
 
 Vui lòng nhấp vào link sau để xác thực email của bạn:
 ${verifyUrl}
@@ -210,7 +212,7 @@ ${verifyUrl}
 Link này sẽ hết hạn sau 24 giờ.
 
 Trân trọng,
-Digital Shop Team
+${siteName} Team
   `;
 
   const html = `
@@ -234,7 +236,7 @@ Digital Shop Team
           <tr>
             <td style="padding: 40px;">
               <p style="color: #cbd5e1; font-size: 16px; line-height: 1.6;">
-                Cảm ơn bạn đã đăng ký tài khoản tại Digital Shop!
+                Cảm ơn bạn đã đăng ký tài khoản tại ${siteName}!
               </p>
               <p style="color: #cbd5e1; font-size: 16px; line-height: 1.6;">
                 Vui lòng nhấp vào nút bên dưới để xác thực email của bạn:

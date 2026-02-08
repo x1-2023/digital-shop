@@ -161,7 +161,7 @@ export function Header() {
             <span className="text-white font-bold text-lg">W</span>
           </div>
           <span className="font-bold text-xl text-foreground hidden sm:inline-block tracking-tight">
-            WebMMO
+            {process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'}
           </span>
         </Link>
 

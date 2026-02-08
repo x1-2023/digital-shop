@@ -77,7 +77,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
             <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
               <span className="text-white font-bold text-xs">WM</span>
             </div>
-            <span className="font-bold text-lg text-text-primary">WebMMO Admin</span>
+            <span className="font-bold text-lg text-text-primary">{process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'} Admin</span>
           </Link>
 
           {/* Close button (mobile only) */}

@@ -125,7 +125,7 @@ export default function ResetPasswordPage() {
             <div className="h-10 w-10 rounded-lg bg-brand flex items-center justify-center">
               <span className="text-white font-bold text-lg">WM</span>
             </div>
-            <span className="font-bold text-2xl text-text-primary">WebMMO</span>
+            <span className="font-bold text-2xl text-text-primary">{process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'}</span>
           </Link>
           <p className="text-text-muted mt-2">Đặt lại mật khẩu mới</p>
         </div>
@@ -137,8 +137,8 @@ export default function ResetPasswordPage() {
               {isVerifying
                 ? 'Đang xác thực link...'
                 : success
-                ? 'Mật khẩu đã được đặt lại thành công'
-                : 'Nhập mật khẩu mới cho tài khoản của bạn'
+                  ? 'Mật khẩu đã được đặt lại thành công'
+                  : 'Nhập mật khẩu mới cho tài khoản của bạn'
               }
             </CardDescription>
           </CardHeader>
@@ -241,9 +241,8 @@ export default function ResetPasswordPage() {
                         {[...Array(5)].map((_, i) => (
                           <div
                             key={i}
-                            className={`h-1 flex-1 rounded-full ${
-                              i < passwordStrength ? strengthColors[passwordStrength - 1] : 'bg-card-dark'
-                            }`}
+                            className={`h-1 flex-1 rounded-full ${i < passwordStrength ? strengthColors[passwordStrength - 1] : 'bg-card-dark'
+                              }`}
                           />
                         ))}
                       </div>

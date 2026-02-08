@@ -18,10 +18,10 @@ interface FooterSettings {
 export function Footer() {
   const [settings, setSettings] = useState<FooterSettings>({
     copyrightYear: new Date().getFullYear().toString(),
-    supportEmail: 'support@webmmo.com',
+    supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@example.com',
     contactInfo: '',
     telegramUrl: process.env.NEXT_PUBLIC_TELEGRAM_URL || 'https://t.me/webmmo',
-    telegramHandle: '@webmmo_support',
+    telegramHandle: process.env.NEXT_PUBLIC_TELEGRAM_HANDLE || '@support',
     workingHours: '8:00 AM - 12:00 PM',
     address: 'Ha Noi, Viet Nam',
   });
@@ -34,7 +34,7 @@ export function Footer() {
           setSettings(prev => ({
             ...prev,
             copyrightYear: data.settings.copyrightYear || new Date().getFullYear().toString(),
-            supportEmail: data.settings.supportEmail || 'support@webmmo.com',
+            supportEmail: data.settings.supportEmail || process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@example.com',
             contactInfo: data.settings.contactInfo || '',
           }));
         }
@@ -194,7 +194,7 @@ export function Footer() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
             <p className="text-text-muted">
-              © {settings.copyrightYear} <span className="text-brand font-medium">WebMMO</span>. All rights reserved.
+              © {settings.copyrightYear} <span className="text-brand font-medium">{process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'}</span>. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link href="/privacy" className="text-brand hover:underline">

@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
             <div className="h-10 w-10 rounded-lg bg-brand flex items-center justify-center">
               <span className="text-white font-bold text-lg">WM</span>
             </div>
-            <span className="font-bold text-2xl text-text-primary">WebMMO</span>
+            <span className="font-bold text-2xl text-text-primary">{process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'}</span>
           </Link>
           <p className="text-text-muted mt-2">Khôi phục mật khẩu</p>
         </div>

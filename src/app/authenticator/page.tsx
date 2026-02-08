@@ -7,11 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Shield, 
-  Plus, 
-  Copy, 
-  Trash2, 
+import {
+  Shield,
+  Plus,
+  Copy,
+  Trash2,
   Search,
   Clock,
   CheckCircle,
@@ -291,21 +291,19 @@ export default function AuthenticatorPage() {
                           <Clock className="w-4 h-4" />
                           Làm mới sau
                         </span>
-                        <span className={`font-medium text-lg ${
-                          quickCode.timeRemaining <= 5 
-                            ? 'text-danger' 
+                        <span className={`font-medium text-lg ${quickCode.timeRemaining <= 5
+                            ? 'text-danger'
                             : 'text-brand'
-                        }`}>
+                          }`}>
                           {quickCode.timeRemaining}s
                         </span>
                       </div>
                       <div className="h-2 bg-card-dark rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-1000 ${
-                            quickCode.timeRemaining <= 5
+                          className={`h-full transition-all duration-1000 ${quickCode.timeRemaining <= 5
                               ? 'bg-danger'
                               : 'bg-brand'
-                          }`}
+                            }`}
                           style={{ width: `${(quickCode.timeRemaining / 30) * 100}%` }}
                         />
                       </div>
@@ -413,7 +411,7 @@ export default function AuthenticatorPage() {
                   {searchQuery ? 'Không tìm thấy tài khoản' : 'Chưa có tài khoản 2FA nào'}
                 </h3>
                 <p className="text-text-muted mb-4">
-                  {searchQuery 
+                  {searchQuery
                     ? 'Thử tìm kiếm với từ khóa khác'
                     : 'Thêm tài khoản đầu tiên để bắt đầu sử dụng'}
                 </p>
@@ -478,21 +476,19 @@ export default function AuthenticatorPage() {
                                 <Clock className="w-3 h-3" />
                                 Làm mới sau
                               </span>
-                              <span className={`font-medium ${
-                                codeData.timeRemaining <= 5 
-                                  ? 'text-danger' 
+                              <span className={`font-medium ${codeData.timeRemaining <= 5
+                                  ? 'text-danger'
                                   : 'text-text-muted'
-                              }`}>
+                                }`}>
                                 {codeData.timeRemaining}s
                               </span>
                             </div>
                             <div className="h-1.5 bg-card-dark rounded-full overflow-hidden">
                               <div
-                                className={`h-full transition-all duration-1000 ${
-                                  codeData.timeRemaining <= 5
+                                className={`h-full transition-all duration-1000 ${codeData.timeRemaining <= 5
                                     ? 'bg-danger'
                                     : 'bg-brand'
-                                }`}
+                                  }`}
                                 style={{ width: `${timePercent}%` }}
                               />
                             </div>
@@ -521,7 +517,7 @@ export default function AuthenticatorPage() {
                   </h3>
                   <ul className="text-sm text-text-muted space-y-1 list-disc list-inside">
                     <li>
-                      Authenticator là một ứng dụng tạo ra mã 2FA (mã code gồm 6 số ngẫu nhiên thay đổi ngẫu nhiên mỗi 30 giây) 
+                      Authenticator là một ứng dụng tạo ra mã 2FA (mã code gồm 6 số ngẫu nhiên thay đổi ngẫu nhiên mỗi 30 giây)
                     </li>
                     <li>
                       Khi bạn đăng nhập vào tài khoản, có yêu cầu xác thực 2 yếu tố bằng chuỗi 2FA, bạn buộc phải sử dụng Authenticator để nhận mã đăng nhập
@@ -530,7 +526,7 @@ export default function AuthenticatorPage() {
                       Khi đã đăng ký tài khoản với tài khoản 2FA, bạn cần lưu chuỗi 2FA lại. Tap hoá 2FA bán các sản phẩm thường kèm theo 2FA
                     </li>
                     <li>
-                      Các gian hàng trên WebMMO bán các sản phẩm thường kèm theo 2FA, hãy dùng ứng dụng này để lấy mã đăng nhập nhé.
+                      Các gian hàng trên {process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'} bán các sản phẩm thường kèm theo 2FA, hãy dùng ứng dụng này để lấy mã đăng nhập nhé.
                     </li>
                     <li>
                       *Lưu ý: Tính năng này sẽ lưu trên trình duyệt của bạn, nếu bạn đổi trình duyệt hoặc xóa cookie sẽ bị mất dữ liệu. Hãy sao chép chuỗi dự phòng và lưu lại ở một nơi an toàn.

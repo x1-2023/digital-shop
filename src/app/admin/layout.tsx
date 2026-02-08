@@ -2,7 +2,7 @@ import { AdminLayout } from '@/components/layout/admin-layout';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'WebMMO Admin',
+    title: `${process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'} Admin`,
     description: 'Admin Dashboard',
 };
 
