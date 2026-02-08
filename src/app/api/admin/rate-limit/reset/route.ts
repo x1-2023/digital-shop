@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
