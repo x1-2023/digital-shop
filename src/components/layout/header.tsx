@@ -326,7 +326,7 @@ export function Header() {
                     <Wallet className="mr-2 h-4 w-4" />
                     <span>Ví của tôi</span>
                   </DropdownMenuItem>
-                  {user.role === 'ADMIN' && (
+                  {(user.role === 'ADMIN' || user.role === 'OWNER') && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => router.push('/admin')}>
