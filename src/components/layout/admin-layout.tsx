@@ -32,7 +32,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 const res = await fetch('/api/auth/session');
                 const data = await res.json();
 
-                if (!data.user || data.user.role !== 'ADMIN') {
+                if (!data.user || (data.user.role !== 'ADMIN' && data.user.role !== 'OWNER')) {
                     router.push('/'); // Redirect unauthorized users
                     return;
                 }
