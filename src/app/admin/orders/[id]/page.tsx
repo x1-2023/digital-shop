@@ -89,7 +89,7 @@ export default function AdminOrderDetailPage() {
       fetchOrder(params.id as string);
       fetchProductLines(params.id as string);
     }
-  }, [params.id]);
+  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchOrder = async (orderId: string) => {
     try {

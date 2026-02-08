@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const active = searchParams.get('active');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
     if (active !== null) {
       where.active = active === 'true';
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, coupons });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.message === 'Unauthorized' || error.message === 'Admin access required') {
       return NextResponse.json({ error: error.message }, { status: 401 });
@@ -92,6 +94,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, coupon });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.message === 'Unauthorized' || error.message === 'Admin access required') {
       return NextResponse.json({ error: error.message }, { status: 401 });

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 // import { AppShell } from '@/components/layout/app-shell'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -80,7 +80,7 @@ export default function RateLimitsPage() {
     }
   ])
 
-  const [isLoading, setIsLoading] = useState(false)
+
   const [isSaving, setIsSaving] = useState(false)
 
   const handleUpdate = (key: string, field: keyof RateLimitConfig, value: number | undefined) => {

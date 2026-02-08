@@ -34,6 +34,7 @@ export async function GET(
     }
 
     return NextResponse.json({ success: true, coupon });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.message === 'Unauthorized' || error.message === 'Admin access required') {
       return NextResponse.json({ error: error.message }, { status: 401 });
@@ -57,6 +58,7 @@ export async function PATCH(
     const body = await request.json();
     const validatedData = updateCouponSchema.parse(body);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = { ...validatedData };
     if (validatedData.startDate) {
       updateData.startDate = new Date(validatedData.startDate);
@@ -84,6 +86,7 @@ export async function PATCH(
     });
 
     return NextResponse.json({ success: true, coupon });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.message === 'Unauthorized' || error.message === 'Admin access required') {
       return NextResponse.json({ error: error.message }, { status: 401 });
@@ -142,6 +145,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.message === 'Unauthorized' || error.message === 'Admin access required') {
       return NextResponse.json({ error: error.message }, { status: 401 });

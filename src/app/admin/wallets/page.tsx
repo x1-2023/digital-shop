@@ -63,7 +63,7 @@ export default function WalletsPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Có lỗi xảy ra khi tải danh sách ví',
@@ -110,7 +110,7 @@ export default function WalletsPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Có lỗi xảy ra khi điều chỉnh ví',

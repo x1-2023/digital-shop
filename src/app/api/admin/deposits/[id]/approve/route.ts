@@ -3,7 +3,6 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { approveDepositSchema } from '@/lib/validations';
 import { addEmailJob } from '@/lib/queues';
-import { generateIdempotencyKey } from '@/lib/utils';
 import { logActivity, getRequestInfo } from '@/lib/user-activity';
 import { logDepositApprove } from '@/lib/system-log';
 
@@ -14,18 +13,18 @@ export async function POST(
   const params = await props.params;
   try {
     const session = await getSession();
-    
+
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const body = await request.json();
     const depositId = parseInt(params.id, 10);
-    
+
     if (isNaN(depositId)) {
       return NextResponse.json({ error: 'Invalid deposit ID' }, { status: 400 });
     }
-    
+
     const { adminNote } = approveDepositSchema.parse({ ...body, depositId: params.id });
 
     // Check if deposit request exists and is pending

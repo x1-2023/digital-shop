@@ -67,7 +67,7 @@ export default function AdminReviewsPage() {
 
   useEffect(() => {
     fetchReviews();
-  }, [filterStatus]);
+  }, [filterStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchReviews = async () => {
     try {
@@ -89,7 +89,7 @@ export default function AdminReviewsPage() {
           description: data.error || 'Không thể tải danh sách đánh giá',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -136,7 +136,7 @@ export default function AdminReviewsPage() {
           description: data.error || 'Không thể cập nhật đánh giá',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -168,7 +168,7 @@ export default function AdminReviewsPage() {
           description: data.error || 'Không thể xóa đánh giá',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -192,7 +192,7 @@ export default function AdminReviewsPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; label: string }> = {
+    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
       PUBLISHED: { variant: 'default', label: 'Công khai' },
       HIDDEN: { variant: 'secondary', label: 'Đã ẩn' },
       DELETED: { variant: 'destructive', label: 'Đã xóa' },
@@ -216,7 +216,7 @@ export default function AdminReviewsPage() {
       } else {
         throw new Error(data.error);
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -387,7 +387,7 @@ export default function AdminReviewsPage() {
 
                 <div>
                   <label className="text-sm font-medium">Trạng thái</label>
-                  <Select value={newStatus} onValueChange={(value: any) => setNewStatus(value)}>
+                  <Select value={newStatus} onValueChange={(value: 'PUBLISHED' | 'HIDDEN' | 'DELETED') => setNewStatus(value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>

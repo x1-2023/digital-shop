@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
         message: `Successfully connected! Found ${transactions.length} transactions.`,
         sample: transactions.slice(0, 3), // Return first 3 transactions as sample
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (apiError: any) {
       console.error('[API] Bank API test error:', apiError);
 
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('[API] Error testing bank config:', error);
     return NextResponse.json(

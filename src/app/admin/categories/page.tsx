@@ -110,8 +110,7 @@ export default function AdminCategoriesPage() {
       setEditingId(null);
       setShowForm(false);
       fetchCategories();
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -133,7 +132,7 @@ export default function AdminCategoriesPage() {
       });
 
       fetchCategories();
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -165,9 +164,6 @@ export default function AdminCategoriesPage() {
 
     if (!file.type.startsWith('image/')) {
       toast({
-        variant: 'destructive',
-        title: 'Lỗi',
-        description: 'Vui lòng chọn file ảnh'
       });
       return;
     }
@@ -192,7 +188,7 @@ export default function AdminCategoriesPage() {
         title: 'Thành công',
         description: 'Icon đã upload'
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',

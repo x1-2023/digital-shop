@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Trash2, Plus, GripVertical, Search, Pencil } from 'lucide-react';
+import { Trash2, Plus, Search, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
     Dialog,
@@ -49,7 +49,7 @@ export default function SearchKeywordsPage() {
 
     useEffect(() => {
         fetchKeywords();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchKeywords = async () => {
         try {
@@ -58,7 +58,7 @@ export default function SearchKeywordsPage() {
                 const data = await res.json();
                 setKeywords(data);
             }
-        } catch (error) {
+        } catch {
             toast({ title: 'Lỗi tải dữ liệu', variant: 'destructive' });
         } finally {
             setLoading(false);
@@ -88,7 +88,7 @@ export default function SearchKeywordsPage() {
                 const data = await res.json();
                 toast({ title: data.error || 'Có lỗi xảy ra', variant: 'destructive' });
             }
-        } catch (error) {
+        } catch {
             toast({ title: 'Có lỗi xảy ra', variant: 'destructive' });
         }
     };
@@ -102,7 +102,7 @@ export default function SearchKeywordsPage() {
                 toast({ title: 'Đã xóa' });
                 fetchKeywords();
             }
-        } catch (error) {
+        } catch {
             toast({ title: 'Lỗi xóa', variant: 'destructive' });
         }
     };
@@ -117,7 +117,7 @@ export default function SearchKeywordsPage() {
             if (res.ok) {
                 fetchKeywords();
             }
-        } catch (error) {
+        } catch {
             toast({ title: 'Lỗi cập nhật', variant: 'destructive' });
         }
     };

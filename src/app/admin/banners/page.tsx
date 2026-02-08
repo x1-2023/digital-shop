@@ -53,7 +53,7 @@ export default function AdminBannersPage() {
 
     useEffect(() => {
         fetchBanners();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchBanners = async () => {
         try {
@@ -146,11 +146,12 @@ export default function AdminBannersPage() {
                 const error = await res.json();
                 throw new Error(error.error || 'Unknown error');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Không thể lưu banner';
             toast({
                 variant: 'destructive',
                 title: 'Lỗi',
-                description: error.message || 'Không thể lưu banner',
+                description: errorMessage,
             });
         } finally {
             setIsSaving(false);
@@ -166,7 +167,7 @@ export default function AdminBannersPage() {
                 toast({ title: 'Đã xóa banner' });
                 fetchBanners();
             }
-        } catch (error) {
+        } catch {
             toast({
                 variant: 'destructive',
                 title: 'Lỗi',
@@ -187,7 +188,7 @@ export default function AdminBannersPage() {
                 toast({ title: banner.active ? 'Đã ẩn banner' : 'Đã hiện banner' });
                 fetchBanners();
             }
-        } catch (error) {
+        } catch {
             toast({
                 variant: 'destructive',
                 title: 'Lỗi',
@@ -391,7 +392,7 @@ export default function AdminBannersPage() {
                         <div className="text-center py-8">
                             <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                             <p className="text-muted-foreground">Chưa có banner nào</p>
-                            <p className="text-sm text-muted-foreground">Nhấn "Thêm Banner" để tạo banner đầu tiên</p>
+                            <p className="text-sm text-muted-foreground">Nhấn &quot;Thêm Banner&quot; để tạo banner đầu tiên</p>
                         </div>
                     ) : (
                         <Table>

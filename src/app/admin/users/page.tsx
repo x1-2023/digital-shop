@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, RefreshCw, Users, UserPlus, Shield, User, Plus, Minus, Wallet } from 'lucide-react';
+import { Search, RefreshCw, Users, Shield, User, Plus, Minus, Wallet } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface User {
@@ -65,7 +65,7 @@ export default function UsersPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Có lỗi xảy ra khi tải danh sách người dùng',
@@ -112,7 +112,7 @@ export default function UsersPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Có lỗi xảy ra khi điều chỉnh ví',

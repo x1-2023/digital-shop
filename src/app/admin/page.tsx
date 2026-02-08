@@ -6,21 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardCharts } from '@/components/admin/dashboard-charts';
 import {
   DollarSign,
   ShoppingCart,
-  CreditCard,
   Users,
   Clock,
   CheckCircle,
   XCircle,
-  ArrowUpCircle,
-  ArrowDownCircle
+  ArrowUpCircle
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import Link from 'next/link';
+
+
+interface ChartData {
+  date: string;
+  amount?: number;
+  count?: number;
+}
 
 interface DashboardStats {
   revenue: {
@@ -28,13 +33,13 @@ interface DashboardStats {
     today: number;
     month: number;
     year: number;
-    chart: any[]; // New field for chart data
+    chart: ChartData[];
   };
   orders: {
     today: number;
     month: number;
     year: number;
-    chart: any[]; // New field for chart data
+    chart: ChartData[];
   };
   deposits: {
     total: number;
@@ -216,7 +221,7 @@ export default function AdminDashboard() {
           <p className="text-text-muted">Chào mừng trở lại, Administrator</p>
         </div>
 
-        <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as any)} className="w-full md:w-auto">
+        <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as 'today' | 'month' | 'year' | 'total')} className="w-full md:w-auto">
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="month">Month</TabsTrigger>

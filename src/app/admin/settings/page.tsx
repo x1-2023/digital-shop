@@ -75,6 +75,19 @@ const EMPTY_BANK_CONFIG: Partial<BankAPIConfig> = {
   },
 };
 
+interface TestResult {
+  success: boolean;
+  message?: string;
+  error?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sample?: any[];
+}
+
+interface WebhookTestResult {
+  success: boolean;
+  message?: string;
+}
+
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SettingsData>({
     paymentMethods: {
@@ -102,15 +115,15 @@ export default function AdminSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [editingBankId, setEditingBankId] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [isTesting, setIsTesting] = useState(false);
-  const [webhookTestResult, setWebhookTestResult] = useState<any>(null);
+  const [webhookTestResult, setWebhookTestResult] = useState<WebhookTestResult | null>(null);
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSettings = async () => {
     try {
@@ -216,10 +229,12 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateSettings = (path: string, value: any) => {
     setSettings(prev => {
       const newSettings = { ...prev };
       const keys = path.split('.');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let current: any = newSettings;
 
       for (let i = 0; i < keys.length - 1; i++) {
@@ -297,7 +312,7 @@ export default function AdminSettingsPage() {
           description: data.error,
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -336,7 +351,7 @@ export default function AdminSettingsPage() {
           description: data.message,
         });
       }
-    } catch (error) {
+    } catch {
       setWebhookTestResult({
         success: false,
         message: 'Có lỗi xảy ra khi test webhook',
@@ -868,8 +883,8 @@ export default function AdminSettingsPage() {
                             {testResult && (
                               <div
                                 className={`mt-3 p-3 rounded-lg border ${testResult.success
-                                    ? 'bg-green-500/10 border-green-500/20'
-                                    : 'bg-red-500/10 border-red-500/20'
+                                  ? 'bg-green-500/10 border-green-500/20'
+                                  : 'bg-red-500/10 border-red-500/20'
                                   }`}
                               >
                                 <div className="flex items-start space-x-2">
@@ -1009,8 +1024,8 @@ export default function AdminSettingsPage() {
                 {/* Test result */}
                 {webhookTestResult && (
                   <div className={`p-3 rounded-lg border ${webhookTestResult.success
-                      ? 'bg-green-500/10 border-green-500/20'
-                      : 'bg-red-500/10 border-red-500/20'
+                    ? 'bg-green-500/10 border-green-500/20'
+                    : 'bg-red-500/10 border-red-500/20'
                     }`}>
                     <div className="flex items-start space-x-2">
                       {webhookTestResult.success ? (

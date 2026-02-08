@@ -54,6 +54,7 @@ export async function PATCH(
     }
 
     // Update error report
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       updatedAt: new Date(),
     };

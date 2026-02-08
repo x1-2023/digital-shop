@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
 
     // Build query
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
     if (status && status !== 'all') {
       where.status = status;

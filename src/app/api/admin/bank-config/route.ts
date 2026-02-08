@@ -6,7 +6,7 @@ import { loadBankConfigs, saveBankConfigs, type BankAPIConfig } from '@/lib/gene
  * GET /api/admin/bank-config
  * Load all bank API configurations
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getSession();
 

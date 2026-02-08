@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Trophy, Star, Zap, Users, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Trophy, Zap, Users, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatCurrency } from '@/lib/utils';
@@ -56,7 +56,7 @@ export default function AdminFeaturedUsersPage() {
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchUsers = async () => {
         try {
@@ -101,7 +101,7 @@ export default function AdminFeaturedUsersPage() {
                 // Re-fetch to get auto spenders if switching to auto
                 fetchUsers();
             }
-        } catch (error) {
+        } catch {
             toast({
                 variant: 'destructive',
                 title: 'Lỗi',
@@ -166,11 +166,12 @@ export default function AdminFeaturedUsersPage() {
                 const error = await res.json();
                 throw new Error(error.error || 'Unknown error');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Không thể lưu Top Seller';
             toast({
                 variant: 'destructive',
                 title: 'Lỗi',
-                description: error.message || 'Không thể lưu Top Seller',
+                description: errorMessage,
             });
         } finally {
             setIsSaving(false);
@@ -186,7 +187,7 @@ export default function AdminFeaturedUsersPage() {
                 toast({ title: 'Đã xóa Top Seller' });
                 fetchUsers();
             }
-        } catch (error) {
+        } catch {
             toast({
                 variant: 'destructive',
                 title: 'Lỗi',

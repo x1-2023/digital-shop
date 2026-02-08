@@ -38,11 +38,11 @@ export default function AdminDepositBonusPage() {
 
   useEffect(() => {
     fetchTiers();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     calculateDemoBonus();
-  }, [demoAmount, tiers]);
+  }, [demoAmount, tiers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchTiers = async () => {
     try {
@@ -100,12 +100,13 @@ export default function AdminDepositBonusPage() {
         const data = await res.json();
         throw new Error(data.error || 'Failed to save');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Không thể lưu cấu hình';
       console.error('Error saving tiers:', error);
       toast({
         variant: 'destructive',
         title: 'Lỗi',
-        description: error.message || 'Không thể lưu cấu hình',
+        description: errorMessage,
       });
     } finally {
       setIsSaving(false);

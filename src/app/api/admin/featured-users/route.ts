@@ -31,6 +31,7 @@ export async function GET() {
 
         // If auto mode, also get auto-calculated top spenders for preview
         const mode = modeSetting?.value || 'manual';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let autoSpenders: any[] = [];
 
         if (mode === 'auto') {

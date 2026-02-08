@@ -1,9 +1,9 @@
-import { getSession, requireAdmin } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { logActivity, getRequestInfo } from '@/lib/user-activity';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const categories = await prisma.category.findMany({
       orderBy: { order: 'asc' },

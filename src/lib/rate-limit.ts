@@ -48,6 +48,46 @@ export class RateLimiter {
 
     return true;
   }
+
+  /**
+   * Reset a specific key
+   */
+  reset(key: string): boolean {
+    return this.tokens.delete(key);
+  }
+
+  /**
+   * Get all active rate limits for debugging
+   */
+  getAll() {
+    return this.tokens;
+  }
+}
+
+// Global instance for API rate limiting
+export const globalRateLimiter = new RateLimiter({
+  interval: 60 * 1000, // 1 minute
+  uniqueTokenPerInterval: 500,
+});
+
+// Helper functions for Admin API
+export function resetRateLimit(identifier: string): boolean {
+  return globalRateLimiter.reset(identifier);
+}
+
+export function getAllRateLimits() {
+  const tokens = globalRateLimiter.getAll();
+  const result = new Map<string, { count: number; resetTime: number; blockedUntil: number | null }>();
+
+  tokens.forEach((timestamps, key) => {
+    result.set(key, {
+      count: timestamps.length,
+      resetTime: Date.now() + 60000, // Approx
+      blockedUntil: null
+    });
+  });
+
+  return result;
 }
 
 // Global instance for API routes

@@ -51,7 +51,7 @@ export default function CouponsAdminPage() {
 
   useEffect(() => {
     fetchCoupons();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchCoupons = async () => {
     try {
@@ -104,7 +104,7 @@ export default function CouponsAdminPage() {
           description: data.error || 'Không thể lưu coupon',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
@@ -128,7 +128,7 @@ export default function CouponsAdminPage() {
         });
         fetchCoupons();
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',

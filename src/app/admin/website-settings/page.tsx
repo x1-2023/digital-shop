@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Save, RefreshCw, Globe, Palette, Image as ImageIcon } from 'lucide-react';
+import { Save, RefreshCw, Globe, Palette, Image as ImageIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
@@ -125,7 +125,7 @@ export default function WebsiteSettingsPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Có lỗi xảy ra khi lưu cài đặt',
@@ -166,7 +166,7 @@ export default function WebsiteSettingsPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Lỗi',
         description: 'Có lỗi xảy ra khi tải lên file',

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 // import { AppShell } from '@/components/layout/app-shell';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -166,12 +166,13 @@ export default function AdminErrorReportsPage() {
       } else {
         throw new Error(data.error || 'Failed to update');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating report:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Không thể cập nhật báo cáo';
       toast({
         variant: 'destructive',
         title: 'Lỗi',
-        description: 'Không thể cập nhật báo cáo',
+        description: errorMessage,
       });
     }
   };
@@ -413,7 +414,7 @@ export default function AdminErrorReportsPage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {JSON.parse(selectedReport.reportedProducts || '[]').map((product: any, idx: number) => (
+                          {JSON.parse(selectedReport.reportedProducts || '[]').map((product: { productName: string; content: string; priceVnd: number }, idx: number) => (
                             <TableRow key={idx}>
                               <TableCell>{product.productName}</TableCell>
                               <TableCell className="font-mono text-sm">{product.content}</TableCell>

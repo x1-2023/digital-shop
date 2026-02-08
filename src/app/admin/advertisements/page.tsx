@@ -67,7 +67,7 @@ export default function AdminAdvertisementsPage() {
 
   useEffect(() => {
     fetchAds();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAds = async () => {
     try {

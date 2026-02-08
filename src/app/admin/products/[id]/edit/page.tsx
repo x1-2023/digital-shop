@@ -22,7 +22,7 @@ import {
   CheckCircle2,
   Plus
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -86,7 +86,7 @@ export default function EditProductPage() {
     if (params.id) {
       fetchProduct(params.id as string);
     }
-  }, [params.id]);
+  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCategories = async () => {
     try {
@@ -241,11 +241,12 @@ export default function EditProductPage() {
             ? `Thêm ${data.addedLines} dòng mới. Tổng: ${data.totalLines} dòng`
             : `File mới: ${data.totalLines} dòng. Stock đã reset.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Không thể upload file';
       toast({
         variant: 'destructive',
         title: 'Lỗi',
-        description: error.message || 'Không thể upload file',
+        description: errorMessage,
       });
     } finally {
       setIsRestocking(false);
@@ -347,7 +348,7 @@ export default function EditProductPage() {
         title: 'Thành công',
         description: `Đã upload và tối ưu ${uploadedImages.length} ảnh (493x493px)`
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: 'destructive',
         title: 'Lỗi',
