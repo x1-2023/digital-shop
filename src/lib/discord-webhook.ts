@@ -28,7 +28,7 @@ export interface DepositNotification {
   userEmail: string;
   amount: number;
   status: 'APPROVED' | 'REJECTED';
-  method: 'AUTO' | 'MANUAL';
+  method: 'AUTO' | 'MANUAL' | 'AUTO_DIRECT';
 }
 
 export interface ReferralNotification {
@@ -124,7 +124,7 @@ export async function sendDepositNotification(
     const color = isApproved ? 0x00ff00 : 0xff0000; // Green for approved, red for rejected
     const icon = isApproved ? '✅' : '❌';
     const statusText = isApproved ? 'Đã Duyệt' : 'Từ Chối';
-    const methodText = deposit.method === 'AUTO' ? 'Tự động' : 'Thủ công';
+    const methodText = deposit.method === 'AUTO' || deposit.method === 'AUTO_DIRECT' ? 'Tự động' : 'Thủ công';
 
     const embed = {
       title: `${icon} Nạp Tiền ${statusText}`,

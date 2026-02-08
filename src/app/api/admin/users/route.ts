@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 const getUsersSchema = z.object({
   search: z.string().optional(),
-  role: z.enum(['ADMIN', 'BUYER']).optional(),
+  role: z.enum(['OWNER', 'ADMIN', 'USER']).optional(),
   page: z.string().optional().default('1'),
   limit: z.string().optional().default('20'),
 });
@@ -14,8 +14,8 @@ const getUsersSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
-    
-    if (!session?.user || session.user.role !== 'ADMIN') {
+
+    if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

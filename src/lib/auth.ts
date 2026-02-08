@@ -49,17 +49,24 @@ export async function verifyCredentials(email: string, password: string) {
     select: {
       id: true,
       email: true,
-      password: true,
+      passwordHash: true,
       role: true,
+      tokenVersion: true,
+      status: true,
     },
   });
 
-  if (!user || !user.password) {
+  if (!user || !user.passwordHash) {
     return null;
   }
 
-  const isValid = await bcrypt.compare(password, user.password);
-  
+  // Check if user is banned
+  if (user.status === 'BANNED') {
+    return null;
+  }
+
+  const isValid = await bcrypt.compare(password, user.passwordHash);
+
   if (!isValid) {
     return null;
   }
@@ -68,6 +75,7 @@ export async function verifyCredentials(email: string, password: string) {
     id: user.id,
     email: user.email,
     role: user.role,
+    tokenVersion: user.tokenVersion,
   };
 }
 
@@ -85,7 +93,8 @@ export async function requireAdmin() {
   if (!session?.user) {
     throw new Error('Unauthorized');
   }
-  if (session.user.role !== 'ADMIN') {
+  // SSO: OWNER and ADMIN both have admin access in Shop
+  if (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
     throw new Error('Admin access required');
   }
   return session;

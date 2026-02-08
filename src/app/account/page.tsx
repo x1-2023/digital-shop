@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 interface UserSession {
   id: string;
   email: string;
-  role: 'ADMIN' | 'BUYER';
+  role: 'OWNER' | 'ADMIN' | 'USER';
   createdAt?: string;
 }
 
@@ -237,7 +237,7 @@ export default function AccountPage() {
                       Ví của tôi
                     </Button>
                   </Link>
-                  
+
                   <Link href="/orders" className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <ShoppingBag className="h-4 w-4 mr-2" />

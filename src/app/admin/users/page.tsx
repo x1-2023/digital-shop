@@ -138,7 +138,7 @@ export default function UsersPage() {
 
   const totalUsers = users.length;
   const adminUsers = users.filter(user => user.role === 'ADMIN').length;
-  const buyerUsers = users.filter(user => user.role === 'BUYER').length;
+  const buyerUsers = users.filter(user => user.role === 'USER').length;
 
   if (loading) {
     return (

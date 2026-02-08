@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 interface SessionUser {
     id: string;
     email: string;
-    role: 'ADMIN' | 'BUYER';
+    role: 'OWNER' | 'ADMIN' | 'USER';
 }
 
 interface AdminLayoutProps {

@@ -6,19 +6,23 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 // User Management
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String // Hashed password
-  role          UserRole  @default(BUYER)
+  id            String     @id @default(cuid())
+  email         String     @unique
+  username      String?    @unique // SSO: shared with Mail
+  passwordHash  String     @map("password_hash") // bcrypt hash, compatible Go <-> Node
+  role          UserRole   @default(USER)
+  tokenVersion  Int        @default(0) // SSO: increment to revoke all tokens
+  status        UserStatus @default(ACTIVE) // SSO: active/banned
+  apiKey        String?    @unique // SSO: API key for programmatic access
   emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   // Referral System
   referralCode String? @unique // User's unique referral code
@@ -55,9 +59,9 @@ model Wallet {
 model Category {
   id          String   @id @default(cuid())
   name        String   @unique
-  description String?  @db.Text
+  description String?  
   slug        String   @unique
-  icon        String?  @db.Text // URL to category icon/image
+  icon        String?   // URL to category icon/image
   order       Int      @default(0)
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -74,17 +78,17 @@ model Product {
   categoryId  String  @default("default")
   name        String
   slug        String  @unique
-  description String? @db.Text
+  description String? 
   priceVnd    Float   @default(0)
   stock       Int     @default(0)
 
   // File upload fields
-  fileUrl    String? @db.Text // S3 or file storage URL
+  fileUrl    String?  // S3 or file storage URL
   fileName   String? // Original file name
   totalLines Int     @default(0) // Total accounts/items in file
   usedLines  Int     @default(0) // How many sold/used
 
-  images    String? @db.Text // JSON string for images array
+  images    String?  // JSON string for images array
   active    Boolean  @default(true)
   fakeSold   Int     @default(0) // Fake sold count for display
   fakeRating Float   @default(0) // Fake rating (0 = auto-random)
@@ -109,9 +113,9 @@ model ProductLog {
   orderId     String
   action      String // "PURCHASE", "REFUND", etc.
   quantity    Int // How many items/lines taken
-  lineIndices String?  @db.Text // JSON array of which lines were taken [0, 1, 2, ...]
-  content     String?  @db.LongText // The actual content delivered (can be partial file content)
-  notes       String?  @db.Text
+  lineIndices String?   // JSON array of which lines were taken [0, 1, 2, ...]
+  content     String?   // The actual content delivered (can be partial file content)
+  notes       String?  
   createdAt   DateTime @default(now())
 
   // Relations
@@ -129,12 +133,12 @@ model ProductLineItem {
   productLogId  String
   orderId       String
   productName   String
-  content       String              @db.Text // The actual account/license/content
+  content       String               // The actual account/license/content
   priceVnd      Float
   status        ProductLineStatus   @default(NORMAL)
   errorReported Boolean             @default(false) // User marked as error
-  replacement   String?             @db.Text // Admin's replacement content
-  adminNote     String?             @db.Text // Admin's note about this line
+  replacement   String?              // Admin's replacement content
+  adminNote     String?              // Admin's note about this line
   rejectedAt    DateTime? // When admin rejected warranty
   replacedAt    DateTime? // When admin replaced
   createdAt     DateTime            @default(now())
@@ -188,7 +192,7 @@ model Order {
   discountVnd    Float         @default(0) // Discount from coupon
   couponCode     String? // Applied coupon code
   currency       String        @default("VND")
-  itemsJson      String        @db.LongText // Order items as JSON string
+  itemsJson      String         // Order items as JSON string
   paymentMethod  PaymentMethod @default(WALLET)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -224,7 +228,7 @@ model Payment {
   provider     PaymentProvider
   providerTxid String?
   amountVnd    Float
-  rawJson      String?         @db.LongText // Raw payment data as JSON string
+  rawJson      String?          // Raw payment data as JSON string
   matchedBy    String? // How payment was matched (admin, tpbank, etc.)
   createdAt    DateTime        @default(now())
 
@@ -240,11 +244,11 @@ model ManualDepositRequest {
   internalId      String?       @unique @default(cuid()) // Keep cuid for internal use, optional for migration
   userId          String
   amountVnd       Float
-  note            String?       @db.Text
-  qrCode          String?       @db.Text // QR code image URL
+  note            String?       
+  qrCode          String?        // QR code image URL
   transferContent String? // Fixed transfer content for user
   status          DepositStatus @default(PENDING)
-  adminNote       String?       @db.Text
+  adminNote       String?       
   decidedAt       DateTime?
   createdAt       DateTime      @default(now())
 
@@ -258,7 +262,7 @@ model ManualDepositRequest {
 model Coupon {
   id             String       @id @default(cuid())
   code           String       @unique // Coupon code (e.g., "SAVE20")
-  description    String?      @db.Text // Description of the coupon
+  description    String?       // Description of the coupon
   discountType   DiscountType @default(PERCENTAGE) // PERCENTAGE or FIXED
   discountValue  Float // Percentage (0-100) or fixed amount in VND
   maxDiscountVnd Float? // Max discount amount for percentage coupons
@@ -280,31 +284,31 @@ model Settings {
   // Website Settings
   websiteName        String  @default("Digital Shop")
   websiteTitle       String  @default("Digital Shop - Premium Digital Products")
-  websiteDescription String  @default("Premium digital products and services") @db.Text
-  websiteKeywords    String  @default("digital products, premium, shop") @db.Text
-  websiteLogo        String? @db.Text // Logo URL
-  websiteFavicon     String? @db.Text // Favicon URL
+  websiteDescription String  @default("Premium digital products and services") 
+  websiteKeywords    String  @default("digital products, premium, shop") 
+  websiteLogo        String?  // Logo URL
+  websiteFavicon     String?  // Favicon URL
   copyrightYear      String  @default("2025") // Copyright year in footer
   supportEmail       String  @default("support@webmmo.com") // Support email in footer
-  contactInfo        String  @default("")  @db.Text // Additional contact info in footer
+  contactInfo        String  @default("")   // Additional contact info in footer
 
   // Payment Settings
-  paymentMethods String @default("{\"manual\":true,\"tpbank\":false,\"momo\":false,\"crypto\":false}") @db.Text
-  bankInfo       String @default("{\"bank\":\"\",\"account\":\"\",\"name\":\"\",\"instructions\":\"\"}") @db.Text
-  topupRules     String @default("{\"minVnd\":10000,\"maxVnd\":100000000}") @db.Text
-  tpbankConfig   String @default("{\"enabled\":false,\"apiUrl\":\"\",\"token\":\"\",\"amountTolerance\":2000}") @db.Text
+  paymentMethods String @default("{\"manual\":true,\"tpbank\":false,\"momo\":false,\"crypto\":false}") 
+  bankInfo       String @default("{\"bank\":\"\",\"account\":\"\",\"name\":\"\",\"instructions\":\"\"}") 
+  topupRules     String @default("{\"minVnd\":10000,\"maxVnd\":100000000}") 
+  tpbankConfig   String @default("{\"enabled\":false,\"apiUrl\":\"\",\"token\":\"\",\"amountTolerance\":2000}") 
 
   // Deposit Bonus Settings
-  depositBonusTiers String @default("[]") @db.Text
+  depositBonusTiers String @default("[]") 
   // Example: [{"minAmount":50000,"maxAmount":100000,"bonusPercent":5},{"minAmount":100001,"maxAmount":500000,"bonusPercent":10}]
 
   // Referral Settings
-  referralSettings String @default("{\"enabled\":true,\"referrerRewardVnd\":10000,\"refereeRewardVnd\":5000,\"minDepositForRewardVnd\":50000}") @db.Text
+  referralSettings String @default("{\"enabled\":true,\"referrerRewardVnd\":10000,\"refereeRewardVnd\":5000,\"minDepositForRewardVnd\":50000}") 
   // Example: {"enabled":true,"referrerRewardVnd":10000,"refereeRewardVnd":5000,"minDepositForRewardVnd":50000}
 
   // UI Settings
-  uiTexts       String @default("{}") @db.Text
-  themeSettings String @default("{\"primaryColor\":\"#3b82f6\",\"darkMode\":true}") @db.Text
+  uiTexts       String @default("{}") 
+  themeSettings String @default("{\"primaryColor\":\"#3b82f6\",\"darkMode\":true}") 
 
   updatedAt DateTime @updatedAt
 
@@ -317,7 +321,7 @@ model DownloadLog {
   orderId   String
   fileId    String?
   ip        String?
-  userAgent String?  @db.Text
+  userAgent String?  
   createdAt DateTime @default(now())
 
   // Relations
@@ -333,7 +337,7 @@ model AdminActionLog {
   action     String
   targetType String?
   targetId   String?
-  diffJson   String?  @db.LongText // Changes made as JSON string
+  diffJson   String?   // Changes made as JSON string
   createdAt  DateTime @default(now())
 
   // Relations
@@ -349,8 +353,8 @@ model WalletTransaction {
   type            WalletTransactionType
   amountVnd       Float
   balanceAfterVnd Float
-  description     String?               @db.Text
-  metadata        String?               @db.Text // JSON string for additional data
+  description     String?               
+  metadata        String?                // JSON string for additional data
   createdAt       DateTime              @default(now())
 
   @@index([userId])
@@ -360,7 +364,7 @@ model WalletTransaction {
 // Website Settings (Key-Value Store)
 model WebsiteSettings {
   key       String   @id
-  value     String   @db.LongText // JSON string or plain text
+  value     String    // JSON string or plain text
   updatedAt DateTime @updatedAt
 
   @@map("website_settings")
@@ -375,9 +379,9 @@ model AutoTopupLog {
   userId            String?
   topupCode         String
   amountVnd         Float
-  description       String          @db.Text
+  description       String          
   status            AutoTopupStatus
-  errorMessage      String?         @db.Text
+  errorMessage      String?         
   transactionDate   DateTime
   createdAt         DateTime        @default(now())
 
@@ -416,9 +420,9 @@ model UserActivityLog {
   action     String // LOGIN, LOGOUT, REGISTER, VIEW_PRODUCT, ADD_TO_CART, PURCHASE, DEPOSIT, WITHDRAW, etc.
   targetType String? // Product, Order, etc.
   targetId   String? // ID of the target entity
-  metadata   String?  @db.Text // JSON string for additional data
+  metadata   String?   // JSON string for additional data
   ip         String?
-  userAgent  String?  @db.Text
+  userAgent  String?  
   createdAt  DateTime @default(now())
 
   @@index([userId])
@@ -429,8 +433,14 @@ model UserActivityLog {
 
 // Enums
 enum UserRole {
+  OWNER
   ADMIN
-  BUYER
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
 }
 
 enum LicenseStatus {
@@ -536,9 +546,9 @@ model Advertisement {
   name        String // Internal name for admin
   type        AdType
   placement   AdPlacement
-  content     String      @db.LongText // JSON or HTML content depending on type
-  imageUrl    String?     @db.Text // For IMAGE type
-  clickUrl    String?     @db.Text // Redirect URL when clicked
+  content     String       // JSON or HTML content depending on type
+  imageUrl    String?      // For IMAGE type
+  clickUrl    String?      // Redirect URL when clicked
   order       Int         @default(0) // Display order
   enabled     Boolean     @default(true)
   impressions Int         @default(0) // Track views
@@ -574,10 +584,10 @@ model SystemLog {
   targetType  String? // e.g., "ORDER", "DEPOSIT", "WALLET", "PRODUCT"
   targetId    String? // ID of the affected entity
   amount      Float? // For money-related actions
-  description String          @db.Text // Human-readable description
-  metadata    String?         @db.LongText // JSON string for additional data
+  description String           // Human-readable description
+  metadata    String?          // JSON string for additional data
   ipAddress   String? // User's IP address
-  userAgent   String?         @db.Text // User's browser info
+  userAgent   String?          // User's browser info
   createdAt   DateTime        @default(now())
 
   @@index([userId])
@@ -594,12 +604,12 @@ model ErrorReport {
   orderId          String
   productLineId    String? // Reference to ProductLineItem
   productName      String? // Product name for this error
-  originalContent  String?           @db.Text // Original product content
-  userNote         String?           @db.Text // User's description of the issue
+  originalContent  String?            // Original product content
+  userNote         String?            // User's description of the issue
   status           ErrorReportStatus @default(PENDING)
-  reportedProducts String?           @db.LongText // JSON array of reported products (legacy field)
-  adminNote        String?           @db.Text // Admin's response/note
-  resolution       String?           @db.Text // How the issue was resolved
+  reportedProducts String?            // JSON array of reported products (legacy field)
+  adminNote        String?            // Admin's response/note
+  resolution       String?            // How the issue was resolved
   resolvedAt       DateTime?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
@@ -670,14 +680,14 @@ model Review {
 
   // Review data
   rating    Int      // 1-5 stars
-  comment   String?  @db.Text
+  comment   String?  
 
   // Privacy
   isAnonymous Boolean @default(false) // Show as "Người dùng ẩn danh"
 
   // Moderation
   status    ReviewStatus @default(PUBLISHED)
-  adminNote String?      @db.Text // Admin note if hidden/deleted
+  adminNote String?       // Admin note if hidden/deleted
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -704,14 +714,14 @@ enum ReviewStatus {
 model Banner {
   id          String   @id @default(cuid())
   title       String
-  subtitle    String?  @db.Text
-  description String?  @db.Text
+  subtitle    String?  
+  description String?  
   buttonText  String   @default("Khám phá ngay")
   buttonLink  String   @default("/products")
-  imageUrl    String?  @db.Text // Background image
+  imageUrl    String?   // Background image
   gradientFrom String  @default("#2563EB") // Hex color
   gradientTo  String   @default("#06B6D4") // Hex color
-  features    String?  @db.Text // JSON array of feature strings
+  features    String?   // JSON array of feature strings
   order       Int      @default(0)
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -726,7 +736,7 @@ model FeaturedUser {
   name      String
   sales     Int      @default(0)
   rating    Float    @default(5.0)
-  avatarUrl String?  @db.Text
+  avatarUrl String?  
   rank      Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -739,7 +749,7 @@ model FeaturedUser {
 model SearchKeyword {
   id          String   @id @default(cuid())
   keyword     String   // The search term
-  subtitle    String?  @db.Text // Optional description like "Bán chạy nhất"
+  subtitle    String?   // Optional description like "Bán chạy nhất"
   icon        String   @default("🔥") // Emoji or icon
   order       Int      @default(0)
   active      Boolean  @default(true)

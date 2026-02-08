@@ -36,7 +36,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 interface SessionUser {
   id: string;
   email: string;
-  role: 'ADMIN' | 'BUYER';
+  role: 'OWNER' | 'ADMIN' | 'USER';
 }
 
 interface Category {

@@ -11,7 +11,7 @@ import { useHeartbeat } from '@/hooks/use-heartbeat';
 interface SessionUser {
   id: string;
   email: string;
-  role: 'ADMIN' | 'BUYER';
+  role: 'OWNER' | 'ADMIN' | 'USER';
 }
 
 interface AppShellProps {

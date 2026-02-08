@@ -3,7 +3,7 @@ import { z } from 'zod';
 // User validations
 export const createUserSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
-  role: z.enum(['ADMIN', 'BUYER']).optional(),
+  role: z.enum(['OWNER', 'ADMIN', 'USER']).optional(),
 });
 
 // Wallet validations

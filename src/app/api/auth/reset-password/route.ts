@@ -62,11 +62,15 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Update user password and mark token as used
+    // SSO: Also increment tokenVersion to revoke all existing tokens
     await prisma.$transaction([
-      // Update password
+      // Update password + revoke tokens
       prisma.user.update({
         where: { id: resetToken.userId },
-        data: { password: hashedPassword },
+        data: {
+          passwordHash: hashedPassword,
+          tokenVersion: { increment: 1 },
+        },
       }),
       // Mark token as used
       prisma.passwordResetToken.update({

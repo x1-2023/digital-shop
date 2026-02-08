@@ -55,19 +55,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
+    // Hash password (bcrypt - compatible with Go bcrypt)
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate 8-character user ID
     const userId = nanoid();
 
-    // Create user with wallet
+    // Create user with wallet (SSO: role USER, not BUYER)
     const user = await prisma.user.create({
       data: {
         id: userId,
         email,
-        password: hashedPassword,
-        role: 'BUYER', // Default role
+        passwordHash: hashedPassword,
+        role: 'USER',
         wallet: {
           create: {
             balanceVnd: 0,
@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
         id: true,
         email: true,
         role: true,
+        tokenVersion: true,
       },
     });
 
@@ -101,11 +102,13 @@ export async function POST(request: NextRequest) {
       'unknown';
     await logUserRegister(user.id, user.email, clientIp);
 
-    // Create JWT session token
+    // Create JWT session token (SSO-compatible)
     const token = createSessionToken({
       userId: user.id,
       email: user.email,
       role: user.role,
+      aud: ['shop', 'mail'],
+      token_version: user.tokenVersion,
     });
 
     // Set secure cookie with JWT
@@ -135,3 +138,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

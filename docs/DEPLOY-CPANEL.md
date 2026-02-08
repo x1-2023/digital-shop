@@ -1,241 +1,128 @@
-# 🚀 Hướng Dẫn Deploy Lên cPanel (MySQL + Node.js)
+# 🚀 Hướng Dẫn Cài Đặt Mới (Fresh Install) - cPanel Hosting
 
-> **Cập nhật**: 08/02/2026 — Đã chuyển sang MySQL, build sẵn trên Windows.
-
----
-
-## 📋 Tổng Quan
-
-| Hạng mục | Giá trị |
-|----------|---------|
-| Database | MySQL (`twebmmonet_digital`) |
-| Node.js | 18+ (khuyên 20 LTS) |
-| Build output | `.next/standalone` (~412 MB) |
-| Dung lượng cần | Tối thiểu 1 GB disk |
+> **Tình huống**: Bạn mua một host mới tinh (hoặc reset host cũ), và muốn deploy website lên từ đầu.
+> **Dữ liệu**: Web sẽ trắng trơn, chưa có dữ liệu cũ.
 
 ---
 
-## Bước 1: Build Trên Máy Tính (Windows)
+## �️ Chuẩn Bị (File Cần Thiết)
+Bạn cần có **2 file** này trên máy tính (đã được tạo sẵn ở bước trước):
 
-Mở terminal trong thư mục dự án:
-
-```powershell
-npm run build
-```
-
-Chờ đến khi thấy `✓ Generating static pages (xx/xx)` — build xong.
+1. **`full-deploy.zip`** (~200MB): Chứa Code + Thư viện Node.js + Prisma Linux.
+2. **`db_init.sql`**: Chứa cấu trúc Database MySQL.
 
 ---
 
-## Bước 2: Chuẩn Bị File Upload
+## Bước 1: Tạo Database MySQL
 
-Sau khi build xong, làm theo **đúng thứ tự** sau:
-
-### 2.1 Copy thêm 2 folder vào standalone
-
-```powershell
-# Copy folder public vào standalone
-Copy-Item -Recurse -Force "public" ".next\standalone\public"
-
-# Copy folder .next/static vào standalone/.next/static
-Copy-Item -Recurse -Force ".next\static" ".next\standalone\.next\static"
-```
-
-### 2.2 Copy thêm Prisma schema
-
-```powershell
-# Prisma cần schema file để chạy trên server
-New-Item -ItemType Directory -Force -Path ".next\standalone\prisma"
-Copy-Item "prisma\schema.prisma" ".next\standalone\prisma\schema.prisma"
-```
-
-### 2.3 Kiểm tra cấu trúc
-
-Sau khi copy xong, folder `.next/standalone` phải có cấu trúc:
-
-```
-standalone/
-├── .next/
-│   ├── static/          ← Vừa copy vào
-│   └── server/
-├── prisma/
-│   └── schema.prisma    ← Vừa copy vào
-├── public/              ← Vừa copy vào
-├── node_modules/
-├── server.js            ← File khởi động (QUAN TRỌNG)
-├── package.json
-└── ...
-```
-
-### 2.4 Nén thành ZIP
-
-Vào bên trong folder `.next/standalone`, chọn **tất cả file**, nén thành `deploy.zip`.
-
-> ⚠️ **Lưu ý**: Nén **nội dung bên trong** folder standalone, KHÔNG nén chính folder standalone. Khi giải nén ra phải thấy ngay `server.js`, không phải thấy folder `standalone/` bọc bên ngoài.
+1. Đăng nhập **cPanel**.
+2. Tìm & chọn **MySQL® Databases**.
+3. **Tạo Database Mới**:
+   - Tên: `digital` (Full tên sẽ là: `twebmmonet_digital`).
+   - Bấm **Create Database**.
+4. **Tạo User Mới**:
+   - Username: `shop` (Full tên sẽ là: `twebmmonet_shop`).
+   - Password: `Quang##2022`
+   - Bấm **Create User**.
+5. **Thêm User vào Database**:
+   - Kéo xuống mục **Add User To Database**.
+   - User: `twebmmonet_shop`.
+   - Database: `twebmmonet_digital`.
+   - Bấm **Add**.
+   - Tick chọn **ALL PRIVILEGES** (Quyền cao nhất).
+   - Bấm **Make Changes**.
 
 ---
 
-## Bước 3: Tạo MySQL Database Trên cPanel
+## Bước 2: Upload Code (Không cần npm install)
 
-1. Đăng nhập **cPanel** → **MySQL® Databases**
-2. **Tạo Database**: `twebmmonet_digital` (cPanel sẽ tự thêm prefix, VD: `twebmmonet_digital`)
-3. **Tạo User**: `twebmmonet_shop` với password `Quang##2022`
-4. **Add User to Database**: Chọn user vừa tạo → chọn database → tick **ALL PRIVILEGES** → Add
-5. Xong bước này bạn sẽ có:
-   - Database: `twebmmonet_digital`
-   - User: `twebmmonet_shop`
-   - Host: `localhost`
-
----
-
-## Bước 4: Upload Code Lên cPanel
-
-1. Đăng nhập **cPanel** → **File Manager**
-2. Tạo folder mới tên `digital-shop` **ngang hàng** với `public_html`
-
-   ```
-   /home/twebmmonet/
-   ├── digital-shop/     ← TẠO FOLDER NÀY
-   ├── public_html/
-   └── ...
-   ```
-
-3. Mở folder `digital-shop` → bấm **Upload** → chọn file `deploy.zip`
-4. Chờ upload xong → click chuột phải vào `deploy.zip` → **Extract**
-5. Sau khi giải nén, kiểm tra bên trong `digital-shop/` phải thấy ngay `server.js`
-6. **Xóa file `deploy.zip`** để tiết kiệm dung lượng
+1. Quay lại trang chủ cPanel -> **File Manager**.
+2. Tạo folder mới tên `digital-shop` (ngang hàng `public_html`).
+3. Vào trong `digital-shop/` -> Bấm **Upload**.
+4. Chọn file **`full-deploy.zip`**.
+5. Sau khi upload xong (100%), bấm chuột phải vào file zip -> **Extract**.
+6. **Kiểm tra**: Sau khi giải nén, bạn phải thấy folder `node_modules`, file `server.js`, `package.json` ngay trong thư mục này.
+7. Xóa file `full-deploy.zip` cho nhẹ host.
 
 ---
 
-## Bước 5: Tạo Node.js App Trên cPanel
+## Bước 3: Nhập Cấu Trúc Database
 
-1. Quay lại trang chủ **cPanel** → **Setup Node.js App**
-2. Bấm **CREATE APPLICATION**
-3. Điền thông tin:
+1. Trang chủ cPanel -> **phpMyAdmin**.
+2. Cột bên trái, chọn database **`twebmmonet_digital`** vừa tạo.
+3. Nhìn thanh menu trên cùng, chọn tab **Import** (Nhập).
+4. Bấm **Choose File** -> Chọn file **`db_init.sql`**.
+5. Kéo xuống dưới cùng -> Bấm **Go** (Thực hiện).
+   *(Màn hình báo thành công màu xanh là OK).*
 
-| Trường | Giá trị |
-|--------|---------|
-| **Node.js version** | `20` (hoặc phiên bản mới nhất có sẵn) |
+---
+
+## Bước 4: Cài Đặt Node.js App
+
+1. Trang chủ cPanel -> **Setup Node.js App**.
+2. Bấm **CREATE APPLICATION**.
+3. Điền thông tin y hệt như sau:
+
+| Trường | Điền Giá Trị |
+|---|---|
+| **Node.js version** | `20` (Chọn bản cao nhất có thể) |
 | **Application mode** | `Production` |
 | **Application root** | `digital-shop` |
-| **Application URL** | Chọn domain của bạn (VD: `webmmo.net`) |
+| **Application URL** | Chọn domain chính (VD: `webmmo.net`) |
 | **Application startup file** | `server.js` |
 
-4. Bấm **CREATE** — Chưa bấm Start, làm tiếp bước 6.
+4. Bấm nút **CREATE**.
 
 ---
 
-## Bước 6: Cấu Hình Biến Môi Trường
+## Bước 5: Cấu Hình Biến Môi Trường (.env)
 
-Trong giao diện Node.js App vừa tạo, tìm mục **Environment variables**, bấm **Add Variable** để thêm:
+Trong giao diện Node.js App vừa tạo, tìm mục **Environment variables** (hoặc nút Settings). Bấm **Add Variable** để thêm từng dòng:
 
-| Key | Value |
-|-----|-------|
-| `DATABASE_URL` | `mysql://twebmmonet_shop:Quang%23%232022@localhost:3306/twebmmonet_digital` |
-| `NEXTAUTH_SECRET` | *(Tạo chuỗi ngẫu nhiên: `openssl rand -hex 32`)* |
-| `NEXTAUTH_URL` | `https://your-domain.com` *(thay bằng domain thật)* |
-| `CRON_SECRET` | *(Chuỗi bảo mật bất kỳ, VD: `my-secret-cron-key-2024`)* |
-| `NODE_ENV` | `production` |
-| `PORT` | *(Để trống hoặc không cần thêm — cPanel tự quản lý)* |
+| Tên (Name) | Giá trị (Value) | Lưu ý |
+|---|---|---|
+| `DATABASE_URL` | `mysql://twebmmonet_shop:Quang%23%232022@localhost:3306/twebmmonet_digital` | Pass `#` đổi thành `%23` |
+| `NEXTAUTH_SECRET` | `bc3448523126652fa2adb9fa684a8049c849d58438ea8cc314ed18ac356d9d6c` | Hoặc chuỗi bất kỳ dài loằng ngoằng |
+| `NEXTAUTH_URL` | `https://webmmo.net` | Đổi thành domain thật |
+| `CRON_SECRET` | `e70a98b6-90b7-4c3e-af2a-19ab84dfea31` | Key bảo mật cho Cron Job |
+| `NODE_ENV` | `production` | Bắt buộc |
 
-> ⚠️ **Quan trọng**: Password `Quang##2022` phải encode ký tự `#` thành `%23`, nên trong URL là `Quang%23%232022`.
-
-Bấm **Save**.
+Sau khi điền đủ, bấm **Save**.
 
 ---
 
-## Bước 7: Chạy Prisma + Khởi Động App
+## Bước 6: Khởi Động Web
 
-### 7.1 Mở Terminal trên cPanel
+1. Trong giao diện Node.js App, bấm **STOP APP** (nếu đang chạy).
+2. Chờ 5 giây.
+3. Bấm **START APP**.
+4. Truy cập website để kiểm tra.
 
-Trong giao diện **Setup Node.js App**, bạn sẽ thấy **dòng lệnh kích hoạt môi trường** (Enter to virtual environment). Copy dòng đó rồi:
+> 💡 **Vì sao không cần chạy lệnh?**
+> File `full-deploy.zip` mình tạo đã chứa sẵn mọi thư viện cần thiết (bao gồm cả Prisma cho Linux), nên bạn **KHÔNG CẦN** vào Terminal chạy `npm install` hay `prisma generate` nữa. Server yếu vẫn chạy ngon lành!
 
-1. Vào **cPanel** → **Terminal** (hoặc SSH vào server)
-2. **Paste dòng lệnh kích hoạt** đó vào terminal, ví dụ:
+---
+
+## Bước 7: Cài Đặt Cron Job (Tự động)
+
+Để web không bị "ngủ đông" và tự động check nạp tiền:
+
+1. Trang chủ cPanel -> **Cron Jobs**.
+2. Phần **Common Settings**, chọn `Once Per Minute` (* * * * *).
+3. Ô **Command**, dán lệnh sau:
    ```bash
-   source /home/twebmmonet/nodevenv/digital-shop/20/bin/activate && cd /home/twebmmonet/digital-shop
+   /usr/bin/curl -s "https://webmmo.net/api/cron/auto-topup" >/dev/null 2>&1
    ```
-
-### 7.2 Cài Prisma CLI và tạo bảng
-
-```bash
-# Cài prisma CLI (nếu chưa có)
-npm install prisma --save-dev
-
-# Tạo Prisma Client
-npx prisma generate
-
-# Tạo tất cả bảng trong MySQL (QUAN TRỌNG - chạy 1 lần đầu)
-npx prisma db push
-```
-
-> Lệnh `prisma db push` sẽ đọc file `prisma/schema.prisma` và tạo toàn bộ tables trong MySQL. Bạn sẽ thấy output như:
-> ```
-> Your database is now in sync with your Prisma schema.
-> ```
-
-### 7.3 Khởi động App
-
-Quay lại giao diện **Setup Node.js App** trên cPanel → bấm **Restart**.
-
-Hoặc chạy trên terminal:
-```bash
-node server.js
-```
-
-### 7.4 Kiểm tra
-
-Truy cập domain của bạn — nếu thấy trang web thì đã deploy thành công! 🎉
+   *(Nhớ thay `webmmo.net` bằng domain của bạn)*.
+4. Bấm **Add New Cron Job**.
 
 ---
 
-## Bước 8: Cài Đặt Cron Job
+## ❓ Xử Lý Lỗi (Troubleshoot)
 
-Vào **cPanel** → **Cron Jobs** → Thêm các lệnh sau:
-
-### Keep-alive + Auto Topup (Mỗi 1 phút)
-
-Cài đặt: `* * * * *`
-```bash
-/usr/bin/curl -s "https://your-domain.com/api/cron/auto-topup" >/dev/null 2>&1
-```
-
-### Auto Review (Mỗi 5 phút — tùy chọn)
-
-Cài đặt: `*/5 * * * *`
-```bash
-/usr/bin/curl -s "https://your-domain.com/api/cron/auto-review?key=YOUR_CRON_SECRET" >/dev/null 2>&1
-```
-
-> Thay `your-domain.com` bằng domain thật và `YOUR_CRON_SECRET` bằng giá trị bạn đã set ở bước 6.
-
----
-
-## 🔄 Cập Nhật Code (Lần Deploy Sau)
-
-Khi có code mới, lặp lại:
-
-1. Build trên máy tính: `npm run build`
-2. Copy `public` + `.next/static` + `prisma/schema.prisma` vào `.next/standalone`
-3. Nén và upload `deploy.zip` lên `digital-shop/`
-4. Giải nén (ghi đè file cũ)
-5. SSH vào → active virtual env → chạy:
-   ```bash
-   npx prisma generate
-   npx prisma db push    # Chỉ cần nếu schema thay đổi
-   ```
-6. Restart Node.js App trên cPanel
-
-> ✅ Dữ liệu MySQL **KHÔNG BỊ MẤT** khi deploy lại (khác với SQLite phải tránh ghi đè file .db).
-
----
-
-## ❓ Xử Lý Lỗi Thường Gặp
-
-| Lỗi | Nguyên nhân | Giải pháp |
-|-----|-------------|-----------|
-| `502 Bad Gateway` | App chưa khởi động xong | Chờ 30s rồi refresh, hoặc Restart App |
-| `Cannot find module` | Thiếu node_modules | SSH vào chạy `npm install` |
-| `PrismaClientInitializationError` | Chưa chạy `prisma generate` hoặc sai `DATABASE_URL` | SSH vào chạy `npx prisma generate` |
-| `Access denied for user` | Sai user/pass MySQL hoặc chưa add user vào database | Kiểm tra lại bước 3 |
-| Trang trắng, không có CSS | Chưa copy `.next/static` vào standalone | Làm lại bước 2.1 |
+| Hiện tượng | Nguyên nhân | Cách sửa |
+|---|---|---|
+| **Lỗi 503 Service Unavailable** | App đang khởi động hoặc crash | Vào Node.js App -> Restart. Chờ 1 phút rồi F5. |
+| **Lỗi Database Connection** | Sai pass hoặc chưa import SQL | Kiểm tra lại Bước 1 (User/Pass) và Bước 3 (Import). |
+| **Lỗi Permission (Ảnh/Upload)** | Chỉ đọc (Read-only) | Vào Terminal, gõ `cd digital-shop` rồi chạy: `chmod -R 755 public` |
+| **Web trắng trơn** | Thiếu file tĩnh | Kiểm tra xem folder `.next/static` có trong `digital-shop/.next/static` không. |

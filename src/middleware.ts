@@ -45,8 +45,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Check if user has ADMIN role
-    if (decoded.role !== 'ADMIN') {
+    // Check if user has ADMIN or OWNER role (SSO: both have admin access)
+    if (decoded.role !== 'ADMIN' && decoded.role !== 'OWNER') {
       // Not an admin, redirect to home
       return NextResponse.redirect(new URL('/', request.url));
     }
@@ -55,11 +55,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected routes (require authentication)
-  const isProtectedRoute = pathname.startsWith('/account') || 
-                          pathname.startsWith('/wallet') || 
-                          pathname.startsWith('/orders') || 
-                          pathname.startsWith('/checkout') ||
-                          pathname.startsWith('/cart');
+  const isProtectedRoute = pathname.startsWith('/account') ||
+    pathname.startsWith('/wallet') ||
+    pathname.startsWith('/orders') ||
+    pathname.startsWith('/checkout') ||
+    pathname.startsWith('/cart');
 
   if (isProtectedRoute) {
     const sessionCookie = request.cookies.get('session');

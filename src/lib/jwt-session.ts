@@ -6,17 +6,16 @@
 import jwt from 'jsonwebtoken';
 
 function getSecret() {
-  const secret = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
-  
+  // SSO: Prefer SSO_JWT_SECRET for ecosystem-wide auth
+  const secret = process.env.SSO_JWT_SECRET || process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
+
   if (!secret || secret.length < 32) {
     if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
-      // Only throw in production server-side to prevent unsafe startup
       throw new Error(
-        'SESSION_SECRET must be set and at least 32 characters long. ' +
+        'SSO_JWT_SECRET must be set and at least 32 characters long. ' +
         'Generate with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
       );
     }
-    // Return a dummy secret for development/build to prevent crashes
     return 'default-dev-secret-do-not-use-in-production-at-least-32-chars';
   }
   return secret;
@@ -25,15 +24,19 @@ function getSecret() {
 export interface SessionData {
   userId: string;
   email: string;
-  role: 'ADMIN' | 'BUYER';
-  iat?: number; // Issued at
-  exp?: number; // Expiry
+  role: 'OWNER' | 'ADMIN' | 'USER';
+  aud?: string[]; // SSO: audience - which apps this token is valid for
+  token_version?: number; // SSO: for token revocation
+  iat?: number;
+  exp?: number;
 }
 
 export interface SessionPayload extends SessionData {
   iat: number;
   exp: number;
   iss: string;
+  aud: string[];
+  token_version: number;
 }
 
 /**
@@ -52,11 +55,13 @@ export function createSessionToken(
         userId: data.userId,
         email: data.email,
         role: data.role,
+        aud: data.aud || ['shop', 'mail'], // SSO: default both apps
+        token_version: data.token_version || 0,
       },
       getSecret(),
       {
         expiresIn: expiresIn as any,
-        issuer: 'digital-shop',
+        issuer: '0xf5-ecosystem',
         algorithm: 'HS256',
       } as jwt.SignOptions
     );
@@ -75,14 +80,24 @@ export function createSessionToken(
  */
 export function verifySessionToken(token: string): SessionPayload | null {
   try {
-    const decoded = jwt.verify(token, getSecret(), {
-      issuer: 'digital-shop',
-      algorithms: ['HS256'],
-    }) as SessionPayload;
+    // SSO: Accept both old issuer and new ecosystem issuer for backward compatibility
+    let decoded: SessionPayload | null = null;
+
+    try {
+      decoded = jwt.verify(token, getSecret(), {
+        issuer: '0xf5-ecosystem',
+        algorithms: ['HS256'],
+      }) as SessionPayload;
+    } catch {
+      // Fallback: try old issuer for tokens issued before SSO migration
+      decoded = jwt.verify(token, getSecret(), {
+        issuer: 'digital-shop',
+        algorithms: ['HS256'],
+      }) as SessionPayload;
+    }
 
     return decoded;
   } catch (error) {
-    // Token invalid, expired, or tampered with
     if (error instanceof jwt.TokenExpiredError) {
       console.log('Session token expired');
     } else if (error instanceof jwt.JsonWebTokenError) {
@@ -116,6 +131,8 @@ export function refreshSessionToken(
       userId: decoded.userId,
       email: decoded.email,
       role: decoded.role,
+      aud: decoded.aud,
+      token_version: decoded.token_version,
     },
     expiresIn
   );

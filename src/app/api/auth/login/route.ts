@@ -48,31 +48,34 @@ export async function POST(request: NextRequest) {
       request.headers.get('x-real-ip') ||
       'unknown';
 
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ADMIN' || user.role === 'OWNER') {
       await logAdminLogin(user.id, user.email, clientIp);
     } else {
       await logUserLogin(user.id, user.email, clientIp);
     }
 
-    // Create JWT session token (signed and tamper-proof)
+    // Create JWT session token (SSO-compatible)
     const token = createSessionToken({
       userId: user.id,
       email: user.email,
       role: user.role,
+      aud: ['shop', 'mail'],
+      token_version: user.tokenVersion,
     });
 
     // Set secure cookie with JWT
     const cookieStore = await cookies();
     cookieStore.set('session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Secure in production, allow http in dev
-      sameSite: 'strict', // Stronger CSRF protection
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
 
     return NextResponse.json({
       success: true,
+      token, // SSO: expose token for cross-service auth (Mail can use this)
       user: {
         id: user.id,
         email: user.email,
@@ -87,3 +90,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

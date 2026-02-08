@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 interface SessionUser {
   id: string;
   email: string;
-  role: 'ADMIN' | 'BUYER';
+  role: 'OWNER' | 'ADMIN' | 'USER';
 }
 
 interface AdminHeaderProps {
