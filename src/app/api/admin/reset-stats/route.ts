@@ -7,9 +7,9 @@ export async function POST(request: NextRequest) {
     try {
         const session = await getSession();
 
-        if (!session?.user || session.user.role !== 'OWNER') {
+        if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
             return NextResponse.json(
-                { error: 'Only OWNER can reset stats' },
+                { error: 'Admin access required' },
                 { status: 403 }
             );
         }
