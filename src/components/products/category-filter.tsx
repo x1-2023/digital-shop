@@ -19,21 +19,21 @@ interface CategoryFilterProps {
 export function CategoryFilter({ categories, selectedCategory, onCategoryChange }: CategoryFilterProps) {
     return (
         <div className="bg-secondary/30 rounded-2xl p-4">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
                 {/* All Categories */}
                 <button
                     onClick={() => onCategoryChange('all')}
                     className={cn(
-                        "flex flex-col items-center gap-2 p-3 rounded-xl bg-card border transition-all hover:-translate-y-0.5",
+                        "flex items-center gap-3 px-4 py-3 rounded-xl bg-card border transition-all hover:-translate-y-0.5",
                         selectedCategory === 'all'
                             ? "border-brand shadow-md shadow-brand/20"
                             : "border-border hover:border-brand/50"
                     )}
                 >
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand/20 to-brand/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand/20 to-brand/10 flex items-center justify-center flex-shrink-0">
                         <span className="text-xl">🏠</span>
                     </div>
-                    <span className="text-xs font-medium text-center line-clamp-1">Tất cả</span>
+                    <span className="text-sm font-medium whitespace-nowrap">Tất cả</span>
                 </button>
 
                 {categories.map((category) => (
@@ -41,26 +41,31 @@ export function CategoryFilter({ categories, selectedCategory, onCategoryChange 
                         key={category.id}
                         onClick={() => onCategoryChange(category.id)}
                         className={cn(
-                            "flex flex-col items-center gap-2 p-3 rounded-xl bg-card border transition-all hover:-translate-y-0.5",
+                            "flex items-center gap-3 px-4 py-3 rounded-xl bg-card border transition-all hover:-translate-y-0.5",
                             selectedCategory === category.id
                                 ? "border-brand shadow-md shadow-brand/20"
                                 : "border-border hover:border-brand/50"
                         )}
                     >
-                        <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
                             {category.icon ? (
-                                <Image
-                                    src={category.icon}
-                                    alt={category.name}
-                                    width={24}
-                                    height={24}
-                                    className="w-6 h-6 object-contain"
-                                />
+                                (category.icon.startsWith('/') || category.icon.startsWith('http')) ? (
+                                    <Image
+                                        src={category.icon}
+                                        alt={category.name}
+                                        width={28}
+                                        height={28}
+                                        className="w-7 h-7 object-contain"
+                                        unoptimized
+                                    />
+                                ) : (
+                                    <span className="text-xl">{category.icon}</span>
+                                )
                             ) : (
                                 <span className="text-xl">📦</span>
                             )}
                         </div>
-                        <span className="text-xs font-medium text-center line-clamp-1">{category.name}</span>
+                        <span className="text-sm font-medium whitespace-nowrap">{category.name}</span>
                     </button>
                 ))}
             </div>

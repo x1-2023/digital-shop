@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Wallet,
@@ -200,23 +201,38 @@ export function Header() {
               )}
 
               {/* Categories */}
-              <div className="p-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Danh mục</p>
-                <div className="space-y-1">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      href={`/products?categoryId=${cat.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-                      onClick={() => setSearchFocused(false)}
-                    >
-                      <span className="text-lg">{cat.icon || '📦'}</span>
-                      <span className="flex-1 text-sm font-medium">{cat.name}</span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </Link>
-                  ))}
+              {categories.length > 0 && (
+                <div className="p-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Danh mục</p>
+                  <div className="space-y-1">
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/products?categoryId=${cat.id}`}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                        onClick={() => setSearchFocused(false)}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {cat.icon && (cat.icon.startsWith('/') || cat.icon.startsWith('http')) ? (
+                            <Image
+                              src={cat.icon}
+                              alt={cat.name}
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 object-contain"
+                              unoptimized
+                            />
+                          ) : (
+                            <span className="text-lg">{cat.icon || '📦'}</span>
+                          )}
+                        </div>
+                        <span className="flex-1 text-sm font-medium">{cat.name}</span>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
