@@ -142,23 +142,23 @@ export function Footer() {
                 </h3>
 
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  <Link href="/policy" className="text-sm text-text-muted hover:text-text-primary transition-colors">
-                    Chính sách
+                  <Link href="/products" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+                    Sản phẩm
                   </Link>
-                  <Link href="/terms" className="text-sm text-text-muted hover:text-text-primary transition-colors">
-                    Điều khoản
-                  </Link>
-                  <Link href="/faq" className="text-sm text-text-muted hover:text-text-primary transition-colors">
-                    Câu hỏi thường gặp
-                  </Link>
-                  <Link href="/contact" className="text-sm text-text-muted hover:text-text-primary transition-colors">
-                    Liên hệ
-                  </Link>
-                  <Link href="/api-docs" className="text-sm text-text-muted hover:text-text-primary transition-colors">
-                    Tài liệu API
-                  </Link>
-                  <Link href="/deposit" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+                  <Link href="/wallet" className="text-sm text-text-muted hover:text-text-primary transition-colors">
                     Nạp tiền
+                  </Link>
+                  <Link href="/orders" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+                    Đơn hàng
+                  </Link>
+                  <Link href="/account" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+                    Tài khoản
+                  </Link>
+                  <a href={settings.telegramUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+                    Liên hệ hỗ trợ
+                  </a>
+                  <Link href="/auth/signin" className="text-sm text-text-muted hover:text-text-primary transition-colors">
+                    Đăng nhập
                   </Link>
                 </div>
               </div>
@@ -197,14 +197,14 @@ export function Footer() {
               © {settings.copyrightYear} <span className="text-brand font-medium">{process.env.NEXT_PUBLIC_SITE_NAME || 'Digital Shop'}</span>. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
-              <Link href="/privacy" className="text-brand hover:underline">
-                Privacy Policy
+              <a href={settings.telegramUrl} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">
+                Telegram
+              </a>
+              <Link href="/products" className="text-brand hover:underline">
+                Sản phẩm
               </Link>
-              <Link href="/terms" className="text-brand hover:underline">
-                Terms of Service
-              </Link>
-              <Link href="/contact" className="text-brand hover:underline">
-                Support
+              <Link href="/wallet" className="text-brand hover:underline">
+                Nạp tiền
               </Link>
             </div>
           </div>

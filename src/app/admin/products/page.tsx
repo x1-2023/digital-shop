@@ -18,7 +18,7 @@ import {
   Package,
   FileText
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate, safeParseImages } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
@@ -209,7 +209,7 @@ export default function AdminProductsPage() {
               </TableHeader>
               <TableBody>
                 {products.map((product) => {
-                  const images = product.images ? JSON.parse(product.images) : [];
+                  const images = safeParseImages(product.images);
                   return (
                     <TableRow key={product.id}>
                       <TableCell>

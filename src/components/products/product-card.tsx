@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, Eye } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, safeParseImages } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { QuickBuyModal } from './quick-buy-modal';
 
@@ -23,7 +23,7 @@ interface Product {
 }
 
 export function ProductCard({ product }: { product: Product }) {
-    const images = product.images ? JSON.parse(product.images as string) : [];
+    const images = safeParseImages(product.images as string);
     const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
 
     return (

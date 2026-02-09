@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  CreditCard, 
-  Wallet, 
+import {
+  CreditCard,
+  Wallet,
   ArrowLeft,
   Package,
   CheckCircle,
@@ -19,7 +19,7 @@ import {
   Tag,
   X
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, safeParseImages } from '@/lib/utils';
 import { useCart } from '@/hooks/use-cart';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -54,12 +54,12 @@ export default function CheckoutPage() {
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   // Coupon states
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
-  
+
   const router = useRouter();
   const { toast } = useToast();
 
@@ -173,7 +173,7 @@ export default function CheckoutPage() {
     }
 
     const finalTotal = getFinalTotal();
-    
+
     if (wallet.balance < finalTotal) {
       toast({
         variant: 'destructive',
@@ -330,45 +330,45 @@ export default function CheckoutPage() {
                     </TableHeader>
                     <TableBody>
                       {cart.map((item) => {
-                        const images = item.images ? JSON.parse(item.images) : [];
+                        const images = safeParseImages(item.images);
                         return (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 bg-card rounded-lg overflow-hidden flex-shrink-0">
-                                {images[0] ? (
-                                  <Image
-                                    src={images[0]}
-                                    alt={item.name}
-                                    width={48}
-                                    height={48}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <Package className="h-4 w-4 text-text-muted" />
-                                  </div>
-                                )}
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-card rounded-lg overflow-hidden flex-shrink-0">
+                                  {images[0] ? (
+                                    <Image
+                                      src={images[0]}
+                                      alt={item.name}
+                                      width={48}
+                                      height={48}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Package className="h-4 w-4 text-text-muted" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-sm">{item.name}</h4>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="font-medium text-sm">{item.name}</h4>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm">{item.quantity}</span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm font-medium">
-                              {formatCurrency(item.priceVnd * item.quantity)}
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      );
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm">{item.quantity}</span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm font-medium">
+                                {formatCurrency(item.priceVnd * item.quantity)}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        );
                       })}
                     </TableBody>
                   </Table>
-                  
+
                   <div className="border-t border-border pt-4 mt-4">
                     {/* Coupon Section */}
                     <div className="mb-4 p-3 bg-card-dark rounded-lg">
@@ -376,7 +376,7 @@ export default function CheckoutPage() {
                         <Tag className="h-4 w-4 text-brand" />
                         <span className="text-sm font-medium">Mã giảm giá</span>
                       </div>
-                      
+
                       {appliedCoupon ? (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between p-2 bg-success/10 border border-success/20 rounded">
@@ -385,8 +385,8 @@ export default function CheckoutPage() {
                                 {appliedCoupon.code}
                               </Badge>
                               <span className="text-sm text-text-muted">
-                                {appliedCoupon.discountType === 'PERCENTAGE' 
-                                  ? `-${appliedCoupon.discountValue}%` 
+                                {appliedCoupon.discountType === 'PERCENTAGE'
+                                  ? `-${appliedCoupon.discountValue}%`
                                   : `-${formatCurrency(appliedCoupon.discountValue)}`}
                               </span>
                             </div>
@@ -431,14 +431,14 @@ export default function CheckoutPage() {
                         <span className="text-text-muted">Tạm tính:</span>
                         <span>{formatCurrency(subtotal)}</span>
                       </div>
-                      
+
                       {discount > 0 && (
                         <div className="flex justify-between text-sm">
                           <span className="text-text-muted">Giảm giá:</span>
                           <span className="text-success">-{formatCurrency(discount)}</span>
                         </div>
                       )}
-                      
+
                       <div className="flex justify-between text-sm">
                         <span className="text-text-muted">Phí vận chuyển:</span>
                         <span className="text-success">Miễn phí</span>

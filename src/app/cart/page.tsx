@@ -4,30 +4,30 @@ import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  ShoppingCart, 
-  Trash2, 
-  Plus, 
+import {
+  ShoppingCart,
+  Trash2,
+  Plus,
   Minus,
   Package,
   ArrowLeft,
   CreditCard
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, safeParseImages } from '@/lib/utils';
 import { useCart } from '@/hooks/use-cart';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CartPage() {
-  const { 
-    cart, 
+  const {
+    cart,
     isLoaded,
-    removeFromCart, 
-    updateQuantity, 
-    clearCart, 
-    getTotal, 
-    getItemCount 
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getTotal,
+    getItemCount
   } = useCart();
   const { toast } = useToast();
 
@@ -128,77 +128,77 @@ export default function CartPage() {
                       </TableHeader>
                       <TableBody>
                         {cart.map((item) => {
-                          const images = item.images ? JSON.parse(item.images) : [];
+                          const images = safeParseImages(item.images);
                           return (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              <div className="flex items-center space-x-3">
-                                <div className="w-16 h-16 bg-card rounded-lg overflow-hidden flex-shrink-0">
-                                  {images[0] ? (
-                                    <Image
-                                      src={images[0]}
-                                      alt={item.name}
-                                      width={64}
-                                      height={64}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                      <Package className="h-6 w-6 text-text-muted" />
-                                    </div>
-                                  )}
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-16 h-16 bg-card rounded-lg overflow-hidden flex-shrink-0">
+                                    {images[0] ? (
+                                      <Image
+                                        src={images[0]}
+                                        alt={item.name}
+                                        width={64}
+                                        height={64}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center">
+                                        <Package className="h-6 w-6 text-text-muted" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <h4 className="font-medium truncate">{item.name}</h4>
+                                    <p className="text-sm text-text-muted">
+                                      Còn lại: {item.stock} sản phẩm
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-medium truncate">{item.name}</h4>
-                                  <p className="text-sm text-text-muted">
-                                    Còn lại: {item.stock} sản phẩm
-                                  </p>
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-medium">
+                                  {formatCurrency(item.priceVnd)}
                                 </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">
-                                {formatCurrency(item.priceVnd)}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center space-x-2">
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                    disabled={item.quantity <= 1}
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </Button>
+                                  <span className="w-8 text-center">{item.quantity}</span>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                    disabled={item.quantity >= item.stock}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-medium text-brand">
+                                  {formatCurrency(item.priceVnd * item.quantity)}
+                                </div>
+                              </TableCell>
+                              <TableCell>
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                  disabled={item.quantity <= 1}
+                                  onClick={() => handleRemoveItem(item.id)}
+                                  className="text-danger hover:text-danger"
                                 >
-                                  <Minus className="h-3 w-3" />
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
-                                <span className="w-8 text-center">{item.quantity}</span>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                  disabled={item.quantity >= item.stock}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium text-brand">
-                                {formatCurrency(item.priceVnd * item.quantity)}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRemoveItem(item.id)}
-                                className="text-danger hover:text-danger"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        );
+                              </TableCell>
+                            </TableRow>
+                          );
                         })}
                       </TableBody>
                     </Table>
@@ -241,7 +241,7 @@ export default function CartPage() {
                           Thanh toán
                         </Link>
                       </Button>
-                      
+
                       <div className="text-xs text-text-muted text-center">
                         <p>Bạn có thể thanh toán bằng ví nội bộ</p>
                         <p>hoặc nạp tiền qua QR code</p>

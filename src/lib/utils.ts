@@ -151,5 +151,24 @@ export function getReviewAvatar(
   return email[0].toUpperCase();
 }
 
+/**
+ * Safely parse product images field
+ * Handles: JSON array strings, plain URL strings, null/undefined
+ * Returns: string[] of image URLs
+ */
+export function safeParseImages(images: string | null | undefined): string[] {
+  if (!images) return [];
+  try {
+    const parsed = JSON.parse(images);
+    if (Array.isArray(parsed)) return parsed;
+    if (typeof parsed === 'string') return [parsed];
+    return [];
+  } catch {
+    // If not valid JSON, treat as a single URL string
+    if (typeof images === 'string' && images.startsWith('/')) return [images];
+    return [];
+  }
+}
+
 
 

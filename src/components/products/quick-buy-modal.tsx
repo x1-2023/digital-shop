@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, safeParseImages } from '@/lib/utils';
 
 interface Product {
     id: string;
@@ -47,7 +47,7 @@ interface CouponResult {
 
 export function QuickBuyModal({ product, isOpen, onClose }: QuickBuyModalProps) {
     const router = useRouter();
-    const images = product.images ? JSON.parse(product.images as string) : [];
+    const images = safeParseImages(product.images as string);
 
     const [quantity, setQuantity] = useState(1);
     const [couponCode, setCouponCode] = useState('');

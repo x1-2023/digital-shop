@@ -22,7 +22,7 @@ import {
   Truck,
   Box
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate, safeParseImages } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -146,7 +146,7 @@ export default function ProductDetailPage() {
         id: product.id,
         name: product.name,
         priceVnd: product.priceVnd,
-        images: product.images ? JSON.parse(product.images)[0] : undefined,
+        images: safeParseImages(product.images)[0] || undefined,
         slug: product.slug,
         stock: product.stock,
       });
@@ -207,7 +207,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const images = product.images ? JSON.parse(product.images) : [];
+  const images = safeParseImages(product.images);
   const soldCount = product.fakeSold || (product.usedLines || 0);
   const rating = reviewStats.total > 0
     ? reviewStats.average
@@ -329,16 +329,9 @@ export default function ProductDetailPage() {
                   {/* Product Title & Brand */}
                   <div>
                     <div className="flex items-center gap-2 mb-3">
-                      <Image
-                        src="/images/logo.png"
-                        width={24}
-                        height={24}
-                        alt="Logo"
-                        className="rounded"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
+                      <div className="h-6 w-6 rounded bg-brand flex items-center justify-center">
+                        <span className="text-white font-bold text-xs">W</span>
+                      </div>
                       <h1 className="text-2xl font-bold text-text-primary leading-tight">
                         {product.name}
                       </h1>
@@ -424,7 +417,7 @@ export default function ProductDetailPage() {
                       </h3>
                       <div className="grid grid-cols-3 gap-3">
                         {relatedProducts.map((rp) => {
-                          const rpImages = rp.images ? JSON.parse(rp.images) : [];
+                          const rpImages = safeParseImages(rp.images);
                           return (
                             <Link key={rp.id} href={`/products/${rp.slug}`}>
                               <div className="border border-border rounded-xl overflow-hidden hover:shadow-md transition bg-card group h-full">

@@ -28,6 +28,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
+import { safeParseImages } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -108,7 +109,7 @@ export default function EditProductPage() {
       if (response.ok) {
         const data = await response.json();
         setProduct(data.product);
-        const productImages = data.product.images ? JSON.parse(data.product.images) : [];
+        const productImages = safeParseImages(data.product.images);
         setFormData({
           name: data.product.name,
           slug: data.product.slug,

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Zap, Shield, CheckCircle, Headphones, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, safeParseImages } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 interface HeroMarketplaceProps {
@@ -12,7 +12,7 @@ interface HeroMarketplaceProps {
 }
 
 export function HeroMarketplace({ dealProduct }: HeroMarketplaceProps) {
-    const images = dealProduct?.images ? JSON.parse(dealProduct.images as string) : [];
+    const images = safeParseImages(dealProduct?.images as string);
 
     return (
         <section className="container mx-auto px-4 py-6">

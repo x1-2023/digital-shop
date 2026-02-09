@@ -20,7 +20,7 @@ import {
   X,
   Check
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, safeParseImages } from '@/lib/utils';
 import { useCart } from '@/hooks/use-cart';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -258,7 +258,7 @@ export default function ProductsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {products.map((product) => {
-                const images = product.images ? JSON.parse(product.images) : [];
+                const images = safeParseImages(product.images);
                 return (
                   <Card key={product.id} className="group hover:shadow-2xl hover:shadow-black/40 transition-all duration-300 overflow-hidden">
                     <CardHeader className="p-0">
