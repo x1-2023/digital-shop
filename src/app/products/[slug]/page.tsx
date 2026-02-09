@@ -65,6 +65,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [reviewRefresh, setReviewRefresh] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [reviewStats, setReviewStats] = useState<{ average: number; total: number }>({ average: 0, total: 0 });
   const { toast } = useToast();
   const { addToCart, updateQuantity, isInCart, getItemQuantity } = useCart();
 
@@ -74,6 +75,25 @@ export default function ProductDetailPage() {
     }
   }, [params.slug]);
 
+  // Refresh review stats when a new review is submitted
+  useEffect(() => {
+    if (params.slug && reviewRefresh > 0) {
+      fetchReviewStats(params.slug as string);
+    }
+  }, [reviewRefresh]);
+
+  const fetchReviewStats = async (slug: string) => {
+    try {
+      const res = await fetch(`/api/products/${slug}/reviews/stats`);
+      if (res.ok) {
+        const data = await res.json();
+        setReviewStats({ average: data.average || 0, total: data.total || 0 });
+      }
+    } catch (error) {
+      console.error('Error fetching review stats:', error);
+    }
+  };
+
   const fetchProduct = async (slug: string) => {
     try {
       setIsLoading(true);
@@ -82,7 +102,8 @@ export default function ProductDetailPage() {
         const data = await response.json();
         setProduct(data.product);
 
-        // Fetch related products from same category
+        // Fetch review stats and related products
+        fetchReviewStats(slug);
         if (data.product.categoryId) {
           fetchRelatedProducts(data.product.categoryId, data.product.id);
         }
@@ -188,9 +209,9 @@ export default function ProductDetailPage() {
 
   const images = product.images ? JSON.parse(product.images) : [];
   const soldCount = product.fakeSold || (product.usedLines || 0);
-  const rating = product.fakeRating && product.fakeRating > 0
-    ? product.fakeRating
-    : (4.0 + Math.random() * 1.0); // fallback random 4.0-5.0
+  const rating = reviewStats.total > 0
+    ? reviewStats.average
+    : (product.fakeRating && product.fakeRating > 0 ? product.fakeRating : 0);
   const isOutOfStock = product.stock === 0;
 
   return (
@@ -342,7 +363,7 @@ export default function ProductDetailPage() {
                             className={`w-3.5 h-3.5 ${s <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                           />
                         ))}
-                        <span className="text-xs text-text-muted ml-1">(3 Review)</span>
+                        <span className="text-xs text-text-muted ml-1">({reviewStats.total} Review)</span>
                       </div>
                     </div>
                   </div>
