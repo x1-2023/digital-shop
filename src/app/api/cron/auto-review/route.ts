@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
         // Check for Admin Session OR Cron Secret
         const session = await getSession();
-        const isAdmin = session?.user?.role === 'ADMIN';
+        const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER';
         const isCron = cronSecret && key === cronSecret;
 
         if (!isAdmin && !isCron) {

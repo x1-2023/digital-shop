@@ -46,7 +46,7 @@ export async function GET(
     }
 
     // Check permission (user owns order OR is admin)
-    const isAdmin = user.role === 'ADMIN';
+    const isAdmin = user.role === 'ADMIN' || user.role === 'OWNER';
     const isOwner = order.user.email === session.user.email;
 
     if (!isAdmin && !isOwner) {

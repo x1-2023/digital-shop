@@ -137,7 +137,7 @@ export default function UsersPage() {
   );
 
   const totalUsers = users.length;
-  const adminUsers = users.filter(user => user.role === 'ADMIN').length;
+  const adminUsers = users.filter(user => user.role === 'ADMIN' || user.role === 'OWNER').length;
   const buyerUsers = users.filter(user => user.role === 'USER').length;
 
   if (loading) {
@@ -258,8 +258,8 @@ export default function UsersPage() {
                       {user.email}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={user.role === 'ADMIN' ? 'default' : 'secondary'}>
-                        {user.role === 'ADMIN' ? 'Admin' : 'Người dùng'}
+                      <Badge variant={user.role === 'ADMIN' || user.role === 'OWNER' ? 'default' : 'secondary'}>
+                        {user.role === 'OWNER' ? 'Owner' : user.role === 'ADMIN' ? 'Admin' : 'Người dùng'}
                       </Badge>
                     </TableCell>
                     <TableCell>
