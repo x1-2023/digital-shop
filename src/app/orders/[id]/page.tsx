@@ -229,7 +229,7 @@ export default function OrderDetailPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${order.id.slice(0, 10)}.txt`;
+        a.download = `${order.id.slice(0, 10).toUpperCase()}.txt`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -343,7 +343,7 @@ export default function OrderDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-text-primary">
-                Đơn hàng #{order.id.slice(0, 10)}
+                Đơn hàng #{order.id.slice(0, 10).toUpperCase()}
               </h1>
               <p className="text-text-muted">
                 Đặt lúc {formatDate(order.createdAt)}

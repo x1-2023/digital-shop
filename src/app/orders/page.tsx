@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 // Table components removed as unused
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Package, 
+import {
+  Package,
   Eye,
   Download,
   Clock,
@@ -167,7 +167,7 @@ export default function OrdersPage() {
                       <div className="flex items-center space-x-4">
                         <div>
                           <h3 className="font-semibold text-lg">
-                            Đơn hàng #{order.id.slice(0, 10)}
+                            Đơn hàng #{order.id.slice(0, 10).toUpperCase()}
                           </h3>
                           <p className="text-sm text-text-muted">
                             {formatDate(order.createdAt)}

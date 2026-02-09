@@ -305,7 +305,7 @@ export default function AdminOrderDetailPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-text-primary">
-              Đơn hàng #{order.id.slice(0, 10)}
+              Đơn hàng #{order.id.slice(0, 10).toUpperCase()}
             </h1>
             <p className="text-text-muted">
               Đặt lúc {formatDate(order.createdAt)}

@@ -53,7 +53,7 @@ export async function GET(
 
     if (productLines.length > 0) {
       // New system: use ProductLineItems
-      downloadContent = `Đơn hàng #${order.id.slice(0, 10)}\n`;
+      downloadContent = `Đơn hàng #${order.id.slice(0, 10).toUpperCase()}\n`;
       downloadContent += `Tổng: ${order.totalAmountVnd.toLocaleString('vi-VN')} đ\n`;
       downloadContent += `Ngày đặt: ${new Date(order.createdAt).toLocaleString('vi-VN')}\n\n`;
       downloadContent += `${'='.repeat(60)}\n\n`;
@@ -65,7 +65,7 @@ export async function GET(
       }
     } else {
       // Old system: extract from ProductLog
-      downloadContent = `Đơn hàng #${order.id.slice(0, 10)}\n`;
+      downloadContent = `Đơn hàng #${order.id.slice(0, 10).toUpperCase()}\n`;
       downloadContent += `Tổng: ${order.totalAmountVnd.toLocaleString('vi-VN')} đ\n`;
       downloadContent += `Ngày đặt: ${new Date(order.createdAt).toLocaleString('vi-VN')}\n\n`;
       downloadContent += `${'='.repeat(60)}\n\n`;
@@ -81,12 +81,12 @@ export async function GET(
           if (match) {
             downloadContent += `${match[1]}\n`;
           } else if (trimmed &&
-                     !trimmed.startsWith('===') &&
-                     !trimmed.startsWith('Sản phẩm:') &&
-                     !trimmed.startsWith('Số lượng:') &&
-                     !trimmed.startsWith('LICENSE KEYS') &&
-                     !trimmed.startsWith('NỘI DUNG') &&
-                     !trimmed.startsWith('⚠️')) {
+            !trimmed.startsWith('===') &&
+            !trimmed.startsWith('Sản phẩm:') &&
+            !trimmed.startsWith('Số lượng:') &&
+            !trimmed.startsWith('LICENSE KEYS') &&
+            !trimmed.startsWith('NỘI DUNG') &&
+            !trimmed.startsWith('⚠️')) {
             downloadContent += `${trimmed}\n`;
           }
         }
