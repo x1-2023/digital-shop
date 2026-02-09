@@ -205,7 +205,7 @@ export function Header() {
                 <div className="p-3">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Danh mục</p>
                   <div className="space-y-1">
-                    {categories.map((cat) => (
+                    {categories.slice(0, 3).map((cat) => (
                       <Link
                         key={cat.id}
                         href={`/products?categoryId=${cat.id}`}
