@@ -31,6 +31,16 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
 
+  // Rewrite old image URLs to new API serving route
+  async rewrites() {
+    return [
+      {
+        source: '/products/images/:path*',
+        destination: '/api/uploads/images/:path*',
+      },
+    ];
+  },
+
   // Security headers
   async headers() {
     return [

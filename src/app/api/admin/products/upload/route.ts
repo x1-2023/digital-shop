@@ -204,12 +204,13 @@ export async function POST(request: NextRequest) {
       const randomId = generateRandomId(6);
       const ext = file.name.split('.').pop() || 'jpg';
       const fileName = `product-${randomId}.${ext}`;
-      const filePath = path.join(process.cwd(), 'public', 'products', 'images', fileName);
-
-      const dirPath = path.join(process.cwd(), 'public', 'products', 'images');
+      // Save to uploads/images/ instead of public/products/images/
+      // Files in uploads/ are served via /api/uploads/images/ API route
+      const dirPath = path.join(process.cwd(), 'uploads', 'images');
       if (!existsSync(dirPath)) {
         await mkdir(dirPath, { recursive: true });
       }
+      const filePath = path.join(dirPath, fileName);
 
       await writeFile(filePath, buffer);
 
@@ -217,7 +218,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: {
           fileName,
-          imageUrl: `/products/images/${fileName}`,
+          imageUrl: `/api/uploads/images/${fileName}`,
         },
       });
     } else {

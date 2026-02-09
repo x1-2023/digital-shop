@@ -162,32 +162,52 @@ async function cleanupS3(s3Client) {
 async function runBackup() {
     const date = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const backupName = `backup_${date}`;
-    const dbPath = path.resolve(__dirname, '../prisma/dev.db');
-    const backupFile = path.join(CONFIG.backupDir, `${backupName}.db`);
+    // const dbPath = path.resolve(__dirname, '../prisma/dev.db'); // OLD: SQLite
+    const backupFile = path.join(CONFIG.backupDir, `${backupName}.sql`);
     const compressedFile = `${backupFile}.gz`;
 
     try {
         log(`Starting backup: ${backupName}`);
 
-        // 1. Backup SQLite
-        if (fs.existsSync(dbPath)) {
-            // Simple file copy for SQLite (locks might be an issue under heavy load, but acceptable for <20 users)
-            // ideally use sqlite3 .backup command but keeping it simple nodejs
-            fs.copyFileSync(dbPath, backupFile);
+        // 1. Check Database Type (PostgreSQL)
+        const dbUrl = process.env.DATABASE_URL;
+        if (!dbUrl) {
+            throw new Error('DATABASE_URL is not set');
+        }
 
-            // 2. Compress
-            execSync(`gzip "${backupFile}"`);
+        // Parse DB URL
+        // Format: postgres://user:password@host:port/dbname
+        // Note: URL parsing might fail if password has special chars without encoding, better rely on pg_dump parsing connection string if possible, 
+        // but passing password via env PGPASSWORD is safer than CLI args.
+        // Let's use simple URL parsing for host/user/db to log, but use the full URL for pg_dump if possible?
+        // Actually pg_dump accepts connection string/URI as dbname since v10+.
+
+        // However, to be safe and cross-platform (execSync shell handling), let's set ENV vars for pg_dump
+        // But simply passing the URL to pg_dump is the easiest: pg_dump "postgres://..."
+
+        log('Executing pg_dump...');
+        // Use connection string directly
+        // Note: We need to ensure we don't log the password
+
+        // Command: pg_dump --format=plain --no-owner --no-acl "DATABASE_URL" | gzip > "compressedFile"
+        // We use execSync with shell to handle the pipe.
+
+        execSync(`pg_dump --format=plain --no-owner --no-acl "${dbUrl}" | gzip > "${compressedFile}"`, {
+            stdio: ['ignore', 'inherit', 'inherit'], // inherit stdio to see errors? no, pipe stdout is used by >. 
+            // Wait, execSync returns stdout buffer if valid?
+            // "command | gzip > file" is shell syntax. execSync executes in shell /bin/sh by default on Linux.
+        });
+
+        if (fs.existsSync(compressedFile)) {
             log(`Database backed up and compressed: ${compressedFile}`);
 
             // 3. Upload to S3
-            await uploadToS3(compressedFile, `${backupName}.db.gz`);
+            await uploadToS3(compressedFile, `${backupName}.sql.gz`);
 
             // 4. Notify Success
-            await sendNotification(`Database backup successful!\nFile: ${backupName}.db.gz`);
-
+            await sendNotification(`Database backup successful!\nFile: ${backupName}.sql.gz`);
         } else {
-            log('Database file not found!', 'ERROR');
-            throw new Error('Database file not found');
+            throw new Error('Backup file not created');
         }
 
         // 5. Local Cleanup
