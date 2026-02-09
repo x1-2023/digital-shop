@@ -7,7 +7,7 @@ import { join } from 'path';
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
+    // Create uploads directory if it doesn't exist (outside public/ for production compatibility)
+    const uploadsDir = join(process.cwd(), 'uploads');
     await mkdir(uploadsDir, { recursive: true });
 
     // Generate unique filename
@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     await writeFile(filePath, buffer);
 
-    // Update database
-    const fileUrl = `/uploads/${fileName}`;
-    const updateData = type === 'logo' 
+    // URL served via API route (not public/ which doesn't work in standalone production)
+    const fileUrl = `/api/uploads/files/${fileName}`;
+    const updateData = type === 'logo'
       ? { websiteLogo: fileUrl }
       : { websiteFavicon: fileUrl };
 
