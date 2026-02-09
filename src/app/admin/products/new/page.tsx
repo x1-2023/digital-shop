@@ -2,18 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 // import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { generateSlug } from '@/lib/utils';
 import Image from 'next/image';
+
+const RichTextEditor = dynamic(() => import('@/components/admin/rich-text-editor'), { ssr: false });
 
 interface Category {
   id: string;
@@ -399,14 +401,11 @@ export default function CreateProductPage() {
               </div>
 
               <div>
-                <Label htmlFor="description">Mô tả</Label>
-                <Textarea
-                  id="description"
-                  name="description"
+                <Label>Mô tả</Label>
+                <RichTextEditor
                   value={formData.description}
-                  onChange={handleInputChange}
+                  onChange={(html) => setFormData(prev => ({ ...prev, description: html }))}
                   placeholder="Mô tả sản phẩm..."
-                  rows={3}
                 />
               </div>
 

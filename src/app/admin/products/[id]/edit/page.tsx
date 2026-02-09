@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 // import { AppShell } from '@/components/layout/app-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+
+const RichTextEditor = dynamic(() => import('@/components/admin/rich-text-editor'), { ssr: false });
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -536,13 +538,11 @@ export default function EditProductPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Mô tả</Label>
-                  <Textarea
-                    id="description"
+                  <Label>Mô tả</Label>
+                  <RichTextEditor
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(html) => handleInputChange('description', html)}
                     placeholder="Mô tả chi tiết về sản phẩm"
-                    rows={4}
                   />
                 </div>
               </CardContent>
