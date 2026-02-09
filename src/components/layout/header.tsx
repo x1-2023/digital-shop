@@ -53,12 +53,7 @@ interface SearchKeyword {
   icon: string;
 }
 
-// Fallback suggestions (used if no keywords from admin)
-const FALLBACK_SUGGESTIONS: SearchKeyword[] = [
-  { id: '1', keyword: 'Netflix Premium', subtitle: 'Bán chạy nhất 7 ngày qua', icon: '🎬' },
-  { id: '2', keyword: 'ChatGPT Plus', subtitle: 'Công cụ AI giá rẻ', icon: '🤖' },
-  { id: '3', keyword: 'Telegram Premium', subtitle: 'Phù hợp chạy tool', icon: '📱' },
-];
+
 
 export function Header() {
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -119,7 +114,7 @@ export function Header() {
 
   const fetchSearchKeywords = async () => {
     try {
-      const res = await fetch('/api/admin/search-keywords');
+      const res = await fetch('/api/search-keywords');
       if (res.ok) {
         const data = await res.json();
         setSearchKeywords(data);
@@ -181,26 +176,28 @@ export function Header() {
           {searchFocused && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50">
               {/* Popular Suggestions */}
-              <div className="p-3 border-b border-border">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Gợi ý phổ biến</p>
-                <div className="space-y-1">
-                  {(searchKeywords.length > 0 ? searchKeywords : FALLBACK_SUGGESTIONS).map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/products?search=${encodeURIComponent(item.keyword)}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
-                      onClick={() => setSearchFocused(false)}
-                    >
-                      <span className="text-xl">{item.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{item.keyword}</p>
-                        <p className="text-xs text-muted-foreground">{item.subtitle}</p>
-                      </div>
-                      <TrendingUp className="w-3 h-3 text-green-500" />
-                    </Link>
-                  ))}
+              {searchKeywords.length > 0 && (
+                <div className="p-3 border-b border-border">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Gợi ý phổ biến</p>
+                  <div className="space-y-1">
+                    {searchKeywords.map((item: SearchKeyword) => (
+                      <Link
+                        key={item.id}
+                        href={`/products?search=${encodeURIComponent(item.keyword)}`}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors"
+                        onClick={() => setSearchFocused(false)}
+                      >
+                        <span className="text-xl">{item.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{item.keyword}</p>
+                          <p className="text-xs text-muted-foreground">{item.subtitle}</p>
+                        </div>
+                        <TrendingUp className="w-3 h-3 text-green-500" />
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Categories */}
               <div className="p-3">
@@ -294,7 +291,7 @@ export function Header() {
               </Link>
 
               {/* User Dropdown */}
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9 border border-border">
