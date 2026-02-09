@@ -19,7 +19,8 @@ import {
   AlertCircle,
   AlertTriangle,
   Upload,
-  RefreshCw
+  RefreshCw,
+  Star
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import Link from 'next/link';
@@ -557,6 +558,34 @@ export default function OrderDetailPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Review Section - Show for PAID orders */}
+          {order.status === 'PAID' && order.orderItems.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Đánh giá sản phẩm</CardTitle>
+                <CardDescription>Chia sẻ trải nghiệm của bạn về sản phẩm đã mua</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {order.orderItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between py-3 px-4 rounded-lg border border-border hover:bg-card-hover transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <Star className="h-5 w-5 text-yellow-500" />
+                        <span className="font-medium">{item.product.name}</span>
+                      </div>
+                      <Link href={`/products/${item.product.slug}?tab=reviews`}>
+                        <Button size="sm" variant="outline" className="border-brand text-brand hover:bg-brand/10">
+                          <Star className="h-4 w-4 mr-1" />
+                          Viết đánh giá
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           )}
