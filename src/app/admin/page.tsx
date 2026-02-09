@@ -65,6 +65,7 @@ interface RecentOrder {
   id: string;
   userEmail: string;
   totalAmount: number;
+  totalAmountVnd?: number;
   status: string;
   createdAt: string;
 }
@@ -116,10 +117,11 @@ export default function AdminDashboard() {
         if (ordersRes.ok) {
           const ordersData = await ordersRes.json();
           const orders = ordersData.data?.orders || ordersData.orders || [];
-          // Map user.email to userEmail for display
+          // Map user.email to userEmail and totalAmountVnd to totalAmount
           const mappedOrders = orders.map((o: any) => ({
             ...o,
             userEmail: o.userEmail || o.user?.email || 'N/A',
+            totalAmount: o.totalAmount || o.totalAmountVnd || 0,
           }));
           setRecentOrders(mappedOrders);
         }
