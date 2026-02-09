@@ -232,68 +232,15 @@ export default function AdminDashboard() {
           <p className="text-text-muted">Chào mừng trở lại, Administrator</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Reset Stats Button */}
-          {!resetConfirm ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-400 border-red-500/30 hover:bg-red-500/10"
-              onClick={() => setResetConfirm(true)}
-            >
-              <RotateCcw className="w-4 h-4 mr-1" />
-              Reset Data
-            </Button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-red-400">Xác nhận?</span>
-              <Button
-                variant="destructive"
-                size="sm"
-                disabled={isResetting}
-                onClick={async () => {
-                  setIsResetting(true);
-                  try {
-                    const res = await fetch('/api/admin/reset-stats', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ confirm: 'RESET_ALL_DATA' }),
-                    });
-                    if (res.ok) {
-                      window.location.reload();
-                    } else {
-                      const err = await res.json();
-                      alert(err.error || 'Lỗi reset');
-                    }
-                  } catch {
-                    alert('Lỗi kết nối');
-                  } finally {
-                    setIsResetting(false);
-                    setResetConfirm(false);
-                  }
-                }}
-              >
-                {isResetting ? 'Đang reset...' : '🗑️ XÓA HẾT'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setResetConfirm(false)}
-              >
-                Hủy
-              </Button>
-            </div>
-          )}
 
-          <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as 'today' | 'month' | 'year' | 'total')} className="w-full md:w-auto">
-            <TabsList className="bg-card border border-border">
-              <TabsTrigger value="today">Today</TabsTrigger>
-              <TabsTrigger value="month">Month</TabsTrigger>
-              <TabsTrigger value="year">Year</TabsTrigger>
-              <TabsTrigger value="total">All</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        <Tabs value={timePeriod} onValueChange={(v) => setTimePeriod(v as 'today' | 'month' | 'year' | 'total')} className="w-full md:w-auto">
+          <TabsList className="bg-card border border-border">
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="month">Month</TabsTrigger>
+            <TabsTrigger value="year">Year</TabsTrigger>
+            <TabsTrigger value="total">All</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Stats Cards - Modern Look */}
@@ -469,7 +416,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </div >
   );
 }
 
