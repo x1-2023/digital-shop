@@ -92,6 +92,8 @@ model Product {
   active    Boolean  @default(true)
   fakeSold   Int     @default(0) // Fake sold count for display
   fakeRating Float   @default(0) // Fake rating (0 = auto-random)
+  isSale     Boolean @default(false) // Show sale badge on frontend
+  salePercent Int    @default(10) // Sale discount percentage for display
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

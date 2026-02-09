@@ -17,12 +17,14 @@ const createProductSchema = z.object({
   usedLines: z.number().default(0),
   images: z.string().optional(),
   active: z.boolean().default(true),
+  isSale: z.boolean().default(false),
+  salePercent: z.number().min(1).max(99).default(10),
 });
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -95,7 +97,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     console.log('Received product data:', body);
-    
+
     const validatedData = createProductSchema.parse(body);
     console.log('Validated data:', validatedData);
 
@@ -147,6 +149,8 @@ export async function POST(request: NextRequest) {
         usedLines: validatedData.usedLines,
         images: validatedData.images,
         active: validatedData.active,
+        isSale: validatedData.isSale,
+        salePercent: validatedData.salePercent,
       } as unknown as Parameters<typeof prisma.product.create>[0]['data'],
     });
 

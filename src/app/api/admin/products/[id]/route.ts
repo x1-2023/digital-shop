@@ -17,6 +17,8 @@ const updateProductSchema = z.object({
   usedLines: z.number().optional(),
   images: z.string().optional(),
   active: z.boolean().optional(),
+  isSale: z.boolean().optional(),
+  salePercent: z.number().min(1).max(99).optional(),
 });
 
 export async function GET(
@@ -26,7 +28,7 @@ export async function GET(
   const params = await props.params;
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -65,7 +67,7 @@ export async function PATCH(
   const params = await props.params;
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -147,7 +149,7 @@ export async function DELETE(
   const params = await props.params;
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },

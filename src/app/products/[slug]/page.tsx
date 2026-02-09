@@ -48,6 +48,8 @@ interface Product {
   active: boolean;
   fakeSold?: number;
   fakeRating?: number;
+  isSale?: boolean;
+  salePercent?: number;
   createdAt: string;
   category?: {
     id: string;
@@ -363,15 +365,19 @@ export default function ProductDetailPage() {
 
                   {/* Price Section */}
                   <div className="flex items-end gap-3 pb-4 border-b border-border border-dashed">
-                    <span className="text-text-muted line-through text-lg">
-                      {formatCurrency(product.priceVnd * 1.1)}
-                    </span>
+                    {product.isSale && (
+                      <span className="text-text-muted line-through text-lg">
+                        {formatCurrency(Math.round(product.priceVnd / (1 - (product.salePercent || 10) / 100)))}
+                      </span>
+                    )}
                     <span className="text-4xl font-bold text-blue-600">
                       {formatCurrency(product.priceVnd)}
                     </span>
-                    <Badge className="bg-red-500 hover:bg-red-600 text-white border-0">
-                      SAVE 10%
-                    </Badge>
+                    {product.isSale && (
+                      <Badge className="bg-red-500 hover:bg-red-600 text-white border-0">
+                        SAVE {product.salePercent || 10}%
+                      </Badge>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
@@ -440,9 +446,11 @@ export default function ProductDetailPage() {
                                 <div className="p-2.5">
                                   <p className="text-xs font-medium line-clamp-2 leading-snug mb-1.5 h-8">{rp.name}</p>
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-text-muted line-through opacity-70">
-                                      {formatCurrency(rp.priceVnd * 1.2)}
-                                    </span>
+                                    {rp.isSale && (
+                                      <span className="text-xs text-text-muted line-through opacity-70">
+                                        {formatCurrency(Math.round(rp.priceVnd / (1 - (rp.salePercent || 10) / 100)))}
+                                      </span>
+                                    )}
                                     <span className="text-xs font-bold text-blue-600">{formatCurrency(rp.priceVnd)}</span>
                                   </div>
                                 </div>

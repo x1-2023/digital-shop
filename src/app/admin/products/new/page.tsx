@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { generateSlug } from '@/lib/utils';
+import { generateSlug, formatCurrency } from '@/lib/utils';
 import Image from 'next/image';
 
 const RichTextEditor = dynamic(() => import('@/components/admin/rich-text-editor'), { ssr: false });
@@ -34,6 +35,8 @@ interface FormData {
   fileContent: string;
   totalLines: number;
   images: string[];
+  isSale: boolean;
+  salePercent: number;
 }
 
 export default function CreateProductPage() {
@@ -49,7 +52,9 @@ export default function CreateProductPage() {
     fileUrl: '',
     fileContent: '',
     totalLines: 0,
-    images: []
+    images: [],
+    isSale: false,
+    salePercent: 10
   });
   const [productFile, setProductFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -308,7 +313,9 @@ export default function CreateProductPage() {
           totalLines: Number(formData.totalLines) || 0,
           usedLines: 0,
           images: JSON.stringify(formData.images),
-          active: true
+          active: true,
+          isSale: formData.isSale,
+          salePercent: formData.salePercent
         })
       });
 
@@ -422,6 +429,42 @@ export default function CreateProductPage() {
                     min="0"
                   />
                 </div>
+              </div>
+
+              {/* Sale Toggle */}
+              <div className="space-y-4 p-4 border border-border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="isSale">Giảm giá (Sale)</Label>
+                    <p className="text-sm text-text-muted">
+                      Hiển thị badge giảm giá và giá gốc trên frontend
+                    </p>
+                  </div>
+                  <Switch
+                    id="isSale"
+                    checked={formData.isSale}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isSale: checked as boolean }))}
+                  />
+                </div>
+                {formData.isSale && (
+                  <div>
+                    <Label htmlFor="salePercent">Phần trăm giảm giá (%)</Label>
+                    <Input
+                      id="salePercent"
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={formData.salePercent}
+                      onChange={(e) => setFormData(prev => ({ ...prev, salePercent: parseInt(e.target.value) || 10 }))}
+                      className="mt-1"
+                    />
+                    {formData.priceVnd > 0 && (
+                      <p className="text-sm text-text-muted mt-1">
+                        Giá gốc hiển thị: {formatCurrency(Math.round(formData.priceVnd / (1 - formData.salePercent / 100)))} → Giá bán: {formatCurrency(formData.priceVnd)}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="border-2 border-dashed border-border rounded-lg p-6">

@@ -106,13 +106,17 @@ export function HeroMarketplace({ dealProduct }: HeroMarketplaceProps) {
                                         </Link>
 
                                         <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                            <span className="text-xs text-muted-foreground line-through">
-                                                {formatCurrency(dealProduct.priceVnd * 1.1)}
-                                            </span>
+                                            {dealProduct.isSale && (
+                                                <span className="text-xs text-muted-foreground line-through">
+                                                    {formatCurrency(Math.round(dealProduct.priceVnd / (1 - (dealProduct.salePercent || 10) / 100)))}
+                                                </span>
+                                            )}
                                             <span className="text-lg font-bold text-red-500">
                                                 {formatCurrency(dealProduct.priceVnd)}
                                             </span>
-                                            <Badge variant="destructive" className="text-[10px] px-1.5 py-0">-10%</Badge>
+                                            {dealProduct.isSale && (
+                                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">-{dealProduct.salePercent || 10}%</Badge>
+                                            )}
                                         </div>
 
                                         <Link href={`/products/${dealProduct.slug}`} className="w-full mt-auto">
@@ -171,13 +175,17 @@ export function HeroMarketplace({ dealProduct }: HeroMarketplaceProps) {
                             </Link>
 
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <span className="text-xs text-muted-foreground line-through">
-                                    {formatCurrency(dealProduct.priceVnd * 1.1)}
-                                </span>
+                                {dealProduct.isSale && (
+                                    <span className="text-xs text-muted-foreground line-through">
+                                        {formatCurrency(Math.round(dealProduct.priceVnd / (1 - (dealProduct.salePercent || 10) / 100)))}
+                                    </span>
+                                )}
                                 <span className="text-base font-bold text-red-500">
                                     {formatCurrency(dealProduct.priceVnd)}
                                 </span>
-                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">-10%</Badge>
+                                {dealProduct.isSale && (
+                                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0">-{dealProduct.salePercent || 10}%</Badge>
+                                )}
                             </div>
 
                             <Link href={`/products/${dealProduct.slug}`} className="w-full mt-auto">

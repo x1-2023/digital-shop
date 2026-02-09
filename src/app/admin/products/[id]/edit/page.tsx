@@ -28,7 +28,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
-import { safeParseImages } from '@/lib/utils';
+import { safeParseImages, formatCurrency } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -44,6 +44,8 @@ interface Product {
   images?: string;
   description?: string;
   active: boolean;
+  isSale?: boolean;
+  salePercent?: number;
   createdAt: string;
   updatedAt: string;
   category?: {
@@ -77,6 +79,8 @@ export default function EditProductPage() {
     usedLines: 0,
     description: '',
     active: true,
+    isSale: false,
+    salePercent: 10,
     images: [] as string[],
   });
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -121,6 +125,8 @@ export default function EditProductPage() {
           usedLines: data.product.usedLines || 0,
           description: data.product.description || '',
           active: data.product.active,
+          isSale: data.product.isSale || false,
+          salePercent: data.product.salePercent || 10,
           images: productImages,
         });
       } else {
@@ -635,6 +641,39 @@ export default function EditProductPage() {
                     onCheckedChange={(checked) => handleInputChange('active', checked)}
                   />
                 </div>
+
+                {/* Sale Toggle */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="isSale">Giảm giá (Sale)</Label>
+                    <p className="text-sm text-text-muted">
+                      Hiển thị badge giảm giá và giá gốc trên frontend
+                    </p>
+                  </div>
+                  <Switch
+                    id="isSale"
+                    checked={formData.isSale}
+                    onCheckedChange={(checked) => handleInputChange('isSale', checked)}
+                  />
+                </div>
+
+                {formData.isSale && (
+                  <div>
+                    <Label htmlFor="salePercent">Phần trăm giảm giá (%)</Label>
+                    <Input
+                      id="salePercent"
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={formData.salePercent}
+                      onChange={(e) => handleInputChange('salePercent', parseInt(e.target.value) || 10)}
+                      className="mt-1"
+                    />
+                    <p className="text-sm text-text-muted mt-1">
+                      Giá gốc hiển thị: {formatCurrency(Math.round(formData.priceVnd / (1 - (formData.salePercent || 10) / 100)))} → Giá bán: {formatCurrency(formData.priceVnd)}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
