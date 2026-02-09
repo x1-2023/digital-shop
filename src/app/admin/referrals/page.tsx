@@ -127,6 +127,7 @@ export default function AdminReferralsPage() {
   };
 
   const formatVND = (amount: number) => {
+    if (!amount || isNaN(amount)) return '0 ₫';
     return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
   };
 
