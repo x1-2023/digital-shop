@@ -53,7 +53,7 @@ const websiteSettingsSchema = z.object({
 export async function GET() {
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -61,16 +61,29 @@ export async function GET() {
       );
     }
 
-    const settings = await prisma.settings.findUnique({
-      where: { id: 'singleton' },
-    });
+    const defaultSettings = {
+      websiteName: 'Digital Shop',
+      websiteTitle: 'Digital Shop - Mua bán tài khoản số',
+      websiteDescription: 'Nền tảng mua bán tài khoản số uy tín',
+      websiteKeywords: 'digital shop, tài khoản số',
+      websiteLogo: null,
+      websiteFavicon: null,
+      copyrightYear: new Date().getFullYear().toString(),
+      supportEmail: '',
+      contactInfo: '',
+      paymentMethods: '{"manual":true,"tpbank":false,"momo":false,"crypto":false}',
+      bankInfo: '{"bankName":"","accountNumber":"","accountHolder":"","instructions":""}',
+      topupRules: '{"minVnd":10000,"maxVnd":10000000}',
+      tpbankConfig: '{"enabled":false,"apiUrl":"","token":"","amountTolerance":1000}',
+      uiTexts: '{"welcomeMessage":"","footerText":"","contactEmail":"","contactPhone":""}',
+      themeSettings: '{"primaryColor":"#6366f1","darkMode":true,"sidebarColor":"","headerColor":""}',
+    };
 
-    if (!settings) {
-      return NextResponse.json(
-        { error: 'Settings not found' },
-        { status: 404 }
-      );
-    }
+    const settings = await prisma.settings.upsert({
+      where: { id: 'singleton' },
+      create: { id: 'singleton', ...defaultSettings },
+      update: {},
+    });
 
     return NextResponse.json({
       settings: {
@@ -103,7 +116,7 @@ export async function GET() {
 export async function PATCH(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -115,7 +128,7 @@ export async function PATCH(request: NextRequest) {
     const validatedData = websiteSettingsSchema.parse(body);
 
     const updateData: any = {};
-    
+
     if (validatedData.websiteName) updateData.websiteName = validatedData.websiteName;
     if (validatedData.websiteTitle) updateData.websiteTitle = validatedData.websiteTitle;
     if (validatedData.websiteDescription) updateData.websiteDescription = validatedData.websiteDescription;
@@ -131,7 +144,7 @@ export async function PATCH(request: NextRequest) {
     if (validatedData.tpbankConfig) updateData.tpbankConfig = JSON.stringify(validatedData.tpbankConfig);
     if (validatedData.uiTexts) updateData.uiTexts = JSON.stringify(validatedData.uiTexts);
     if (validatedData.themeSettings) updateData.themeSettings = JSON.stringify(validatedData.themeSettings);
-    
+
     updateData.updatedAt = new Date();
 
     const updatedSettings = await prisma.settings.update({
@@ -174,7 +187,7 @@ export async function PATCH(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER')) {
       return NextResponse.json(
         { error: 'Unauthorized' },
