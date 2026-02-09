@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, RefreshCw, Users, Shield, User, Plus, Minus, Wallet } from 'lucide-react';
+import { Search, RefreshCw, Users, Shield, User, Plus, Minus, Wallet, ShieldPlus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface User {
@@ -46,6 +46,9 @@ export default function UsersPage() {
     type: 'add',
     reason: '',
   });
+  const [promoteModal, setPromoteModal] = useState(false);
+  const [promoteEmail, setPromoteEmail] = useState('');
+  const [isPromoting, setIsPromoting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -131,6 +134,51 @@ export default function UsersPage() {
     });
   };
 
+  const handlePromote = async () => {
+    if (!promoteEmail.trim()) {
+      toast({
+        title: 'Lỗi',
+        description: 'Vui lòng nhập email',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsPromoting(true);
+    try {
+      const response = await fetch('/api/admin/users/promote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: promoteEmail.trim(), role: 'ADMIN' }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: 'Thành công',
+          description: data.message,
+        });
+        setPromoteModal(false);
+        setPromoteEmail('');
+        fetchUsers();
+      } else {
+        toast({
+          title: 'Lỗi',
+          description: data.error || 'Không thể promote user',
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({
+        title: 'Lỗi',
+        description: 'Có lỗi xảy ra',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPromoting(false);
+    }
+  };
+
   const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.id.toLowerCase().includes(searchTerm.toLowerCase())
@@ -158,10 +206,16 @@ export default function UsersPage() {
               Quản lý tài khoản người dùng và phân quyền
             </p>
           </div>
-          <Button onClick={fetchUsers} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Làm mới
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button onClick={() => setPromoteModal(true)} variant="outline" className="border-brand text-brand hover:bg-brand/10">
+              <ShieldPlus className="h-4 w-4 mr-2" />
+              Promote Admin
+            </Button>
+            <Button onClick={fetchUsers} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Làm mới
+            </Button>
+          </div>
         </div>
 
         {/* Statistics */}
@@ -368,6 +422,62 @@ export default function UsersPage() {
                   <Button
                     variant="outline"
                     onClick={() => setAdjustmentModal({ isOpen: false, user: null })}
+                    className="flex-1"
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Promote Admin Modal */}
+        {promoteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldPlus className="h-5 w-5" />
+                  Promote Admin
+                </CardTitle>
+                <CardDescription>
+                  Nhập email người dùng để nâng lên quyền Admin
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email người dùng</label>
+                  <Input
+                    type="email"
+                    value={promoteEmail}
+                    onChange={(e) => setPromoteEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    onKeyDown={(e) => e.key === 'Enter' && handlePromote()}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    ⚠️ User sẽ được nâng lên quyền <strong>Admin</strong> và có thể truy cập trang quản trị.
+                  </p>
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={handlePromote}
+                    className="flex-1"
+                    disabled={isPromoting}
+                  >
+                    {isPromoting ? 'Đang xử lý...' : '✅ Xác nhận Promote'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setPromoteModal(false);
+                      setPromoteEmail('');
+                    }}
                     className="flex-1"
                   >
                     Hủy
