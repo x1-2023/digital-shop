@@ -49,6 +49,10 @@ export default function AdminProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const ITEMS_PER_PAGE = 10;
   const { toast } = useToast();
   const router = useRouter();
 
@@ -57,11 +61,17 @@ export default function AdminProductsPage() {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
       if (statusFilter !== 'all') params.append('active', statusFilter);
+      params.append('page', currentPage.toString());
+      params.append('limit', ITEMS_PER_PAGE.toString());
 
       const response = await fetch(`/api/products?${params}`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data.products || []);
+        if (data.pagination) {
+          setTotalPages(data.pagination.pages || 1);
+          setTotalProducts(data.pagination.total || 0);
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -79,7 +89,7 @@ export default function AdminProductsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, statusFilter, toast]);
+  }, [search, statusFilter, currentPage, toast]);
 
   useEffect(() => {
     fetchProducts();
@@ -157,13 +167,13 @@ export default function AdminProductsPage() {
                   <Input
                     placeholder="Tìm kiếm sản phẩm..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
                     className="pl-10"
                   />
                 </div>
               </div>
               <div className="flex gap-4">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Trạng thái" />
                   </SelectTrigger>
@@ -311,16 +321,47 @@ export default function AdminProductsPage() {
         )}
 
         {/* Pagination */}
-        {products.length > 0 && (
+        {totalPages > 1 && (
           <div className="flex justify-center">
             <div className="flex items-center space-x-2">
-              <Button variant="outline" disabled onClick={() => { }}>
+              <Button
+                variant="outline"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              >
                 Trước
               </Button>
-              <Button variant="default" onClick={() => { }}>1</Button>
-              <Button variant="outline" onClick={() => { }}>2</Button>
-              <Button variant="outline" onClick={() => { }}>3</Button>
-              <Button variant="outline" onClick={() => { }}>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => {
+                  // Show first, last, current, and neighbors
+                  if (p === 1 || p === totalPages) return true;
+                  if (Math.abs(p - currentPage) <= 1) return true;
+                  return false;
+                })
+                .reduce((acc: (number | string)[], p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={currentPage === p ? 'default' : 'outline'}
+                      onClick={() => setCurrentPage(p as number)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )
+              }
+              <Button
+                variant="outline"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              >
                 Sau
               </Button>
             </div>
