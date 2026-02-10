@@ -56,6 +56,9 @@ export default function AdminLogsPage() {
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [targetFilter, setTargetFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const { toast } = useToast();
 
   const fetchLogs = useCallback(async () => {
@@ -64,11 +67,16 @@ export default function AdminLogsPage() {
       if (search) params.append('search', search);
       if (actionFilter !== 'all') params.append('action', actionFilter);
       if (targetFilter !== 'all') params.append('targetType', targetFilter);
+      params.append('page', currentPage.toString());
+      params.append('limit', ITEMS_PER_PAGE.toString());
 
       const response = await fetch(`/api/admin/logs?${params}`);
       if (response.ok) {
         const data = await response.json();
         setLogs(data.data?.logs || data.logs || []);
+        if (data.data?.pagination) {
+          setTotalPages(data.data.pagination.pages || 1);
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -86,7 +94,7 @@ export default function AdminLogsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, actionFilter, targetFilter, toast]);
+  }, [search, actionFilter, targetFilter, currentPage, toast]);
 
   const fetchSystemLogs = useCallback(async () => {
     try {
@@ -94,11 +102,16 @@ export default function AdminLogsPage() {
       if (search) params.append('search', search);
       if (actionFilter !== 'all') params.append('action', actionFilter);
       if (targetFilter !== 'all') params.append('targetType', targetFilter);
+      params.append('page', currentPage.toString());
+      params.append('limit', ITEMS_PER_PAGE.toString());
 
       const response = await fetch(`/api/admin/system-logs?${params}`);
       if (response.ok) {
         const data = await response.json();
         setSystemLogs(data.data?.logs || data.logs || []);
+        if (data.data?.pagination) {
+          setTotalPages(data.data.pagination.pages || 1);
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -116,7 +129,7 @@ export default function AdminLogsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, actionFilter, targetFilter, toast]);
+  }, [search, actionFilter, targetFilter, currentPage, toast]);
 
   useEffect(() => {
     if (activeTab === 'admin') {
@@ -209,7 +222,7 @@ export default function AdminLogsPage() {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setCurrentPage(1); setTotalPages(1); }}>
           <TabsList>
             <TabsTrigger value="system">Nhật ký hệ thống</TabsTrigger>
             <TabsTrigger value="admin">Nhật ký Admin</TabsTrigger>
@@ -450,16 +463,41 @@ export default function AdminLogsPage() {
         </Tabs>
 
         {/* Pagination */}
-        {logs.length > 0 && (
+        {totalPages > 1 && (
           <div className="flex justify-center">
             <div className="flex items-center space-x-2">
-              <Button variant="outline" disabled onClick={() => { }}>
+              <Button
+                variant="outline"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              >
                 Trước
               </Button>
-              <Button variant="default" onClick={() => { }}>1</Button>
-              <Button variant="outline" onClick={() => { }}>2</Button>
-              <Button variant="outline" onClick={() => { }}>3</Button>
-              <Button variant="outline" onClick={() => { }}>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce((acc: (number | string)[], p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`e-${idx}`} className="px-2 text-muted-foreground">...</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={currentPage === p ? 'default' : 'outline'}
+                      onClick={() => setCurrentPage(p as number)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+              <Button
+                variant="outline"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              >
                 Sau
               </Button>
             </div>

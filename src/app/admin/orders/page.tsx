@@ -58,6 +58,9 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const { toast } = useToast();
 
   const fetchOrders = useCallback(async () => {
@@ -66,11 +69,16 @@ export default function AdminOrdersPage() {
       if (search) params.append('search', search);
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (dateFilter !== 'all') params.append('date', dateFilter);
+      params.append('page', currentPage.toString());
+      params.append('limit', ITEMS_PER_PAGE.toString());
 
       const response = await fetch(`/api/orders?${params}`);
       if (response.ok) {
         const data = await response.json();
         setOrders(data.orders || []);
+        if (data.pagination) {
+          setTotalPages(data.pagination.pages || 1);
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -88,7 +96,7 @@ export default function AdminOrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, statusFilter, dateFilter, toast]);
+  }, [search, statusFilter, dateFilter, currentPage, toast]);
 
   useEffect(() => {
     fetchOrders();
@@ -199,13 +207,13 @@ export default function AdminOrdersPage() {
                   <Input
                     placeholder="Tìm kiếm đơn hàng, email..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
                     className="pl-10"
                   />
                 </div>
               </div>
               <div className="flex gap-4">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="w-40">
                     <Filter className="h-4 w-4 mr-2" />
                     <SelectValue placeholder="Trạng thái" />
@@ -218,7 +226,7 @@ export default function AdminOrdersPage() {
                     <SelectItem value="REVIEW_REQUIRED">Cần xem xét</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={dateFilter} onValueChange={setDateFilter}>
+                <Select value={dateFilter} onValueChange={(v) => { setDateFilter(v); setCurrentPage(1); }}>
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Thời gian" />
                   </SelectTrigger>
@@ -322,16 +330,41 @@ export default function AdminOrdersPage() {
         )}
 
         {/* Pagination */}
-        {orders.length > 0 && (
+        {totalPages > 1 && (
           <div className="flex justify-center">
             <div className="flex items-center space-x-2">
-              <Button variant="outline" disabled onClick={() => { }}>
+              <Button
+                variant="outline"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              >
                 Trước
               </Button>
-              <Button variant="default" onClick={() => { }}>1</Button>
-              <Button variant="outline" onClick={() => { }}>2</Button>
-              <Button variant="outline" onClick={() => { }}>3</Button>
-              <Button variant="outline" onClick={() => { }}>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce((acc: (number | string)[], p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`e-${idx}`} className="px-2 text-muted-foreground">...</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={currentPage === p ? 'default' : 'outline'}
+                      onClick={() => setCurrentPage(p as number)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+              <Button
+                variant="outline"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              >
                 Sau
               </Button>
             </div>

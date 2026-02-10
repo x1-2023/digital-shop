@@ -63,6 +63,8 @@ export default function AdminReviewsPage() {
   const [adminNote, setAdminNote] = useState('');
   const [newStatus, setNewStatus] = useState<'PUBLISHED' | 'HIDDEN' | 'DELETED'>('PUBLISHED');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const { toast } = useToast();
 
   useEffect(() => {
@@ -227,6 +229,12 @@ export default function AdminReviewsPage() {
     }
   };
 
+  const totalPages = Math.ceil(reviews.length / ITEMS_PER_PAGE);
+  const paginatedReviews = reviews.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="flex-1 p-6">
       <div className="space-y-6">
@@ -242,7 +250,7 @@ export default function AdminReviewsPage() {
               Chạy Auto-Review
             </Button>
 
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v); setCurrentPage(1); }}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Lọc theo trạng thái" />
               </SelectTrigger>
@@ -281,7 +289,7 @@ export default function AdminReviewsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {reviews.map((review) => (
+                  {paginatedReviews.map((review) => (
                     <TableRow key={review.id}>
                       <TableCell>
                         <div className="font-medium">{review.product.name}</div>
@@ -353,6 +361,48 @@ export default function AdminReviewsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              >
+                Trước
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce((acc: (number | string)[], p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`e-${idx}`} className="px-2 text-muted-foreground">...</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={currentPage === p ? 'default' : 'outline'}
+                      onClick={() => setCurrentPage(p as number)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+              <Button
+                variant="outline"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              >
+                Sau
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

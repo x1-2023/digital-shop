@@ -49,6 +49,8 @@ export default function UsersPage() {
   const [promoteModal, setPromoteModal] = useState(false);
   const [promoteEmail, setPromoteEmail] = useState('');
   const [isPromoting, setIsPromoting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchUsers();
@@ -184,6 +186,14 @@ export default function UsersPage() {
     user.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
+
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const totalUsers = users.length;
   const adminUsers = users.filter(user => user.role === 'ADMIN' || user.role === 'OWNER').length;
   const buyerUsers = users.filter(user => user.role === 'USER').length;
@@ -275,7 +285,7 @@ export default function UsersPage() {
                 <Input
                   placeholder="Tìm kiếm theo email hoặc ID..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                   className="pl-10"
                 />
               </div>
@@ -306,7 +316,7 @@ export default function UsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
                       {user.email}

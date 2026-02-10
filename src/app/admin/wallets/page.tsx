@@ -44,6 +44,8 @@ export default function WalletsPage() {
     type: 'add',
     reason: '',
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchWallets();
@@ -134,6 +136,12 @@ export default function WalletsPage() {
     wallet.userId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const totalPages = Math.ceil(filteredWallets.length / ITEMS_PER_PAGE);
+  const paginatedWallets = filteredWallets.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balanceVnd, 0);
 
   if (loading) {
@@ -221,7 +229,7 @@ export default function WalletsPage() {
                 <Input
                   placeholder="Tìm kiếm theo email hoặc ID..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                   className="pl-10"
                 />
               </div>
@@ -250,7 +258,7 @@ export default function WalletsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredWallets.map((wallet) => (
+                {paginatedWallets.map((wallet) => (
                   <TableRow key={wallet.id}>
                     <TableCell className="font-medium">
                       {wallet.userId.slice(0, 8)}...
@@ -283,6 +291,48 @@ export default function WalletsPage() {
             </Table>
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              >
+                Trước
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .reduce((acc: (number | string)[], p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span key={`e-${idx}`} className="px-2 text-muted-foreground">...</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={currentPage === p ? 'default' : 'outline'}
+                      onClick={() => setCurrentPage(p as number)}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+              <Button
+                variant="outline"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              >
+                Sau
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Adjustment Modal */}
         {adjustmentModal.isOpen && (
