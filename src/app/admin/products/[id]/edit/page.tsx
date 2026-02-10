@@ -77,12 +77,14 @@ export default function EditProductPage() {
     fileName: '',
     totalLines: 0,
     usedLines: 0,
+    fakeSold: 0,
     description: '',
     active: true,
     isSale: false,
     salePercent: 10,
     images: [] as string[],
   });
+  const [soldMode, setSoldMode] = useState<'real' | 'manual'>('real');
   const [uploadingImages, setUploadingImages] = useState(false);
   const [isRestocking, setIsRestocking] = useState(false);
   const [restockMode, setRestockMode] = useState<'append' | 'replace'>('append');
@@ -123,12 +125,14 @@ export default function EditProductPage() {
           fileName: data.product.fileName || '',
           totalLines: data.product.totalLines || 0,
           usedLines: data.product.usedLines || 0,
+          fakeSold: data.product.fakeSold || 0,
           description: data.product.description || '',
           active: data.product.active,
           isSale: data.product.isSale || false,
           salePercent: data.product.salePercent || 10,
           images: productImages,
         });
+        setSoldMode(data.product.fakeSold > 0 ? 'manual' : 'real');
       } else {
         toast({
           variant: 'destructive',
@@ -626,6 +630,64 @@ export default function EditProductPage() {
                   <p className="text-xs text-text-muted mt-1">
                     Tự động cập nhật khi có đơn hàng
                   </p>
+                </div>
+
+                {/* Sold Mode Toggle */}
+                <div className="border border-border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Số lượng đã bán (hiển thị)</Label>
+                      <p className="text-xs text-text-muted mt-0.5">
+                        Chế độ hiển thị số &quot;Đã bán&quot; trên frontend
+                      </p>
+                    </div>
+                    <div className="flex bg-secondary rounded-lg p-0.5">
+                      <button
+                        type="button"
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${soldMode === 'real'
+                            ? 'bg-brand text-white shadow-sm'
+                            : 'text-text-muted hover:text-text-primary'
+                          }`}
+                        onClick={() => {
+                          setSoldMode('real');
+                          handleInputChange('fakeSold', 0);
+                        }}
+                      >
+                        📊 Thật
+                      </button>
+                      <button
+                        type="button"
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${soldMode === 'manual'
+                            ? 'bg-brand text-white shadow-sm'
+                            : 'text-text-muted hover:text-text-primary'
+                          }`}
+                        onClick={() => setSoldMode('manual')}
+                      >
+                        ✏️ Thủ công
+                      </button>
+                    </div>
+                  </div>
+
+                  {soldMode === 'real' ? (
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+                      <p className="text-sm text-emerald-400">
+                        Đang hiển thị <strong>{formData.usedLines}</strong> (số thật từ đơn hàng)
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        type="number"
+                        value={formData.fakeSold}
+                        onChange={(e) => handleInputChange('fakeSold', parseInt(e.target.value) || 0)}
+                        placeholder="Nhập số lượng đã bán"
+                        min="0"
+                      />
+                      <p className="text-xs text-yellow-500">
+                        ⚠️ Số này sẽ hiển thị thay cho số thật trên frontend
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between">

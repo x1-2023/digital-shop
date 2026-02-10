@@ -20,6 +20,9 @@ interface Product {
     slug: string;
     fileName?: string | null;
     stock: number;
+    avgRating?: number;
+    reviewCount?: number;
+    soldCount?: number;
 }
 
 export function ProductCard({ product }: { product: Product }) {
@@ -80,16 +83,22 @@ export function ProductCard({ product }: { product: Product }) {
                         </h3>
                     </Link>
 
-                    {/* Rating & Sold (Deterministic based on product ID) */}
+                    {/* Rating & Sold (Real data from API) */}
                     <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                        <div className="flex items-center text-yellow-500">
-                            <span className="text-xs mr-1">{((product.id.charCodeAt(0) % 10) / 10 + 4.5).toFixed(1)}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-                                <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                            </svg>
-                        </div>
-                        <span>•</span>
-                        <span>Đã bán {(product.id.charCodeAt(0) + product.id.charCodeAt(1)) % 500 + 50}</span>
+                        {(product.avgRating || 0) > 0 && (
+                            <>
+                                <div className="flex items-center text-yellow-500">
+                                    <span className="text-xs mr-1">{product.avgRating?.toFixed(1)}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                                        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <span>•</span>
+                            </>
+                        )}
+                        {(product.soldCount || 0) > 0 && (
+                            <span>Đã bán {product.soldCount}</span>
+                        )}
                     </div>
 
                     <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between">

@@ -79,22 +79,48 @@ export async function GET(request: NextRequest) {
           stock: true,
           images: true,
           active: true,
-          description: true, // Needed for listing snippets
+          description: true,
           createdAt: true,
           updatedAt: true,
+          fileName: true,
+          fakeSold: true,
+          usedLines: true,
           category: {
             select: {
               name: true,
             },
+          },
+          reviews: {
+            where: { status: 'PUBLISHED' },
+            select: { rating: true },
           },
         },
       }),
       prisma.product.count({ where }),
     ]);
 
+    // Enrich products with computed rating and sold count
+    const enrichedProducts = products.map((p: any) => {
+      const reviews = p.reviews || [];
+      const reviewCount = reviews.length;
+      const avgRating = reviewCount > 0
+        ? Number((reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount).toFixed(1))
+        : 0;
+      // If fakeSold > 0, use it; otherwise use real usedLines
+      const soldCount = p.fakeSold > 0 ? p.fakeSold : (p.usedLines || 0);
+
+      const { reviews: _reviews, ...productData } = p;
+      return {
+        ...productData,
+        avgRating,
+        reviewCount,
+        soldCount,
+      };
+    });
+
     return NextResponse.json({
       success: true,
-      products,
+      products: enrichedProducts,
       pagination: {
         page,
         limit,

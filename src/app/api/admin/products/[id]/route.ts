@@ -19,6 +19,7 @@ const updateProductSchema = z.object({
   active: z.boolean().optional(),
   isSale: z.boolean().optional(),
   salePercent: z.number().min(1).max(99).optional(),
+  fakeSold: z.number().min(0).optional(),
 });
 
 export async function GET(
