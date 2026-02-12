@@ -273,12 +273,24 @@ export function Header() {
                     Đơn hàng
                   </Button>
                 </Link>
-                <Link href={telegramUrl} target="_blank">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    <MessageCircle className="h-4 w-4 mr-1.5" />
-                    Hỗ trợ
-                  </Button>
-                </Link>
+                <Button
+                  onClick={() => window.open(process.env.NEXT_PUBLIC_MAILHUB_URL || 'https://mailhub.webmmo.net', '_blank')}
+                  variant="ghost"
+                  size="sm"
+                  className="relative group overflow-hidden border border-indigo-500/50 hover:border-indigo-500 bg-indigo-50/10 hover:bg-indigo-50/20 transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.2)] hover:shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:animate-[spin_1s_linear_infinite]" style={{ animation: 'shimmer 2s infinite' }} />
+                  <Mail className="h-4 w-4 mr-1.5 text-indigo-500 group-hover:text-indigo-600" />
+                  <span className="font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
+                    MailHub
+                  </span>
+                  <style jsx>{`
+                    @keyframes shimmer {
+                      0% { transform: translateX(-200%); }
+                      100% { transform: translateX(200%); }
+                    }
+                  `}</style>
+                </Button>
               </div>
 
               {/* Deposit Button */}
